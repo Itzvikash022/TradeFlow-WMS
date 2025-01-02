@@ -13,7 +13,26 @@ namespace WMS_Application.Repositories.Classes
 
     public async Task SaveUsers(User user)
     {
-        await _context.Users.AddAsync(user);
+            if (user.ProfileImage != null)
+            {
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\Uploads");
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + user.ProfileImage.FileName;
+
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    user.ProfileImage.CopyTo(stream);
+                }
+
+                // Hash the password
+
+                user.ProfileImgPath = "\\Uploads\\" + uniqueFileName;
+                user.ProfileImage = null;
+            }
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
+
+
+            await _context.Users.AddAsync(user);
         await _context.SaveChangesAsync();
     }
 

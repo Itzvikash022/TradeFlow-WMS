@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WMS_Application.Models;
 
@@ -30,4 +31,6 @@ public partial class User
     public string? Designation { get; set; }
 
     public string? AdminRef { get; set; }
+    [NotMapped]
+    public IFormFile? ProfileImage { get; set; }
 }

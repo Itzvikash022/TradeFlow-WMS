@@ -10,65 +10,83 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Register">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <img src="#" id="imagePreview" class="img-fluid rounded" alt="Signup Graphic" style="display:none">
+        <form id="SignUpForm" enctype="multipart/form-data">
             <div class="form-group">
                 <label asp-for="Username" class="control-label"></label>
-                <input asp-for="Username" class="form-control" />
-                <span asp-validation-for="Username" class="text-danger"></span>
+                <input asp-for="Username" class="form-control" name="Username" />
+                
             </div>
             <div class="form-group">
                 <label asp-for="FirstName" class="control-label"></label>
                 <input asp-for="FirstName" class="form-control" />
-                <span asp-validation-for="FirstName" class="text-danger"></span>
-            </div>
+            </div>  
             <div class="form-group">
                 <label asp-for="LastName" class="control-label"></label>
                 <input asp-for="LastName" class="form-control" />
-                <span asp-validation-for="LastName" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="PasswordHash" class="control-label"></label>
                 <input asp-for="PasswordHash" class="form-control" />
-                <span asp-validation-for="PasswordHash" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" class="form-control" />
-                <span asp-validation-for="Email" class="text-danger"></span>
+                <input asp-for="Email" type="email" class="form-control" />
             </div>
             <div class="form-group">
                 <label asp-for="PhoneNumber" class="control-label"></label>
-                <input asp-for="PhoneNumber" class="form-control" />
-                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                <input asp-for="PhoneNumber" type="tel" class="form-control" />
             </div>
-            <div class="form-group">
-                <label asp-for="Role" class="control-label"></label>
-                <input asp-for="Role" class="form-control" />
-                <span asp-validation-for="Role" class="text-danger"></span>
+
+            @* <div class="form-group"> *@
+            @*     <label asp-for="Role" class="control-label"></label> *@
+            @*     <input asp-for="Role" type="radio" name="Role" id="roleAdmin" value="Admin" />Admin *@
+            @*     <input asp-for="Role" type="radio" name="Role" id="roleEmployee" value="Employee" />Employee *@
+            @* </div> *@
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label asp-for="Role" class="form-label">Role</label>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="form-check">
+                            <input asp-for="Role" name="Role" type="radio" value="Admin" class="form-check-input" id="roleAdmin" />
+                            <label class="form-check-label" for="roleAdmin">Admin</label>
+                        </div>
+                        <div class="form-check">
+                            <input asp-for="Role" name="Role" type="radio" value="Employee" class="form-check-input" id="roleEmployee" />
+                            <label class="form-check-label" for="roleEmployee">Employee</label>
+                        </div>
+                    </div>
+                    <span class="text-danger"></span>
+                </div>
+                <!-- Referenced Admin Username-->
+                <div class="mb-3 col-md-8 visually-hidden" id="AdminRef">
+                    <label asp-for="AdminRef" class="form-label">Admin Ref</label>
+                    <select asp-for="AdminRef" id="AdminReference">
+                        <option value="">--Select Admin Username--</option>
+                        <option value="">--Select Admin Username--</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group visually-hidden">
+                <label asp-for="AdminRef" class="control-label"></label>
+                <input asp-for="AdminRef" class="form-control" />
             </div>
             <div class="form-group">
                 <label asp-for="DateOfBirth" class="control-label"></label>
-                <input asp-for="DateOfBirth" class="form-control" />
-                <span asp-validation-for="DateOfBirth" class="text-danger"></span>
+                <input asp-for="DateOfBirth" type="date" class="form-control" />
             </div>
             <div class="form-group">
-                <label asp-for="ProfileImgPath" class="control-label"></label>
-                <input asp-for="ProfileImgPath" class="form-control" />
-                <span asp-validation-for="ProfileImgPath" class="text-danger"></span>
+                <label asp-for="ProfileImage" class="control-label"></label>
+                <input asp-for="ProfileImage" class="form-control" type="file" accept=".jpg, .jpeg, .png"/>
             </div>
             <div class="form-group">
                 <label asp-for="Designation" class="control-label"></label>
                 <input asp-for="Designation" class="form-control" />
-                <span asp-validation-for="Designation" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="AdminRef" class="control-label"></label>
-                <input asp-for="AdminRef" class="form-control" />
-                <span asp-validation-for="AdminRef" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <button type="submit" id="btnRegister" class="btn btn-primary" >Create</button>
             </div>
         </form>
     </div>
@@ -80,4 +98,5 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="/js/Register.js"></script>
 }

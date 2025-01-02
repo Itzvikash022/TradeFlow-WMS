@@ -33,8 +33,8 @@ namespace WMS_Application.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Register(User user)
-        {
+        public async Task<IActionResult> Register([FromForm] User user)
+            {
             try
             {
                 if(await _users.IsUsernameExists(user.Username))
@@ -43,8 +43,10 @@ namespace WMS_Application.Controllers
                 }
                 if(await _users.IsEmailExists(user.Email))
                 {
-                    return Json(new { success = false, message = "Username already exists" });
+                    return Json(new { success = false, message = "Email already exists" });
                 }
+
+                await _users.SaveUsers(user);
 
                 return Json(new { success = true, message = "User registered successfully" });
             }

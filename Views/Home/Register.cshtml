@@ -59,20 +59,12 @@
                     </div>
                     <span class="text-danger"></span>
                 </div>
+            </div>
                 <!-- Referenced Admin Username-->
                 <div class="mb-3 col-md-8 visually-hidden" id="AdminRef">
                     <label asp-for="AdminRef" class="form-label">Admin Ref</label>
-                    <select asp-for="AdminRef" id="AdminReference">
-                        <option value="">--Select Admin Username--</option>
-                        <option value="">--Select Admin Username--</option>
-                    </select>
+                    <input asp-for="AdminRef" class="form-control" id="AdminReference"/>
                 </div>
-            </div>
-
-            <div class="form-group visually-hidden">
-                <label asp-for="AdminRef" class="control-label"></label>
-                <input asp-for="AdminRef" class="form-control" />
-            </div>
             <div class="form-group">
                 <label asp-for="DateOfBirth" class="control-label"></label>
                 <input asp-for="DateOfBirth" type="date" class="form-control" />
@@ -83,7 +75,13 @@
             </div>
             <div class="form-group">
                 <label asp-for="Designation" class="control-label"></label>
-                <input asp-for="Designation" class="form-control" />
+                <select>
+                    <option value="">--Select Designation--</option>
+                    @foreach (var designation in ViewBag.Designations as List<Designation>)
+                    {
+                        <option value="@designation.Designation1">@designation.Designation1</option>
+                    }
+                </select>
             </div>
             <div class="form-group">
                 <button type="submit" id="btnRegister" class="btn btn-primary" >Create</button>

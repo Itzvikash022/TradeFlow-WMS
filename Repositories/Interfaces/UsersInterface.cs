@@ -4,9 +4,11 @@ namespace WMS_Application.Repositories.Interfaces
 {
     public interface UsersInterface
     {
-            Task SaveUsers(User user);
-            Task<bool> IsUsernameExists(string Username);
-            Task<bool> IsEmailExists(string Email);
+        Task<object> SaveUsers(User user);
+        Task<bool> IsUsernameExists(string Username);
+        Task<bool> IsEmailExists(string Email);
+        Task<bool> IsAdminExists(string AdminRef);
+        Task<List<Designation>> GetDesignations();
     }
 
 }

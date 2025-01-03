@@ -1,0 +1,5 @@
+﻿.error {
+    color: red;
+    /*font-size: 14px;*/ /* Optional: Adjust size */
+    font-weight: bold; /* Optional: Make it bold */
+}

@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 
@@ -27,8 +28,9 @@ namespace WMS_Application.Controllers
             return View();
         }
 
-        public IActionResult Register()
+        public async Task<IActionResult> Register()
         {
+            ViewBag.Designations = await _users.GetDesignations();
             return View();
         }
 
@@ -45,10 +47,12 @@ namespace WMS_Application.Controllers
                 {
                     return Json(new { success = false, message = "Email already exists" });
                 }
+                if(!await _users.IsAdminExists(user.AdminRef))
+                {
+                    return Json(new { success = false, message = "Admin doesn't exists" });
+                }
 
-                await _users.SaveUsers(user);
-
-                return Json(new { success = true, message = "User registered successfully" });
+                return Json(await _users.SaveUsers(user));
             }
             catch(Exception e)
             {

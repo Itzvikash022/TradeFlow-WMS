@@ -1,100 +1,174 @@
 ﻿@model WMS_Application.Models.User
 
 @{
+    Layout = "/Views/Shared/_mainLayout.cshtml";
+    // Layout = null;
     ViewData["Title"] = "Register";
 }
+@* <script type="text/javascript"> *@
+@*     var adminUsernames = @Html.Raw(Json.Serialize(ViewBag.Admins)); *@
+@* </script> *@
+@* <div class="row"> *@
+@*     <div class="card"> *@
 
-<h1>Register</h1>
+@*         <div class="col-md-4"> *@
+@*             <h1>Register</h1> *@
+@*             <img src="#" id="imagePreview" class="img-fluid rounded" alt="Signup Graphic" style="display:none"> *@
+@*             <form id="SignUpForm" enctype="multipart/form-data"> *@
+@*                 <div class="form-group"> *@
+@*                     <label asp-for="Username" class="control-label"></label> *@
+@*                     <input asp-for="Username" class="form-control" name="Username" /> *@
+@*                 </div> *@
+@*                 <div class="form-group"> *@
+@*                     <label asp-for="PasswordHash" class="control-label"></label> *@
+@*                     <input asp-for="PasswordHash" class="form-control" /> *@
+@*                 </div> *@
+@*                 <div class="form-group"> *@
+@*                     <label asp-for="ConfirmPassword" class="control-label"></label> *@
+@*                     <input asp-for="ConfirmPassword" class="form-control" /> *@
+@*                 </div> *@
+@*                 <div class="form-group"> *@
+@*                     <label asp-for="Email" class="control-label"></label> *@
+@*                     <input asp-for="Email" type="email" class="form-control" /> *@
+@*                 </div> *@
+@*                 <div class="form-group"> *@
+@*                     <label asp-for="PhoneNumber" class="control-label"></label> *@
+@*                     <input asp-for="PhoneNumber" type="tel" class="form-control" /> *@
+@*                 </div> *@
+@*                 <div class="row"> *@
+@*                     <div class="col-md-4 mb-3"> *@
+@*                         <label asp-for="Role" class="form-label">Role</label> *@
+@*                         <div class="d-flex align-items-center gap-3"> *@
+@*                             <div class="form-check"> *@
+@*                                 <input asp-for="Role" name="Role" type="radio" value="Admin" class="form-check-input" id="roleAdmin" /> *@
+@*                                 <label class="form-check-label" for="roleAdmin">Admin</label> *@
+@*                             </div> *@
+@*                             <div class="form-check"> *@
+@*                                 <input asp-for="Role" name="Role" type="radio" value="Employee" class="form-check-input" id="roleEmployee" /> *@
+@*                                 <label class="form-check-label" for="roleEmployee">Employee</label> *@
+@*                             </div> *@
+@*                         </div> *@
+@*                         <span class="text-danger"></span> *@
+@*                     </div> *@
+@*                 </div> *@
+@*                 <div class="mb-3 col-md-8 visually-hidden" id="AdminRef"> *@
+@*                     <label asp-for="AdminRef" class="form-label">Admin Ref</label> *@
+@*                     <input asp-for="AdminRef" class="form-control" id="AdminReference" disabled /> *@
+@*                     <div id="displayAdmin" style="display: none; position: absolute; border: 1px solid #ccc; max-height: 200px; overflow-y: auto; background-color: white; width: 100%;"></div> *@
+@*                 </div> *@
+@*                 <div class="form-group"> *@
+@*                     <label asp-for="ProfileImage" class="control-label"></label> *@
+@*                     <input asp-for="ProfileImage" class="form-control" type="file" accept=".jpg, .jpeg, .png" /> *@
+@*                 </div> *@
+@*                 <div class="form-group"> *@
+@*                     <label asp-for="Designation" class="control-label"></label> *@
+@*                     <select asp-for="Designation" class="control-label"> *@
+@*                         <option value="">--Select Designation--</option> *@
+@*                         @foreach (var designation in ViewBag.Designation as List<Designation>) *@
+@*                         { *@
+@*                             <option value="@designation.Designation1">@designation.Designation1</option> *@
+@*                         } *@
+@*                     </select> *@
+@*                 </div> *@
+@*                 <div class="form-group"> *@
+@*                     <button type="submit" id="btnRegister" class="btn btn-primary">Create</button> *@
+@*                 </div> *@
+@*             </form> *@
+@*         </div> *@
+@*     </div> *@
+@* </div> *@
 
-<h4>User</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <img src="#" id="imagePreview" class="img-fluid rounded" alt="Signup Graphic" style="display:none">
-        <form id="SignUpForm" enctype="multipart/form-data">
-            <div class="form-group">
-                <label asp-for="Username" class="control-label"></label>
-                <input asp-for="Username" class="form-control" name="Username" />
-                
-            </div>
-            <div class="form-group">
-                <label asp-for="FirstName" class="control-label"></label>
-                <input asp-for="FirstName" class="form-control" />
-            </div>  
-            <div class="form-group">
-                <label asp-for="LastName" class="control-label"></label>
-                <input asp-for="LastName" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label asp-for="PasswordHash" class="control-label"></label>
-                <input asp-for="PasswordHash" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label asp-for="Email" class="control-label"></label>
-                <input asp-for="Email" type="email" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label asp-for="PhoneNumber" class="control-label"></label>
-                <input asp-for="PhoneNumber" type="tel" class="form-control" />
-            </div>
+<html lang="en">
+<head>
+    <title>Register for WMS</title>
+    <style>
+        label.error {
+            color: red !important;
+        }
+    </style>
+</head>
+<body class="account-page">
 
-            @* <div class="form-group"> *@
-            @*     <label asp-for="Role" class="control-label"></label> *@
-            @*     <input asp-for="Role" type="radio" name="Role" id="roleAdmin" value="Admin" />Admin *@
-            @*     <input asp-for="Role" type="radio" name="Role" id="roleEmployee" value="Employee" />Employee *@
-            @* </div> *@
-
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label asp-for="Role" class="form-label">Role</label>
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="form-check">
-                            <input asp-for="Role" name="Role" type="radio" value="Admin" class="form-check-input" id="roleAdmin" />
-                            <label class="form-check-label" for="roleAdmin">Admin</label>
+    <div class="main-wrapper">
+        <div class="account-content">
+            <div class="login-wrapper">
+                <div class="login-content">
+                    <div class="login-userset">
+                        <form id="SignUpForm" enctype="multipart/form-data">
+                        <div class="login-logo">
                         </div>
-                        <div class="form-check">
-                            <input asp-for="Role" name="Role" type="radio" value="Employee" class="form-check-input" id="roleEmployee" />
-                            <label class="form-check-label" for="roleEmployee">Employee</label>
+                        <div class="login-userheading">
+                            <h3>Create an Account</h3>
                         </div>
+                        <div class="form-login">
+                            <label>Username</label>
+                            <div class="form-addons">
+                                <input type="text" asp-for="Username" placeholder="Enter your Username">
+                                <img src="~/assets/img/icons/users1.svg" alt="img">
+                            </div>
+                        </div>
+                        <div class="form-login">
+                            <label>Email</label>
+                            <div class="form-addons">
+                                <input type="text" asp-for="Email" placeholder="Enter your email address">
+                                <img src="~/assets/img/icons/mail.svg" alt="img">
+                            </div>
+                        </div>
+                        <div class="form-login">
+                            <label>Password</label>
+                            <div class="pass-group">
+                                <input asp-for="PasswordHash" class="pass-input" placeholder="Enter your password">
+                                <span class="fas toggle-password fa-eye-slash"></span>
+                            </div>
+                        </div>
+                        <div class="form-login">
+                            <label>Confirm Password</label>
+                            <div class="pass-group">
+                                <input asp-for="ConfirmPassword" class="pass-input" placeholder="Enter confirm password">
+                                <span class="fas toggle-password fa-eye-slash"></span>
+                            </div>
+                        </div>
+                        <div class="form-login">
+                                <button type="submit" id="btnRegister" class="btn btn-login">Create</button>
+                        </div>
+                        <div class="signinform text-center">
+                            <h4>Already a user? <a href="signin.html" class="hover-a">Sign In</a></h4>
+                        </div>
+                        <div class="form-setlogin">
+                            <h4>Or sign up with</h4>
+                        </div>
+                        <div class="form-sociallink">
+                            <ul>
+                                <li>
+                                    <a href="javascript:void(0);">
+                                            <img src="~/assets/img/icons/google.png" class="me-2" alt="google">
+                                        Sign Up using Google
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="javascript:void(0);">
+                                            <img src="~/assets/img/icons/facebook.png" class="me-2" alt="google">
+                                        Sign Up using Facebook
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                        </form>
                     </div>
-                    <span class="text-danger"></span>
+                </div>
+                <div class="login-img">
+                    <img src="~/assets/img/login.jpg" alt="img">
                 </div>
             </div>
-                <!-- Referenced Admin Username-->
-                <div class="mb-3 col-md-8 visually-hidden" id="AdminRef">
-                    <label asp-for="AdminRef" class="form-label">Admin Ref</label>
-                    <input asp-for="AdminRef" class="form-control" id="AdminReference"/>
-                </div>
-            <div class="form-group">
-                <label asp-for="DateOfBirth" class="control-label"></label>
-                <input asp-for="DateOfBirth" type="date" class="form-control" />
-            </div>
-            <div class="form-group">
-                <label asp-for="ProfileImage" class="control-label"></label>
-                <input asp-for="ProfileImage" class="form-control" type="file" accept=".jpg, .jpeg, .png"/>
-            </div>
-            <div class="form-group">
-                <label asp-for="Designation" class="control-label"></label>
-                <select>
-                    <option value="">--Select Designation--</option>
-                    @foreach (var designation in ViewBag.Designations as List<Designation>)
-                    {
-                        <option value="@designation.Designation1">@designation.Designation1</option>
-                    }
-                </select>
-            </div>
-            <div class="form-group">
-                <button type="submit" id="btnRegister" class="btn btn-primary" >Create</button>
-            </div>
-        </form>
+        </div>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
     <script src="/js/Register.js"></script>
 }
+</body>
+</html>
+
+

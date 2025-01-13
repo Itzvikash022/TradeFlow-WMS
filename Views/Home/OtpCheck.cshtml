@@ -1,0 +1,69 @@
+﻿@model WMS_Application.Models.User
+
+@{
+    Layout = "/Views/Shared/_mainLayout.cshtml";
+    ViewData["Title"] = "Verification Page";
+}
+
+
+<html lang="en">
+<head>
+    <title>Register for WMS</title>
+    <style>
+        label.error {
+            color: red !important;
+        }
+    </style>
+</head>
+<body class="account-page">
+
+    <div class="main-wrapper">
+        <div class="account-content">
+            <div class="login-wrapper">
+                <div class="login-content">
+                    <div class="login-userset">
+                        <form id="OtpCheck">
+                        <div class="login-logo">
+                        </div>
+                        <div class="login-userheading">
+                            <h3>OTP Verification</h3>
+                        </div>
+                        <div class="form-login">
+                            <label>Email</label>
+                            <div class="form-addons">
+                                    <input asp-for="Email" value="@TempData["UserEmail"]" readonly />
+                                    <img src="~/assets/img/icons/mail.svg" alt="img">
+                            </div>
+                        </div>
+                                <div class="form-login">
+                                    <label>OTP </label>
+                                    <div class="form-addons">
+                                        <input asp-for="Otp" placeholder="Enter your OTP here">
+                                    <img src="~/assets/img/icons/users1.svg" alt="img">
+                                    </div>
+                                </div>
+                        <div class="form-login">
+                                <button type="submit" id="btnNext" class="btn btn-login">Next</button>
+                        </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="login-img">
+                    <img src="~/assets/img/login.jpg" alt="img">
+                </div>
+            </div>
+        </div>
+    </div>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script src="~/js/OtpCheck.js"></script>
+}
+</body>
+</html>
+
+
+
+
+

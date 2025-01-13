@@ -19,6 +19,8 @@ public partial class dbMain : DbContext
 
     public virtual DbSet<Designation> Designations { get; set; }
 
+    public virtual DbSet<Shop> Shops { get; set; }
+
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -59,9 +61,7 @@ public partial class dbMain : DbContext
 
         modelBuilder.Entity<Designation>(entity =>
         {
-            entity.HasKey(e => e.DesignationId).HasName("PK__Designat__BABD603E11052943");
-
-            entity.ToTable("Designation");
+            entity.HasKey(e => e.DesignationId).HasName("PK__Designat__BABD603E5F59310F");
 
             entity.Property(e => e.DesignationId).HasColumnName("DesignationID");
             entity.Property(e => e.CreatedAt)
@@ -71,6 +71,27 @@ public partial class dbMain : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("Designation");
+        });
+
+        modelBuilder.Entity<Shop>(entity =>
+        {
+            entity.HasKey(e => e.ShopId).HasName("PK__Shops__67C55629389FF7EC");
+
+            entity.HasIndex(e => e.ShopName, "UQ__Shops__649A7D9659F8F11B").IsUnique();
+
+            entity.Property(e => e.ShopId).HasColumnName("ShopID");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Gst)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("GST");
+            entity.Property(e => e.LastOrderDate).HasColumnType("datetime");
+            entity.Property(e => e.Location).IsUnicode(false);
+            entity.Property(e => e.OwnerName).HasMaxLength(50);
+            entity.Property(e => e.PhoneNumber).HasMaxLength(15);
+            entity.Property(e => e.ShopName).HasMaxLength(100);
         });
 
         modelBuilder.Entity<User>(entity =>
@@ -97,9 +118,17 @@ public partial class dbMain : DbContext
             entity.Property(e => e.FirstName)
                 .HasMaxLength(20)
                 .IsUnicode(false);
+            entity.Property(e => e.IsVerified)
+                .HasDefaultValue(false)
+                .HasColumnName("isVerified");
             entity.Property(e => e.LastName)
                 .HasMaxLength(20)
                 .IsUnicode(false);
+            entity.Property(e => e.Otp)
+                .HasMaxLength(6)
+                .IsUnicode(false)
+                .HasColumnName("OTP");
+            entity.Property(e => e.OtpExpiry).HasColumnType("datetime");
             entity.Property(e => e.PasswordHash).IsUnicode(false);
             entity.Property(e => e.ProfileImgPath).IsUnicode(false);
             entity.Property(e => e.Role)

@@ -11,11 +11,13 @@ namespace WMS_Application.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly dbMain _db;
         private readonly UsersInterface _users;
-        public HomeController(ILogger<HomeController> logger, dbMain db, UsersInterface users)
+        private readonly EmailSenderInterface _emailSender;
+        public HomeController(ILogger<HomeController> logger, dbMain db, UsersInterface users, EmailSenderInterface emailSender)
         {
             _logger = logger;
             _db = db;
             _users = users;
+            _emailSender = emailSender;
         }
 
         public IActionResult Index()
@@ -27,34 +29,65 @@ namespace WMS_Application.Controllers
         {
             return View();
         }
+        public IActionResult OtpCheck()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> OtpCheck(User user)
+        {
+            try
+            {
+                if (await _users.IsEmailExists(user.Email))
+                {
+                    if (await _users.OtpVerification(user.Otp))
+                    {
+                        await _users.updateStatus(user.Email);
+                        return Json(new { success = true, message = "OTP verified successfully" });
+                    }
+                    else
+                    {
+                        return Json(new { success = false, message = "OTP verification failed" });
+                    }
+                }
+                return Json(new { success = false, message = "Email not found" });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString);
+                return Json(new { success = false, message = "Unkown error occured" });
+
+            }
+        }
 
         public async Task<IActionResult> Register()
         {
-            ViewBag.Designations = await _users.GetDesignations();
+            ViewBag.Designation = await _users.GetDesignations();
+            ViewBag.Admins = await _users.GetAdminUsernames();
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> Register([FromForm] User user)
-            {
+        {
             try
-            {
-                if(await _users.IsUsernameExists(user.Username))
+             {
+                user.Role = "Admin";
+                if (await _users.IsUsernameExists(user.Username))
                 {
                     return Json(new { success = false, message = "Username already exists" });
                 }
-                if(await _users.IsEmailExists(user.Email))
+                if (await _users.IsEmailExists(user.Email))
                 {
                     return Json(new { success = false, message = "Email already exists" });
                 }
-                if(!await _users.IsAdminExists(user.AdminRef))
-                {
-                    return Json(new { success = false, message = "Admin doesn't exists" });
-                }
+
+                TempData["UserEmail"] = user.Email;
 
                 return Json(await _users.SaveUsers(user));
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e.ToString);
                 return Json(new { success = false, message = "Unkown error occured" });

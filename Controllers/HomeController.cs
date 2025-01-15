@@ -33,6 +33,36 @@ namespace WMS_Application.Controllers
         {
             return View();
         }
+        public IActionResult MoreDetails()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MoreDetails(User user)
+        {
+            int id = (int) await _users.GetUserIdByEmail(user.Email);
+            HttpContext.Session.SetInt32("UserId", id);
+            return Json(await _users.SaveMoreDetails(user));
+        }
+        public IActionResult ShopDetails()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ShopDetails(Shop shop)
+        {
+            int id = (int) HttpContext.Session.GetInt32("UserId");
+            if(id != null)
+            {
+                return Json(await _users.SaveShopDetails(shop, id));
+            }
+            else
+            {
+                return Json(new { success = false, message = "Owner Id not found" });
+            }
+        }
 
         [HttpPost]
         public async Task<IActionResult> OtpCheck(User user)
@@ -63,8 +93,8 @@ namespace WMS_Application.Controllers
 
         public async Task<IActionResult> Register()
         {
-            ViewBag.Designation = await _users.GetDesignations();
-            ViewBag.Admins = await _users.GetAdminUsernames();
+            //ViewBag.Designation = await _users.GetDesignations();
+            //ViewBag.Admins = await _users.GetAdminUsernames();
             return View();
         }
 
@@ -83,15 +113,14 @@ namespace WMS_Application.Controllers
                     return Json(new { success = false, message = "Email already exists" });
                 }
 
-                TempData["UserEmail"] = user.Email;
-
+                //TempData["UserEmail"] = user.Email;
+                HttpContext.Session.SetString("UserEmail", user.Email);
                 return Json(await _users.SaveUsers(user));
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString);
                 return Json(new { success = false, message = "Unkown error occured" });
-
             }
         }
 

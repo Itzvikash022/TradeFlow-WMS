@@ -17,8 +17,7 @@
             success: function (result) {
                 alert(result.message);
                 if (result.success) {
-                    alert("heehheheheheh")
-                    //window.location.href = '/Home/Index';
+                    window.location.href = '/Home/MoreDetails';
                 }
             },
             error: function () {

@@ -3,6 +3,7 @@
 @{
     Layout = "/Views/Shared/_mainLayout.cshtml";
     ViewData["Title"] = "Verification Page";
+
 }
 
 
@@ -23,28 +24,28 @@
                 <div class="login-content">
                     <div class="login-userset">
                         <form id="OtpCheck">
-                        <div class="login-logo">
-                        </div>
-                        <div class="login-userheading">
-                            <h3>OTP Verification</h3>
-                        </div>
-                        <div class="form-login">
-                            <label>Email</label>
-                            <div class="form-addons">
-                                    <input asp-for="Email" value="@TempData["UserEmail"]" readonly />
-                                    <img src="~/assets/img/icons/mail.svg" alt="img">
+                            <div class="login-logo">
                             </div>
-                        </div>
-                                <div class="form-login">
-                                    <label>OTP </label>
-                                    <div class="form-addons">
-                                        <input asp-for="Otp" placeholder="Enter your OTP here">
-                                    <img src="~/assets/img/icons/users1.svg" alt="img">
-                                    </div>
+                            <div class="login-userheading">
+                                <h3>OTP Verification</h3>
+                            </div>
+                            <div class="form-login">
+                                <label>Email</label>
+                                <div class="form-addons">
+                                    <input asp-for="Email" value="@Context.Session.GetString("UserEmail")" readonly />
+                                    <img src="~/assets/img/icons/mail.svg" alt="img">
                                 </div>
-                        <div class="form-login">
+                            </div>
+                            <div class="form-login">
+                                <label>OTP </label>
+                                <div class="form-addons">
+                                    <input asp-for="Otp" placeholder="Enter your OTP here">
+                                    <img src="~/assets/img/icons/users1.svg" alt="img">
+                                </div>
+                            </div>
+                            <div class="form-login">
                                 <button type="submit" id="btnNext" class="btn btn-login">Next</button>
-                        </div>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -54,12 +55,12 @@
             </div>
         </div>
     </div>
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
+        <script src="~/js/OtpCheck.js"></script>
     }
-    <script src="~/js/OtpCheck.js"></script>
-}
 </body>
 </html>
 

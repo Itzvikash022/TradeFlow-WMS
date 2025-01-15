@@ -1,0 +1,65 @@
+﻿.login-wrapper .login-img {
+    width: 50% !important;
+}
+
+.login-wrapper .login-content {
+    width: 50% !important;
+}
+
+label.error {
+    color: red !important;
+}
+
+#PhoneNumber {
+    padding-left: 50px !important; /* Adjust padding to accommodate the flag */
+}
+
+.iti {
+    width: 100%; /* Ensures proper width of the input field */
+}
+
+.iti__flag-container {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding-left: 10px; /* Adds space between the flag and input text */
+}
+
+.iti input {
+    padding-left: 60px; /* Extra padding for better alignment */
+}
+
+.image-preview-container {
+    text-align: center;
+    border: 2px dashed #ddd;
+    padding: 10px;
+    border-radius: 50%; /* Make the preview container circular */
+    width: 150px; /* Set a fixed size for the circle */
+    height: 150px;
+    position: relative;
+    background-color: #f9f9f9;
+    overflow: hidden;
+    margin: 0 auto; /* Center the container */
+}
+
+    .image-preview-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Ensure the image fills the circular container */
+        border-radius: 50%; /* Make the image itself circular */
+        display: block;
+    }
+
+#imagePreviewText {
+    color: #999;
+    font-size: 14px;
+    font-weight: 500;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}

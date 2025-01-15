@@ -1,0 +1,142 @@
+﻿    @model WMS_Application.Models.Shop
+
+@{
+    Layout = "/Views/Shared/_mainLayout.cshtml";
+    ViewData["Title"] = "More Details";
+}
+<html lang="en">
+<head>
+    <title>Register for WMS</title>
+    <link rel="stylesheet" href="~/css/ShopDetails.css"/>
+
+
+
+</head>
+<body class="account-page">
+
+    <div class="main-wrapper">
+        <div class="account-content">
+            <div class="login-wrapper">
+                <div class="login-content">
+                    <div class="login-userset">
+                        <form id="shopDetails" enctype="multipart/form-data">
+                            <div class="login-logo">
+                            </div>
+
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="login-userheading">
+                                        <h3>More Details</h3>
+                                    </div>
+                                    <div class="row">
+                                        <form id="shopDetails" enctype="multipart/form-data">
+                                            <div class="col-lg-8 col-sm-9 col-12">
+                                                <div class="form-group">
+                                                    <label>Shop Name</label>
+                                                    <input type="text" asp-for="ShopName" placeholder="Enter Shop Name">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-9 col-12">
+                                                <div class="form-group">
+                                                    <label>Shop Category</label>
+                                                    <select class="select">
+                                                        <option>cat1 </option>
+                                                        <option>cat2 </option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-lg-4 col-sm-9 col-12">
+                                                <div class="form-login">
+                                                    <label>Opening Time</label>
+                                                    <input type="time" asp-for="StartTime">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-9 col-12">
+                                                <div class="form-login">
+                                                    <label>Closing Time</label>
+                                                    <input type="time" asp-for="ClosingTime">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4 col-sm-9 col-12">
+                                                <div class="form-group">
+                                                    <label>State</label>
+                                                    <select class="js-example-basic-single select2" asp-for="State">
+                                                        <option>State 1</option>
+                                                        <option>State 2</option>
+                                                        <option>State 3</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-lg-4 col-sm-9 col-12">
+                                                <div class="form-group">
+                                                    <label>City</label>
+                                                    <select class="js-example-basic-single select2" asp-for="City">
+                                                        <option>city 1</option>
+                                                        <option>city 2</option>
+                                                        <option>city 3</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-8 col-sm-9 col-12">
+                                                <div class="form-group">
+                                                    <label>Pincode</label>
+                                                    <input type="text" placeholder="Enter Pincode" asp-for="Pincode">
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-lg-12">
+                                                <div class="form-group">
+                                                    <label>Shop Address</label>
+                                                    <input type="text" placeholder="Enter Full Address" asp-for="Address">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-8">
+                                                <div class="form-group">
+                                                    <label> Shop Logo</label>
+                                                    <div class="image-upload">
+                                                        <input type="file" asp-for="ShopImage">
+                                                        <div class="image-uploads">
+                                                            <img src="~/assets/img/icons/upload.svg" alt="img">
+                                                            <h4>Drag and drop a file to upload</h4>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4">
+                                                <div class="image-preview-container">
+                                                    <img src="#" alt="Image Preview" id="imagePreview" style="display: none;" />
+                                                    <p id="imagePreviewText">No image selected</p>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    <button type="submit" id="btnShopDetails" class="btn btn-submit me-2">Next</button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="login-img">
+                    <img src="~/assets/img/login.jpg" alt="img">
+                </div>
+            </div>
+        </div>
+    </div>
+    @section Scripts {
+        @{
+            await Html.RenderPartialAsync("_ValidationScriptsPartial");
+        }
+
+        <script src="~/js/ShopDetails.js"></script>
+
+    }
+</body>
+</html>

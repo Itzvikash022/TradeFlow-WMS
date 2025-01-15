@@ -1,0 +1,147 @@
+﻿$(document).ready(function () {
+
+    //// JavaScript to preview image
+    //document.getElementById('ProfileImage').addEventListener('change', function (e) {
+    //    var file = e.target.files[0];
+    //    if (file) {
+    //        var reader = new FileReader();
+    //        reader.onload = function (event) {
+    //            var imagePreview = document.getElementById('imagePreview');
+    //            imagePreview.src = event.target.result;
+    //            imagePreview.style.display = 'block';
+    //        };
+    //        reader.readAsDataURL(file);
+    //    }
+    //});
+
+    document.getElementById('ProfileImage').addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        const previewImage = document.getElementById('imagePreview');
+        const previewText = document.getElementById('imagePreviewText');
+
+        if (file) {
+            const reader = new FileReader();
+
+            // Display image once it's loaded
+            reader.onload = function (e) {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                previewText.style.display = 'none';
+            };
+
+            // Read the selected file
+            reader.readAsDataURL(file);
+        } else {
+            // Reset preview if no file is selected
+            previewImage.src = '#';
+            previewImage.style.display = 'none';
+            previewText.style.display = 'block';
+        }
+    });
+
+
+    const phoneInputField = document.querySelector("#PhoneNumber");
+    phoneInput = window.intlTelInput(phoneInputField, {
+        initialCountry: "IN", // Set initial country (auto or a specific code like "us")
+        geoIpLookup: function (callback) {
+            fetch('https://ipapi.co/json', { mode: 'no-cors' })
+                .then((response) => response.json())
+                .then((data) => callback(data.country_code))
+                .catch(() => callback("us"));
+        },
+        utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js"
+    });
+
+
+    $("#moreDetails").validate({
+        rules: {
+            FirstName: {
+                required: false,
+                lettersOnly: true, // Custom method for letters only
+                maxlength: 20
+            },
+            LastName: {
+                lettersOnly: true // Custom method for letters only
+            },
+            Email: {
+                required: true,
+                email: true
+            },
+            PhoneNumber: {
+                required: true,
+                digits: true,
+                minlength: 6,
+                maxlength: 15
+            },
+            DateOfBirth: {
+                required: true,
+                dateBeforeToday: true
+            },
+        },
+        messages: {
+            FirstName: {
+                required: "Please enter your first name."
+            },
+            Email: {
+                required: "Please enter your email.",
+                email: "Please enter a valid email address."
+            },
+            PhoneNumber: {
+                required: "Please enter your phone number.",
+                digits: "Please enter only numbers.",
+                minlength: "Phone number must be at least 6 digits.",
+                maxlength: "Phone number cannot exceed 15 digits."
+            },
+            DateOfBirth: {
+                required: "Please enter your date of birth.",
+            },
+        },
+
+        submitHandler: function (form, event) {
+            event.preventDefault()
+            const formData = new FormData(form);
+
+            // AJAX submission
+            $.ajax({
+                url: '/Home/MoreDetails',
+                type: 'POST',
+                processData: false,
+                contentType: false,
+                data: formData,
+                success: function (result) {
+                    alert(result.message);
+                    if (result.success) {
+                        window.location.href = '/Home/ShopDetails';
+                    }
+                },
+                error: function () {
+                    alert('An error occurred while registering the user.');
+                }
+            });
+        }
+    });
+
+    // Custom method for letters only
+    $.validator.addMethod("lettersOnly", function (value, element) {
+        return this.optional(element) || /^[a-zA-Z]+$/.test(value);
+    }, "Please enter only letters.");
+
+    // Custom validation method for file extension
+    $.validator.addMethod("extension", function (value, element, param) {
+        return this.optional(element) || param.split("|").some(ext => value.endsWith(`.${ext}`));
+    }, "Please upload a valid image file (jpg, jpeg, png).");
+
+    // Add custom validation method for DateOfBirth
+    $.validator.addMethod("dateBeforeToday", function (value, element) {
+        // Get today's date
+        var today = new Date();
+
+        // Convert the input value into a date object (assuming it's in 'YYYY-MM-DD' format)
+        var selectedDate = new Date(value);
+
+        // Compare if the selected date is earlier than today
+        return this.optional(element) || selectedDate < today;
+    }, "Date of birth must be before today's date.");
+
+
+});

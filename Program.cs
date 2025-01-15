@@ -21,6 +21,8 @@ builder.Services.AddSession(options =>
     options.Cookie.HttpOnly = true; // Ensures session cookie is accessible only via HTTP
     options.Cookie.IsEssential = true; // Ensures cookie is essential
 });
+builder.Services.AddHttpContextAccessor();
+
 
 builder.Services.AddScoped<UsersInterface, UsersClass>();
 //builder.Services.AddTransient<EmailSenderInterface, EmailSenderClass>();

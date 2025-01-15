@@ -8,10 +8,13 @@ namespace WMS_Application.Repositories.Interfaces
         Task<bool> IsUsernameExists(string Username);
         Task<bool> IsEmailExists(string Email);
         //Task<bool> IsAdminExists(string AdminRef);
-        Task<List<Designation>> GetDesignations();
-        Task<List<string>> GetAdminUsernames();
+        //Task<List<Designation>> GetDesignations();
+        //Task<List<string>> GetAdminUsernames();
         Task<bool> OtpVerification(string Otp);
         Task<object> updateStatus(string Email);
+        Task<object> SaveMoreDetails(User user);
+        Task<object> SaveShopDetails(Shop shop, int id);
+        Task<int?> GetUserIdByEmail(string email);
     }
 
 }

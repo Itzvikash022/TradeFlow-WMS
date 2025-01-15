@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WMS_Application.Models;
 
@@ -7,17 +8,24 @@ public partial class Shop
 {
     public int ShopId { get; set; }
 
-    public string ShopName { get; set; } = null!;
+    public string? ShopName { get; set; }
 
-    public string? OwnerName { get; set; }
+    public int AdminId { get; set; }
 
-    public string? PhoneNumber { get; set; }
-
-    public DateTime? LastOrderDate { get; set; }
-
-    public string? Location { get; set; }
-
-    public string? Gst { get; set; }
-
+    public string? ShopImagePath { get; set; }
+    [NotMapped]
+    public IFormFile? ShopImage { get; set; }
     public DateTime? CreatedAt { get; set; }
+
+    public string? State { get; set; }
+
+    public string? City { get; set; }
+
+    public long? Pincode { get; set; }
+
+    public string? Address { get; set; }
+
+    public TimeOnly? StartTime { get; set; }
+
+    public TimeOnly? ClosingTime { get; set; }
 }

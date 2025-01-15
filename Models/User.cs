@@ -15,29 +15,30 @@ public partial class User
     public string? LastName { get; set; }
 
     public string PasswordHash { get; set; } = null!;
-    [NotMapped]
-    public string ConfirmPassword { get; set; } = null!;
 
+    [NotMapped]
+    public string ConfirmPassword { get; set; }
     public string Email { get; set; } = null!;
 
-    public long PhoneNumber { get; set; }
+    public string? PhoneNumber { get; set; }
 
     public string Role { get; set; } = null!;
 
     public DateTime? CreatedAt { get; set; }
 
     public DateOnly? DateOfBirth { get; set; }
-    [NotMapped]
-    public IFormFile? ProfileImage { get; set; }
+
     public string? ProfileImgPath { get; set; }
 
-    public string? Designation { get; set; }
+    [NotMapped]
+    public IFormFile ProfileImage { get; set; }
+    public int? DesignationIdRef { get; set; }
 
     public string? AdminRef { get; set; }
-
-    public bool? IsVerified { get; set; }
 
     public string? Otp { get; set; }
 
     public DateTime? OtpExpiry { get; set; }
+
+    public bool? IsVerified { get; set; }
 }

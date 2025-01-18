@@ -17,7 +17,7 @@ public partial class User
     public string PasswordHash { get; set; } = null!;
 
     [NotMapped]
-    public string ConfirmPassword { get; set; }
+    public string? ConfirmPassword { get; set; }
     public string Email { get; set; } = null!;
 
     public string? PhoneNumber { get; set; }
@@ -31,7 +31,7 @@ public partial class User
     public string? ProfileImgPath { get; set; }
 
     [NotMapped]
-    public IFormFile ProfileImage { get; set; }
+    public IFormFile? ProfileImage { get; set; }
     public int? DesignationIdRef { get; set; }
 
     public string? AdminRef { get; set; }

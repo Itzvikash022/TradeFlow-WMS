@@ -25,8 +25,9 @@ builder.Services.AddHttpContextAccessor();
 
 
 builder.Services.AddScoped<UsersInterface, UsersClass>();
-//builder.Services.AddTransient<EmailSenderInterface, EmailSenderClass>();
-
+builder.Services.AddScoped<LoginInterface, LoginClass>();
+builder.Services.AddScoped<ForgotPasswordInterface, ForgotPasswordClass>();
+builder.Services.AddMemoryCache();
 var app = builder.Build();
 app.UseSession();
 if (app.Environment.IsDevelopment())
@@ -58,6 +59,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Register}/{id?}");
+    pattern: "{controller=Home}/{action=Login}/{id?}");
 
 app.Run();

@@ -4,12 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 namespace WMS_Application.Repositories.Auth
 {
-    public class UsersRepository : UsersInterface
+    public class UsersRepository : IUsers
     {
         private readonly dbMain _context;
-        private readonly EmailSenderInterface _emailSender;
+        private readonly IEmailSender _emailSender;
 
-        public UsersRepository(dbMain context, EmailSenderInterface emailSender)
+        public UsersRepository(dbMain context, IEmailSender emailSender)
         {
             _context = context;
             _emailSender = emailSender;

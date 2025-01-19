@@ -43,17 +43,18 @@
                             <div class="form-login">
                                 <label>Password</label>
                                 <div class="pass-group">
-                                    <input asp-for="PasswordHash" class="pass-input" placeholder="Enter your password">
+                                    <input asp-for="PasswordHash" class="pass-input" type="password" placeholder="Enter your password">
                                     <span class="fas toggle-password fa-eye-slash"></span>
                                 </div>
                             </div>
                             <div class="form-login">
                                 <label>Confirm Password</label>
                                 <div class="pass-group">
-                                    <input asp-for="ConfirmPassword" class="pass-input" placeholder="Enter confirm password">
-                                    <span class="fas toggle-password fa-eye-slash"></span>
+                                    <input asp-for="ConfirmPassword" class="pass-input" type="password" placeholder="Enter confirm password">
+                                    @* <span class="fas toggle-password fa-eye-slash"></span> *@
                                 </div>
                             </div>
+
                             <div class="form-login">
                                 <button type="submit" id="btnRegister" class="btn btn-login">Create</button>
                             </div>

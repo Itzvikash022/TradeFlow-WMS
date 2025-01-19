@@ -101,6 +101,10 @@
             event.preventDefault()
             const formData = new FormData(form);
 
+            const formattedPhoneNumber = phoneInput.getNumber(intlTelInputUtils.numberFormat.E164);
+            console.log("Formatted Phone Number:", formattedPhoneNumber); // Debug output
+            formData.set("PhoneNumber", formattedPhoneNumber); 
+
             // AJAX submission
             $.ajax({
                 url: '/Auth/MoreDetails',

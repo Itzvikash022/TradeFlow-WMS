@@ -1,4 +1,26 @@
 ﻿$(document).ready(function () {
+
+
+    document.querySelectorAll('.toggle-password').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            // Locate the password input within the same parent (.pass-group)
+            const passwordInput = toggle.closest('.pass-group').querySelector('.pass-input');
+
+            // Toggle input type between "password" and "text"
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                toggle.classList.remove("fa-eye-slash");
+                toggle.classList.add("fa-eye");
+            } else {
+                passwordInput.type = "password";
+                toggle.classList.remove("fa-eye");
+                toggle.classList.add("fa-eye-slash");
+            }
+        });
+    });
+
+
+
     $("#SignUpForm").validate({
         rules: {
             Username: {
@@ -116,6 +138,53 @@
         // Compare if the selected date is earlier than today
         return this.optional(element) || selectedDate < today;
     }, "Date of birth must be before today's date.");
+
+
+
+    const timerElement = $("#timer");
+    const resendSection = $("#resend-section");
+    const resendButton = $("#resend-btn");
+    const duration = 60;
+    let timeRemaining = duration;
+
+    // Update the timer every second
+    const interval = setInterval(() => {
+        if (timeRemaining <= 0) {
+            clearInterval(interval);
+            timerElement.text("You can resend the OTP.");
+            resendSection.show(); // Show the resend button when timer expires
+        } else {
+            timeRemaining--;
+            const minutes = Math.floor(timeRemaining / 60).toString().padStart(2, "0");
+            const seconds = (timeRemaining % 60).toString().padStart(2, "0");
+            timerElement.text(`Time remaining: ${minutes}:${seconds}`);
+        }
+    }, 1000);
+
+    // Resend OTP functionality
+    resendButton.click(function (e) {
+        e.preventDefault();
+        $.ajax({
+            url: "/Auth/ResendOTP", // Adjust the route to your server's endpoint
+            method: "GET",
+            success: function (data) {
+                if (data.success) {
+                    alert("OTP has been resent to your email.");
+                    timeRemaining = duration; // Reset the timer
+                    resendSection.hide(); // Hide the resend button
+                    timerElement.text("Time remaining: 02:00"); // Reset the timer text
+                    setInterval(interval); // Restart the interval
+                } else {
+                    alert("Failed to resend OTP. Please try again.");
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error resending OTP:", error);
+                alert("An error occurred. Please try again.");
+            }
+        });
+    });
+
 
 
 });

@@ -16,53 +16,57 @@
 
 
     const username = "itzvikash"; // Replace with your Geonames username
-    const stateGeonameId = 1269750; 
+    const stateGeonameId = 1269750; // ID for India
 
-        // Fetch States
-        fetch(`http://api.geonames.org/childrenJSON?geonameId=${stateGeonameId}&username=${username}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                const states = data.geonames;
-                let stateOptions = `<option value="">Select State</option>`;
-                states.forEach(state => {
-                    stateOptions += `<option value="${state.geonameId}">${state.name}</option>`;
-                });
-                $("#State").html(stateOptions);
-            })
-            .catch(error => {
-                console.error("Error fetching states:", error);
-            });
-
-        // Fetch Cities when a state is selected
-        $("#State").on("change", function () {
-            const selectedStateGeonameId = $(this).val();
-            if (selectedStateGeonameId) {
-                fetch(`http://api.geonames.org/childrenJSON?geonameId=${selectedStateGeonameId}&username=${username}`)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        const cities = data.geonames;
-                        let cityOptions = `<option value="">Select City</option>`;
-                        cities.forEach(city => {
-                            cityOptions += `<option value="${city.geonameId}">${city.name}</option>`;
-                        });
-                        $("#City").html(cityOptions);
-                    })
-                    .catch(error => {
-                        console.error("Error fetching cities:", error);
-                    });
+    // Fetch States
+    fetch(`http://api.geonames.org/childrenJSON?geonameId=${stateGeonameId}&username=${username}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            return response.json();
+        })
+        .then(data => {
+            const states = data.geonames;
+            let stateOptions = `<option value="">Select State</option>`;
+            states.forEach(state => {
+                // Store name as the value and geonameId in data-id
+                stateOptions += `<option value="${state.name}" data-id="${state.geonameId}">${state.name}</option>`;
+            });
+            $("#State").html(stateOptions);
+        })
+        .catch(error => {
+            console.error("Error fetching states:", error);
         });
 
+    // Fetch Cities when a state is selected
+    $("#State").on("change", function () {
+        const selectedStateGeonameId = $(this).find("option:selected").data("id"); // Get geonameId from data-id
+
+        if (selectedStateGeonameId) {
+            fetch(`http://api.geonames.org/childrenJSON?geonameId=${selectedStateGeonameId}&username=${username}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const cities = data.geonames;
+                    let cityOptions = `<option value="">Select City</option>`;
+                    cities.forEach(city => {
+                        // Store city name as the value and optionally include geonameId in data-id
+                        cityOptions += `<option value="${city.name}" data-id="${city.geonameId}">${city.name}</option>`;
+                    });
+                    $("#City").html(cityOptions);
+                })
+                .catch(error => {
+                    console.error("Error fetching cities:", error);
+                });
+        } else {
+            $("#City").html(`<option value="">Select City</option>`); // Reset city dropdown
+        }
+    });
 
     document.getElementById('ShopImage').addEventListener('change', function (event) {
         const file = event.target.files[0];

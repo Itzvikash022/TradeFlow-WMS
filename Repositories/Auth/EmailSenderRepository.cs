@@ -6,7 +6,7 @@ using MimeKit;
 using MailKit.Security;
 namespace WMS_Application.Repositories.Auth
 {
-    public class EmailSenderRepository : EmailSenderInterface
+    public class EmailSenderRepository : IEmailSender
     {
         private readonly SmtpSettings _smtpSettings;
         

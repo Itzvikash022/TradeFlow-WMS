@@ -11,12 +11,12 @@ namespace WMS_Application.Controllers
     {
         private readonly ILogger<AuthController> _logger;
         private readonly dbMain _db;
-        private readonly UsersInterface _users;
-        private readonly EmailSenderInterface _emailSender;
-        private readonly LoginInterface _login;
+        private readonly IUsers _users;
+        private readonly IEmailSender _emailSender;
+        private readonly ILogin _login;
         private readonly IMemoryCache _memoryCache;
             
-        public AuthController(ILogger<AuthController> logger, dbMain db, UsersInterface users, EmailSenderInterface emailSender, LoginInterface login, IMemoryCache memoryCache)
+        public AuthController(ILogger<AuthController> logger, dbMain db, IUsers users, IEmailSender emailSender, ILogin login, IMemoryCache memoryCache)
         {
             _logger = logger;
             _db = db;
@@ -66,15 +66,16 @@ namespace WMS_Application.Controllers
         [HttpPost]
         public async Task<IActionResult> ResetPasswordAction(string PasswordHash)
         {
-
             string user = HttpContext.Session.GetString("ForgotPassEmail");
             var res = await _login.ResetPassword(user, PasswordHash);
+            
             return Ok(res);
         }
         public IActionResult OtpCheck()
         {
             return View();
         }
+
         public IActionResult MoreDetails()
         {
             return View();
@@ -82,7 +83,21 @@ namespace WMS_Application.Controllers
 
         public IActionResult Login()
         {
-            return View();
+            var model = new LoginModel();
+            if (Request.Cookies.TryGetValue("RememberMe_Email", out string Emailvalue))
+            {
+                model.EmailOrUsername = Emailvalue;
+                model.RememberMe = true;
+            }
+
+            //JIC, password is working fine and is being stored in the input field, but due to browser restrictions being type=pass, it can't autofill, changin pass field type=text fixes it.
+            //if (Request.Cookies.TryGetValue("RememberMe_Password", out string Passvalue))
+            //{
+            //    model.Password = Passvalue;
+            //    model.RememberMe = true;
+            //}
+
+            return View(model);
         }
         [HttpPost]
         public async Task<IActionResult> Login(LoginModel login)
@@ -93,6 +108,25 @@ namespace WMS_Application.Controllers
             if (((dynamic)result).success)
             {
                 HttpContext.Session.SetString("Cred", login.EmailOrUsername);
+
+                if (login.RememberMe)
+                {
+                    var options = new CookieOptions
+                    {
+                        Expires = DateTime.Now.AddDays(7), // Cookie expiration time
+                        HttpOnly = true,                  // For security
+                        Secure = true                     // Use HTTPS
+                    };
+                    Response.Cookies.Append("RememberMe_Email", login.EmailOrUsername, options);
+                    Response.Cookies.Append("RememberMe_Password", login.Password, options);
+                }
+                else
+                {
+                    // Clear cookies if Remember Me is not checked
+                    Response.Cookies.Delete("RememberMe_Email");
+                    Response.Cookies.Delete("RememberMe_Password");
+                }
+
             }
             return Ok(result);
         }
@@ -128,11 +162,12 @@ namespace WMS_Application.Controllers
         {
             try
             {
-                if (await _users.IsEmailExists(user.Email))
+                String email = HttpContext.Session.GetString("UserEmail");
+                if (await _users.IsEmailExists(email))
                 {
                     if (await _users.OtpVerification(user.Otp))
                     {
-                        await _users.updateStatus(user.Email);
+                        await _users.updateStatus(email);
                         return Json(new { success = true, message = "OTP verified successfully" });
                     }
                     else
@@ -183,7 +218,33 @@ namespace WMS_Application.Controllers
             }
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [HttpGet]
+        public async Task<IActionResult> ResendOtp()
+        {
+            string email = HttpContext.Session.GetString("UserEmail");
+            if (email != null)
+            {
+                var user = await _db.Users.FirstOrDefaultAsync(x => x.Email == email);
+                if (user != null)
+                {
+                    user.Otp = _emailSender.GenerateOtp();
+                    user.OtpExpiry = DateTime.Now.AddMinutes(5);
+                    await _emailSender.SendEmailAsync(user.Email, "OTP Verification!!", user.Otp);
+                    await _db.SaveChangesAsync();
+                    return Json(new { success = true, message = "OTP sent successfully" });
+                }
+                return Json(new { success = false, message = "User not found" });
+            }
+            return Json(new { success = false, message = "Email not found" });
+        }
+        
+
+
+
+
+
+
+            [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

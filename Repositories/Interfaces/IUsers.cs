@@ -2,7 +2,7 @@
 
 namespace WMS_Application.Repositories.Interfaces
 {
-    public interface UsersInterface
+    public interface IUsers
     {
         Task<object> SaveUsers(User user);
         Task<bool> IsUsernameExists(string Username);

@@ -1,10 +1,10 @@
-﻿.login-wrapper .login-img {
+﻿/*.login-wrapper .login-img {
     width: 50% !important;
 }
 
 .login-wrapper .login-content {
     width: 50% !important;
-}
+}*/
 
 label.error {
     color: red !important;

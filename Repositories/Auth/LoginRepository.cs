@@ -1,17 +1,19 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 using System;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 namespace WMS_Application.Repositories.Auth
 {
-    public class LoginRepository : LoginInterface
+    public class LoginRepository : ILogin
     {
         private readonly dbMain _context;
-        private readonly EmailSenderInterface _emailSender;
+        private readonly IEmailSender _emailSender;
         private readonly IMemoryCache _memoryCache;
 
-        public LoginRepository(dbMain context, EmailSenderInterface emailSender, IMemoryCache memoryCache)
+        public LoginRepository(dbMain context, IEmailSender emailSender, IMemoryCache memoryCache)
         {
             _context = context;
             _emailSender = emailSender;

@@ -1,4 +1,23 @@
 ﻿$(document).ready(function () {
+
+    document.querySelectorAll('.toggle-password').forEach(toggle => {
+        toggle.addEventListener('click', () => {
+            // Locate the password input within the same parent (.pass-group)
+            const passwordInput = toggle.closest('.pass-group').querySelector('.pass-input');
+
+            // Toggle input type between "password" and "text"
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                toggle.classList.remove("fa-eye-slash");
+                toggle.classList.add("fa-eye");
+            } else {
+                passwordInput.type = "password";
+                toggle.classList.remove("fa-eye");
+                toggle.classList.add("fa-eye-slash");
+            }
+        });
+
+    });
     $("#loginForm").validate({
         rules: {
             EmailOrUsername: {

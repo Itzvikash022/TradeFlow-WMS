@@ -1,6 +1,6 @@
 ﻿namespace WMS_Application.Repositories.Interfaces
 {
-    public interface LoginInterface
+    public interface ILogin
     {
         Task<object> AuthenticateUser(string emailOrUsername, string password);
         Task<object> TokenSenderViaEmail(string email);

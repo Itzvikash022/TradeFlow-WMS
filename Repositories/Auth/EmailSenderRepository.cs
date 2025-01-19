@@ -3,19 +3,19 @@ using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 using MailKit.Net.Smtp;
 using MimeKit;
-using MimeKit.Text;
 using MailKit.Security;
-namespace WMS_Application.Repositories.Classes
+namespace WMS_Application.Repositories.Auth
 {
-    public class EmailSenderClass : EmailSenderInterface
+    public class EmailSenderRepository : EmailSenderInterface
     {
         private readonly SmtpSettings _smtpSettings;
-
-        public EmailSenderClass(IOptions<SmtpSettings> smtpSettings)
+        
+        public EmailSenderRepository(IOptions<SmtpSettings> smtpSettings)
         {
             _smtpSettings = smtpSettings.Value;
         }
 
+        //This method will send email to user using Mailkit library
         public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
             try
@@ -26,7 +26,6 @@ namespace WMS_Application.Repositories.Classes
                 message.To.Add(new MailboxAddress("User", toEmail));
                 message.Subject = subject;
                 message.Body = new TextPart("html") { Text = body };
-
 
 
                 using (var smtpClient = new SmtpClient())
@@ -44,6 +43,7 @@ namespace WMS_Application.Repositories.Classes
             }
         }
 
+        //We are generating OTP here which will be sent to user's email and saved in db
         public string GenerateOtp()
         {
             Random random = new Random();

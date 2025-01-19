@@ -11,7 +11,6 @@
 
 </head>
 <body class="account-page">
-
     <div class="main-wrapper">
         <div class="account-content">
             <div class="login-wrapper">
@@ -23,11 +22,11 @@
 
                             <div class="card">
                                 <div class="card-body">
-                                <div class="login-userheading">
-                                    <h3>More Details</h3>
-                                </div>
-                                        <div class="row">
-                                            <form id="MoreDetailsForm" enctype="multipart/form-data">
+                                    <div class="login-userheading">
+                                        <h3>More Details</h3>
+                                    </div>
+                                    <div class="row">
+                                        <form id="MoreDetailsForm" enctype="multipart/form-data">
                                             <div class="col-lg-8 col-sm-9 col-12">
                                                 <div class="form-group">
                                                     <label>Email</label>
@@ -37,7 +36,7 @@
                                             <div class="col-lg-4 col-sm-9 col-12">
                                                 <div class="form-login">
                                                     <label>Date Of Birth</label>
-                                                    <input type="date" asp-for="DateOfBirth" >
+                                                    <input type="date" asp-for="DateOfBirth">
                                                 </div>
                                             </div>
                                             <div class="col-lg-6 col-sm-9 col-12">
@@ -54,7 +53,7 @@
                                             </div>
                                             <div class="col-lg-12">
                                                 <div class="form-login">
-                                                    <label>Phone Number</label> 
+                                                    <label>Phone Number</label>
                                                     <input type="tel" asp-for="PhoneNumber" id="PhoneNumber" placeholder="Enter Phone Number">
                                                 </div>
                                             </div>
@@ -83,7 +82,7 @@
                                                 </div>
                                             </div>
                                         </form>
-                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </form>
@@ -96,25 +95,7 @@
         </div>
     </div>
     @section Scripts {
-        @{
-            await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        }
         <script src="~/js/MoreDetails.js"></script>
     }
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

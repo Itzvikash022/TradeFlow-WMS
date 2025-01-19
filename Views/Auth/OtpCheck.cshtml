@@ -2,7 +2,7 @@
 
 @{
     Layout = "/Views/Shared/_mainLayout.cshtml";
-    ViewData["Title"] = "Verification Page";
+    ViewData["Title"] = "OTP Verification";
 
 }
 
@@ -17,7 +17,6 @@
     </style>
 </head>
 <body class="account-page">
-
     <div class="main-wrapper">
         <div class="account-content">
             <div class="login-wrapper">
@@ -56,15 +55,7 @@
         </div>
     </div>
     @section Scripts {
-        @{
-            await Html.RenderPartialAsync("_ValidationScriptsPartial");
-        }
-        <script src="~/js/OtpCheck.js"></script>
+        <script src="~/js/Register.js"></script>
     }
 </body>
 </html>
-
-
-
-
-

@@ -3,5 +3,7 @@
     public interface LoginInterface
     {
         Task<object> AuthenticateUser(string emailOrUsername, string password);
+        Task<object> TokenSenderViaEmail(string email);
+        Task<object> ResetPassword(string creds, string newPassword);
     }
 }

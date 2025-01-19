@@ -19,8 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Views\Main\" />
-    <Folder Include="wwwroot\Uploads\" />
+    <Folder Include="wwwroot\ShopUploads\Documents\" />
+    <Folder Include="wwwroot\ShopUploads\Images\" />
+    <Folder Include="wwwroot\UserUploads\" />
   </ItemGroup>
 
 </Project>

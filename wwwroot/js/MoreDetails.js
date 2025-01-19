@@ -103,7 +103,7 @@
 
             // AJAX submission
             $.ajax({
-                url: '/Home/MoreDetails',
+                url: '/Auth/MoreDetails',
                 type: 'POST',
                 processData: false,
                 contentType: false,
@@ -111,7 +111,7 @@
                 success: function (result) {
                     alert(result.message);
                     if (result.success) {
-                        window.location.href = '/Home/ShopDetails';
+                        window.location.href = '/Auth/ShopDetails';
                     }
                 },
                 error: function () {

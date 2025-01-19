@@ -7,17 +7,16 @@ using WMS_Application.Repositories.Interfaces;
 
 namespace WMS_Application.Controllers
 {
-    public class HomeController : Controller
+    public class AuthController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<AuthController> _logger;
         private readonly dbMain _db;
         private readonly UsersInterface _users;
         private readonly EmailSenderInterface _emailSender;
         private readonly LoginInterface _login;
         private readonly IMemoryCache _memoryCache;
-        private readonly ForgotPasswordInterface _forgot;
             
-        public HomeController(ILogger<HomeController> logger, dbMain db, UsersInterface users, EmailSenderInterface emailSender, LoginInterface login, IMemoryCache memoryCache, ForgotPasswordInterface forgot)
+        public AuthController(ILogger<AuthController> logger, dbMain db, UsersInterface users, EmailSenderInterface emailSender, LoginInterface login, IMemoryCache memoryCache)
         {
             _logger = logger;
             _db = db;
@@ -25,7 +24,6 @@ namespace WMS_Application.Controllers
             _emailSender = emailSender;
             _login = login;
             _memoryCache = memoryCache;
-            _forgot = forgot;
         }
 
         public IActionResult Index()
@@ -49,7 +47,7 @@ namespace WMS_Application.Controllers
         public async Task<IActionResult> ForgotPassword(User user)
         {
             HttpContext.Session.SetString("ForgotPassEmail", user.Email);
-            var res = await _forgot.TokenSenderViaEmail(user.Email);
+            var res = await _login.TokenSenderViaEmail(user.Email);
             return Ok(res);
         }
 
@@ -70,7 +68,7 @@ namespace WMS_Application.Controllers
         {
 
             string user = HttpContext.Session.GetString("ForgotPassEmail");
-            var res = await _forgot.ResetPassword(user, PasswordHash);
+            var res = await _login.ResetPassword(user, PasswordHash);
             return Ok(res);
         }
         public IActionResult OtpCheck()

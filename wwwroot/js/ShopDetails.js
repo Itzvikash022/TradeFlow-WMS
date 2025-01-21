@@ -43,7 +43,7 @@
     $("#State").on("change", function () {
         const selectedStateGeonameId = $(this).find("option:selected").data("id"); // Get geonameId from data-id
 
-        if (selectedStateGeonameId) {
+        if (selectedStateGeonameId) { 
             fetch(`http://api.geonames.org/childrenJSON?geonameId=${selectedStateGeonameId}&username=${username}`)
                 .then(response => {
                     if (!response.ok) {
@@ -152,7 +152,7 @@
                 success: function (result) {
                     alert(result.message);
                     if (result.success) {
-                        window.location.href = '/Auth/Index';
+                        window.location.href = '/Auth/AdminDoc';
                     }
                 },
                 error: function () {

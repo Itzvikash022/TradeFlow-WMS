@@ -15,6 +15,7 @@ namespace WMS_Application.Repositories.Interfaces
         Task<object> SaveMoreDetails(User user);
         Task<object> SaveShopDetails(Shop shop, int id);
         Task<int?> GetUserIdByEmail(string email);
+        Task<object> SaveAdminDoc(AdminInfo info, int id);
     }
 
 }

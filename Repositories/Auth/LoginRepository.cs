@@ -1,8 +1,5 @@
-﻿using Azure;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
-using System;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 namespace WMS_Application.Repositories.Auth

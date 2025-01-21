@@ -1,6 +1,4 @@
 ﻿$(document).ready(function () {
-
-
     document.querySelectorAll('.toggle-password').forEach(toggle => {
         toggle.addEventListener('click', () => {
             // Locate the password input within the same parent (.pass-group)
@@ -18,8 +16,6 @@
             }
         });
     });
-
-
 
     $("#SignUpForm").validate({
         rules: {
@@ -88,8 +84,6 @@
         }
     });
 
-
-
     $("#OtpCheck").submit(function (event) {
         event.preventDefault()
 
@@ -139,8 +133,6 @@
         return this.optional(element) || selectedDate < today;
     }, "Date of birth must be before today's date.");
 
-
-
     const timerElement = $("#timer");
     const resendSection = $("#resend-section");
     const resendButton = $("#resend-btn");
@@ -172,7 +164,7 @@
                     alert("OTP has been resent to your email.");
                     timeRemaining = duration; // Reset the timer
                     resendSection.hide(); // Hide the resend button
-                    timerElement.text("Time remaining: 02:00"); // Reset the timer text
+                    timerElement.text("Time remaining: 01:00"); // Reset the timer text
                     setInterval(interval); // Restart the interval
                 } else {
                     alert("Failed to resend OTP. Please try again.");
@@ -184,7 +176,4 @@
             }
         });
     });
-
-
-
 });

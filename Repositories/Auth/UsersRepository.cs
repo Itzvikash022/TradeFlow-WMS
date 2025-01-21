@@ -158,5 +158,77 @@ namespace WMS_Application.Repositories.Auth
 
             return new { success = true, message = "Shop data added successfully enjoyy" };
         }
-    }
+
+        public async Task<object> SaveAdminDoc(AdminInfo info, int id)
+        {
+            if (info.IdentityDoc != null)
+            {
+                var allowedExtensions = new[] { ".pdf" };
+                // Maximum allowed file size (5 MB in bytes)
+                //const long maxFileSize = 5  1024  1024;
+                // Get file extension and check if it is allowed
+                string fileExtension = Path.GetExtension(info.IdentityDoc.FileName).ToLower();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return new { success = false, message = "Invalid file type. Only .pdf is allowed." };
+                }
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\ShopUploads\\Documents\\IdentityDoc");
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + info.IdentityDoc.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    info.IdentityDoc.CopyTo(stream);
+                }
+                info.IdentityDocPath = "\\ShopUploads\\Documents\\IdentityDoc\\" + uniqueFileName;
+                info.IdentityDoc = null;
+            }
+            if (info.AddressProof != null)
+            {
+                var allowedExtensions = new[] { ".pdf" };
+                // Maximum allowed file size (5 MB in bytes)
+                //const long maxFileSize = 5  1024  1024;
+                // Get file extension and check if it is allowed
+                string fileExtension = Path.GetExtension(info.AddressProof.FileName).ToLower();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return new { success = false, message = "Invalid file type. Only .pdf is allowed." };
+                }
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\ShopUploads\\Documents\\AddressDoc");
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + info.AddressProof.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    info.AddressProof.CopyTo(stream);
+                }
+                info.AddressProofPath = "\\ShopUploads\\Documents\\AddressDoc\\" + uniqueFileName;
+                info.AddressProof = null;
+            }
+            if (info.ShopLicense != null)
+            {
+                var allowedExtensions = new[] { ".pdf" };
+                // Maximum allowed file size (5 MB in bytes)
+                //const long maxFileSize = 5  1024  1024;
+                // Get file extension and check if it is allowed
+                string fileExtension = Path.GetExtension(info.ShopLicense.FileName).ToLower();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return new { success = false, message = "Invalid file type. Only .pdf is allowed." };
+                }
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\ShopUploads\\Documents\\LicenseDoc");
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + info.ShopLicense.FileName;
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    info.ShopLicense.CopyTo(stream);
+                }
+                info.ShopLicensePath = "\\ShopUploads\\Documents\\LicenseDoc\\" + uniqueFileName;
+                info.ShopLicense = null;
+            }
+            info.VerificationStatus = "Pending";
+            info.AdminId = id;
+            await _context.AdminInfos.AddAsync(info);
+            await _context.SaveChangesAsync();
+            return new { success = true, message = "Documents added successfully" };
+            }
+        }
 }

@@ -15,7 +15,11 @@ public partial class dbMain : DbContext
     {
     }
 
+    public virtual DbSet<AdminInfo> AdminInfos { get; set; }
+
     public virtual DbSet<Company> Companies { get; set; }
+
+    public virtual DbSet<Designation> Designations { get; set; }
 
     public virtual DbSet<Shop> Shops { get; set; }
 
@@ -29,6 +33,35 @@ public partial class dbMain : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<AdminInfo>(entity =>
+        {
+            entity.HasKey(e => e.InfoId).HasName("PK__AdminInf__4DEC9D9A9EBF19AF");
+
+            entity.ToTable("AdminInfo");
+
+            entity.Property(e => e.InfoId).HasColumnName("InfoID");
+            entity.Property(e => e.AddressProofPath).IsUnicode(false);
+            entity.Property(e => e.AdminId).HasColumnName("AdminID");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
+            entity.Property(e => e.IdentityDocNo)
+                .HasMaxLength(30)
+                .IsUnicode(false);
+            entity.Property(e => e.ShopLicensePath).IsUnicode(false);
+            entity.Property(e => e.ShopLicenseNo)
+                .HasMaxLength(30)
+                .IsUnicode(false);
+            entity.Property(e => e.IdentityDocPath).IsUnicode(false);
+            entity.Property(e => e.IdentityDocType)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.VerificationStatus)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.VerifiedBy)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+        });
+
         modelBuilder.Entity<Company>(entity =>
         {
             entity.HasKey(e => e.CompanyId).HasName("PK__Companie__2D971C4CD6D1F5DD");
@@ -57,6 +90,20 @@ public partial class dbMain : DbContext
                 .HasMaxLength(30)
                 .IsUnicode(false);
             entity.Property(e => e.ReputationScore).HasDefaultValue(100);
+        });
+
+        modelBuilder.Entity<Designation>(entity =>
+        {
+            entity.HasKey(e => e.DesignationId).HasName("PK__Designat__BABD603EFA4FF91D");
+
+            entity.Property(e => e.DesignationId).HasColumnName("DesignationID");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Designation1)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("Designation");
         });
 
         modelBuilder.Entity<Shop>(entity =>
@@ -96,11 +143,11 @@ public partial class dbMain : DbContext
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCACE00A1D10");
+            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCAC6F310873");
 
-            entity.HasIndex(e => e.Username, "UQ__Users__536C85E4A4BC76A1").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__Users__536C85E4C3F7304A").IsUnique();
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D105342B90EC57").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__Users__A9D105348B239E19").IsUnique();
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.AdminRef)
@@ -118,6 +165,9 @@ public partial class dbMain : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.LastName)
                 .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.Otp)
+                .HasMaxLength(10)
                 .IsUnicode(false);
             entity.Property(e => e.OtpExpiry).HasColumnType("datetime");
             entity.Property(e => e.PasswordHash).IsUnicode(false);

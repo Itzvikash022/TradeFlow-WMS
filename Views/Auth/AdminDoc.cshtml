@@ -1,0 +1,88 @@
+﻿@model WMS_Application.Models.AdminInfo
+
+@{
+    Layout = "/Views/Shared/_mainLayout.cshtml";
+    ViewData["Title"] = "Verification Documents";
+}
+<html lang="en">
+<head>
+    <title>Upload Documents for Verification</title>
+    <link rel="stylesheet" href="~/css/MoreDetails.css" />
+
+</head>
+<body class="account-page">
+    <div class="main-wrapper">
+        <div class="account-content">
+            <div class="login-wrapper">
+                <div class="login-content">
+                    <div class="login-userset">
+                        <form id="AdminDocForm" enctype="multipart/form-data">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="login-userheading">
+                                        <h3>AdminDoc</h3>
+                                    </div>
+                                    <div class="row">
+                                            <div class="col-lg-6 col-sm-9 col-12">
+                                                <div class="form-group">
+                                                    <label>Identity Document Type</label>
+                                                    <select asp-for="IdentityDocType" class="form-control">
+                                                        <option value="AdharCard">Adhar Card</option>
+                                                        <option value="VotingCard">Voting Card</option>
+                                                        <option value="DrivingLicense">Driving License</option>
+                                                        <option value="PanCard">Pan Card</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6 col-sm-9 col-12">
+                                                <div class="form-group">
+                                                    <label>Document Unique Number</label>
+                                                    <input type="text" asp-for="IdentityDocNo" placeholder="Enter selected document number">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12 col-sm-12 col-12">
+                                                <div>
+                                                    <label>Upload Identity Document</label>
+                                                    <input type="file" class="form-control" asp-for="IdentityDoc">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12 col-sm-12 col-12">
+                                                <div>
+                                                    <label>Upload Shop License</label>
+                                                    <input type="file" class="form-control" asp-for="ShopLicense">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6 col-sm-9 col-12">
+                                                <div class="form-group">
+                                                    <label>Shop License Number</label>
+                                                    <input type="text" class="form-control" asp-for="ShopLicenseNo" placeholder="Enter shop license number">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12 col-sm-12 col-12">
+                                                <div>
+                                                    <label>Address Proof</label>
+                                                    <input type="file" class="form-control"  asp-for="AddressProof">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-lg-12">
+                                                    <button type="submit" id="btnDocumentUpload" class="btn btn-submit me-2">Next</button>
+                                                </div>
+                                            </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="login-img">
+                    <img src="~/assets/img/login.jpg" alt="img">
+                </div>
+            </div>
+        </div>
+    </div>
+    @section Scripts {
+        <script src="~/js/AdminDoc.js"></script>
+    }
+</body>
+</html>

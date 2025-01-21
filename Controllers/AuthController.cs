@@ -57,9 +57,12 @@ namespace WMS_Application.Controllers
             // Validate the token
             if (string.IsNullOrEmpty(token) || !_memoryCache.TryGetValue(token, out object tokenData))
             {
-                return Json(new { success = false, message = "Token is Invalid or Expired, please send another link" });
+                ViewBag.InvalidToken = true;
+                return View();
             }
-
+            ViewBag.InvalidToken = false;
+            ViewBag.Token = token;
+            _memoryCache.Remove(token);
             return View();
         }
 
@@ -102,6 +105,20 @@ namespace WMS_Application.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginModel login)
         {
+            const int maxAttempts = 5; // Maximum allowed attempts
+            const int lockoutDurationSeconds = 300; // Lockout duration in minutes
+
+            // Define cache keys for tracking attempts and lockout status
+            var attemptKey = $"LoginAttempts_{login.EmailOrUsername}";
+            var lockoutKey = $"Lockout_{login.EmailOrUsername}";
+
+            // Check if the user is locked out
+            if (_memoryCache.TryGetValue(lockoutKey, out DateTime lockoutEndTime) && lockoutEndTime > DateTime.Now)
+            {
+                var remainingTime = (lockoutEndTime - DateTime.Now).Seconds;
+                return Json(new { success = false, message = $"Account is locked. Try again in {remainingTime} seconds." });
+            }
+
             var result = await _login.AuthenticateUser(login.EmailOrUsername, login.Password);
 
             // Set session if login was successful
@@ -128,6 +145,22 @@ namespace WMS_Application.Controllers
                 }
 
             }
+            else
+            {
+                // Increment the login attempts
+                var attempts = _memoryCache.Get<int>(attemptKey) + 1;
+                _memoryCache.Set(attemptKey, attempts, TimeSpan.FromSeconds(lockoutDurationSeconds));
+                // Lockout the user if max attempts reached
+                if (attempts >= maxAttempts)
+                {
+                    _memoryCache.Set(lockoutKey, DateTime.Now.AddSeconds(lockoutDurationSeconds), TimeSpan.FromSeconds(lockoutDurationSeconds));
+                    _memoryCache.Remove(attemptKey);
+                    return Json(new { success = false, message = $"Account is locked. Try again in {lockoutDurationSeconds} seconds." });
+                }
+                return Json(new { success = false, message = $"Invalid credentials. You have {maxAttempts - attempts} attempts left." });
+            }
+
+            _memoryCache.Remove(attemptKey);
             return Ok(result);
         }
 
@@ -141,6 +174,25 @@ namespace WMS_Application.Controllers
         public IActionResult ShopDetails()
         {
             return View();
+        }
+
+        public IActionResult AdminDoc()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AdminDoc(AdminInfo info)
+        {
+            int id = (int)HttpContext.Session.GetInt32("UserId");
+            if (id != null)
+            {
+                return Json(await _users.SaveAdminDoc(info, id));
+            }
+            else
+            {
+                return Json(new { success = false, message = "Owner Id not found" });
+            }
         }
 
         [HttpPost]

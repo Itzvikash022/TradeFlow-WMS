@@ -15,7 +15,6 @@ public partial class User
     public string? LastName { get; set; }
 
     public string PasswordHash { get; set; } = null!;
-
     [NotMapped]
     public string? ConfirmPassword { get; set; }
     public string Email { get; set; } = null!;

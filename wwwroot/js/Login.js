@@ -39,24 +39,40 @@
         submitHandler: function (form, event) {
             event.preventDefault()
             const formData = new FormData(form);
-
+            const btnRegister = $("#btnLogin");
+            const btnLoader = $("#btnLoader");
             // AJAX submission
-            $.ajax({
-                url: '/Auth/Login',
-                type: 'POST',
-                processData: false,
-                contentType: false,
-                data: formData,
-                success: function (result) {
-                    alert(result.message);
-                    if (result.success) {
-                        window.location.href = '/Auth/Index';
+
+            setTimeout(function () {
+
+                $.ajax({
+                    url: '/Auth/Login',
+                    type: 'POST',
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    success: function (result) {
+                        alert(result.message);
+                        if (result.success) {
+                            if (result.res != "Dashboard") {
+                                window.location.href = "/Auth/" + result.res;
+                            }
+                            else {
+                                window.location.href = "/"+result.res;
+                            }
+
+                        }
+                    },
+                    complete: function () {
+                        // Re-enable button and hide loader
+                        btnRegister.prop("disabled", false);
+                        btnLoader.addClass("d-none");
+                    },
+                    error: function () {
+                        alert('An error occurred while login');
                     }
-                },
-                error: function () {
-                    alert('An error occurred while registering the user.');
-                }
-            });
+                });
+            }, 2000);
         }
     });
 
@@ -77,20 +93,29 @@
         submitHandler: function (form, event) {
             event.preventDefault()
             const formData = new FormData(form);
-
+            const btnRegister = $("#btnSubmit");
+            const btnLoader = $("#btnLoader");
             // AJAX submission
-            $.ajax({
-                url: '/Auth/ForgotPassword',
-                type: 'POST',
-                processData: false,
-                contentType: false,
-                data: formData,
-                success: function (result) {
-                    alert(result.message);
-                },
-                error: function () {
-                    alert('An error occurred while sending the email.');
-                }
+            setTimeout(function () {
+
+                $.ajax({
+                    url: '/Auth/ForgotPassword',
+                    type: 'POST',
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    success: function (result) {
+                        alert(result.message);
+                    },
+                    complete: function () {
+                        // Re-enable button and hide loader
+                        btnRegister.prop("disabled", false);
+                        btnLoader.addClass("d-none");
+                    },
+                    error: function () {
+                        alert('An error occurred while sending the email.');
+                    }
+                }, 2000);
             });
         }
     });
@@ -126,23 +151,34 @@
             //var formData = {
             //    PasswordHash: $('#PasswordHash').val(),
             //}
-            // AJAX submission
-            $.ajax({
-                url: '/Auth/ResetPasswordAction',
-                type: 'POST',
-                processData: false,
-                contentType: false,
-                data: formData,
-                success: function (result) {
-                    alert(result.message);
-                    if (result.success) {
-                        window.location.href = '/Auth/Login';
+
+            const btnRegister = $("#btnSubmit");
+            const btnLoader = $("#btnLoader");
+            setTimeout(function () {
+
+                // AJAX submission
+                $.ajax({
+                    url: '/Auth/ResetPasswordAction',
+                    type: 'POST',
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    success: function (result) {
+                        alert(result.message);
+                        if (result.success) {
+                            window.location.href = '/Auth/Login';
+                        }
+                    },
+                    complete: function () {
+                        // Re-enable button and hide loader
+                        btnRegister.prop("disabled", false);
+                        btnLoader.addClass("d-none");
+                    },
+                    error: function () {
+                        alert('An error occurred while registering the user.');
                     }
-                },
-                error: function () {
-                    alert('An error occurred while registering the user.');
-                }
-            });
+                });
+            }, 2000);
         }
     });
 

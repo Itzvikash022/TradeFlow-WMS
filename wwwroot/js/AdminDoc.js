@@ -32,23 +32,33 @@
         submitHandler: function (form, event) {
             event.preventDefault()
             const formData = new FormData(form);
-
+            const btnRegister = $("#btnDocumentUpload");
+            const btnLoader = $("#btnLoader");
             // AJAX submission
-            $.ajax({
-                url: '/Auth/AdminDoc',
-                type: 'POST',
-                processData: false,
-                contentType: false,
-                data: formData,
-                success: function (result) {
-                    alert(result.message);
-                    if (result.success) {
-                        window.location.href = '/Auth/Index';
+
+            setTimeout(function () {
+
+                $.ajax({
+                    url: '/Auth/AdminDoc',
+                    type: 'POST',
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    success: function (result) {
+                        alert(result.message);
+                        if (result.success) {
+                            window.location.href = '/Auth/Login';
+                        }
+                    },
+                    complete: function () {
+                        // Re-enable button and hide loader
+                        btnRegister.prop("disabled", false);
+                        btnLoader.addClass("d-none");
+                    },
+                    error: function () {
+                        alert('An error occurred while registering the user.');
                     }
-                },
-                error: function () {
-                    alert('An error occurred while registering the user.');
-                }
+                }, 2000)
             });
         }
     });

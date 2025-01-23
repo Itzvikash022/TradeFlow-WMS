@@ -15,17 +15,21 @@ public partial class dbMain : DbContext
     {
     }
 
-    public virtual DbSet<AdminInfo> AdminInfos { get; set; }
+    public virtual DbSet<TblAdminInfo> TblAdminInfos { get; set; }
 
-    public virtual DbSet<Company> Companies { get; set; }
+    public virtual DbSet<TblCompany> TblCompanies { get; set; }
 
-    public virtual DbSet<Designation> Designations { get; set; }
+    public virtual DbSet<TblPermission> TblPermissions { get; set; }
 
-    public virtual DbSet<Shop> Shops { get; set; }
+    public virtual DbSet<TblRole> TblRoles { get; set; }
 
-    public virtual DbSet<ShopCategory> ShopCategories { get; set; }
+    public virtual DbSet<TblShop> TblShops { get; set; }
 
-    public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<TblShopCategory> TblShopCategories { get; set; }
+
+    public virtual DbSet<TblTab> TblTabs { get; set; }
+
+    public virtual DbSet<TblUser> TblUsers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -33,11 +37,11 @@ public partial class dbMain : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<AdminInfo>(entity =>
+        modelBuilder.Entity<TblAdminInfo>(entity =>
         {
-            entity.HasKey(e => e.InfoId).HasName("PK__AdminInf__4DEC9D9A9EBF19AF");
+            entity.HasKey(e => e.InfoId).HasName("PK__AdminInf__4DEC9D9AB00D761C");
 
-            entity.ToTable("AdminInfo");
+            entity.ToTable("tblAdminInfo");
 
             entity.Property(e => e.InfoId).HasColumnName("InfoID");
             entity.Property(e => e.AddressProofPath).IsUnicode(false);
@@ -46,14 +50,14 @@ public partial class dbMain : DbContext
             entity.Property(e => e.IdentityDocNo)
                 .HasMaxLength(30)
                 .IsUnicode(false);
-            entity.Property(e => e.ShopLicensePath).IsUnicode(false);
-            entity.Property(e => e.ShopLicenseNo)
-                .HasMaxLength(30)
-                .IsUnicode(false);
             entity.Property(e => e.IdentityDocPath).IsUnicode(false);
             entity.Property(e => e.IdentityDocType)
                 .HasMaxLength(50)
                 .IsUnicode(false);
+            entity.Property(e => e.ShopLicenseNo)
+                .HasMaxLength(30)
+                .IsUnicode(false);
+            entity.Property(e => e.ShopLicensePath).IsUnicode(false);
             entity.Property(e => e.VerificationStatus)
                 .HasMaxLength(20)
                 .IsUnicode(false);
@@ -62,9 +66,11 @@ public partial class dbMain : DbContext
                 .IsUnicode(false);
         });
 
-        modelBuilder.Entity<Company>(entity =>
+        modelBuilder.Entity<TblCompany>(entity =>
         {
             entity.HasKey(e => e.CompanyId).HasName("PK__Companie__2D971C4CD6D1F5DD");
+
+            entity.ToTable("tblCompanies");
 
             entity.HasIndex(e => e.CompanyName, "UQ__Companie__9BCE05DC3980D1EE").IsUnique();
 
@@ -92,25 +98,37 @@ public partial class dbMain : DbContext
             entity.Property(e => e.ReputationScore).HasDefaultValue(100);
         });
 
-        modelBuilder.Entity<Designation>(entity =>
+        modelBuilder.Entity<TblPermission>(entity =>
         {
-            entity.HasKey(e => e.DesignationId).HasName("PK__Designat__BABD603EFA4FF91D");
+            entity.HasKey(e => e.PermissionId).HasName("PK__tblPermi__EFA6FB2F766BECD4");
 
-            entity.Property(e => e.DesignationId).HasColumnName("DesignationID");
-            entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
-            entity.Property(e => e.Designation1)
-                .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasColumnName("Designation");
+            entity.ToTable("tblPermissions");
+
+            entity.HasOne(d => d.Tab).WithMany(p => p.TblPermissions)
+                .HasForeignKey(d => d.TabId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK__tblPermis__TabId__59904A2C");
         });
 
-        modelBuilder.Entity<Shop>(entity =>
+        modelBuilder.Entity<TblRole>(entity =>
+        {
+            entity.HasKey(e => e.RoleId).HasName("PK__tblRoles__8AFACE1ACBEB9A77");
+
+            entity.ToTable("tblRoles");
+
+            entity.Property(e => e.CreateAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.RoleName)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<TblShop>(entity =>
         {
             entity.HasKey(e => e.ShopId).HasName("PK__Shop__67C55629F6A6F3FB");
 
-            entity.ToTable("Shop");
+            entity.ToTable("tblShop");
 
             entity.Property(e => e.ShopId).HasColumnName("ShopID");
             entity.Property(e => e.Address).IsUnicode(false);
@@ -130,20 +148,42 @@ public partial class dbMain : DbContext
                 .IsUnicode(false);
         });
 
-        modelBuilder.Entity<ShopCategory>(entity =>
+        modelBuilder.Entity<TblShopCategory>(entity =>
         {
             entity.HasKey(e => e.ShopCatId).HasName("PK__ShopCate__9673CEEFCBB8B0C9");
 
+            entity.ToTable("tblShopCategories");
+
             entity.Property(e => e.ShopCatId).HasColumnName("ShopCatID");
-            entity.Property(e => e.ShopCategory1)
+            entity.Property(e => e.ShopCategory)
                 .HasMaxLength(20)
-                .IsUnicode(false)
-                .HasColumnName("ShopCategory");
+                .IsUnicode(false);
         });
 
-        modelBuilder.Entity<User>(entity =>
+        modelBuilder.Entity<TblTab>(entity =>
+        {
+            entity.HasKey(e => e.TabId).HasName("PK__tblTabs__80E37C18457ADDD7");
+
+            entity.ToTable("tblTabs");
+
+            entity.Property(e => e.TabName)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.TabUrl)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.ParentId)
+                .IsUnicode(false);
+            entity.Property(e => e.IconPath)
+                .IsUnicode(false);
+
+        });
+
+        modelBuilder.Entity<TblUser>(entity =>
         {
             entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCAC6F310873");
+
+            entity.ToTable("tblUsers");
 
             entity.HasIndex(e => e.Username, "UQ__Users__536C85E4C3F7304A").IsUnique();
 
@@ -175,7 +215,7 @@ public partial class dbMain : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false);
             entity.Property(e => e.ProfileImgPath).IsUnicode(false);
-            entity.Property(e => e.Role)
+            entity.Property(e => e.RoleId)
                 .HasMaxLength(20)
                 .IsUnicode(false);
             entity.Property(e => e.Username)

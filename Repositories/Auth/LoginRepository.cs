@@ -4,13 +4,13 @@ using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 namespace WMS_Application.Repositories.Auth
 {
-    public class LoginRepository : ILogin
+    public class LoginRepository : ILoginRepository
     {
         private readonly dbMain _context;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailSenderRepository _emailSender;
         private readonly IMemoryCache _memoryCache;
 
-        public LoginRepository(dbMain context, IEmailSender emailSender, IMemoryCache memoryCache)
+        public LoginRepository(dbMain context, IEmailSenderRepository emailSender, IMemoryCache memoryCache)
         {
             _context = context;
             _emailSender = emailSender;
@@ -20,8 +20,15 @@ namespace WMS_Application.Repositories.Auth
         //Here we are authenticating user by first checking user by email or username and then comparing hashed passwords
         public async Task<object> AuthenticateUser(string emailOrUsername, string password)
         {
+            const int maxAttempts = 5; // Maximum allowed attempts
+            const int lockoutDurationSeconds = 300; // Lockout duration in seconds
+
+            // Define cache keys for tracking attempts and lockout status
+            var attemptKey = $"LoginAttempts_{emailOrUsername}";
+            var lockoutKey = $"Lockout_{emailOrUsername}";
+
             //Fetching user by email or username
-            var user = await _context.Users
+            var user = await _context.TblUsers
            .FirstOrDefaultAsync(u => u.Email == emailOrUsername || u.Username == emailOrUsername);
 
             if (user == null)
@@ -29,21 +36,55 @@ namespace WMS_Application.Repositories.Auth
                 return new { success = false, message = "User not found" };
             }
 
+            var info = await _context.TblAdminInfos
+           .FirstOrDefaultAsync(u => u.AdminId == user.UserId);
             //Comparing hashed passwords
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
             if (isPasswordValid)
             {
-                return new { success = true, message = "You are successfully logged in", email = user.Email };
+                if(user.RoleId != 1)
+                {
+                    if(info.VerificationStatus == "Pending")
+                    {
+                        return new { success = false, message = "You're yet to be verified by the SuperAdmins, please wait for awhile." };
+                    }
+                }
+                _memoryCache.Remove(attemptKey);
+                return new { success = true, message = "You are successfully logged in"};
+            }
+           
+            // Check if the user is locked out
+            if (_memoryCache.TryGetValue(lockoutKey, out DateTime lockoutEndTime) && lockoutEndTime > DateTime.Now)
+            {
+                var remainingTime = (int)(lockoutEndTime - DateTime.Now).TotalSeconds;
+                return new { success = false, message = $"Account is locked. Try again in {remainingTime} seconds." };
             }
 
-            return new { success = false, message = "Invalid user id or pass" };
+         int attempts = _memoryCache.GetOrCreate(attemptKey, entry =>
+         {
+             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(lockoutDurationSeconds);
+             return 0;
+         });
+
+            attempts++;
+            _memoryCache.Set(attemptKey, attempts, TimeSpan.FromSeconds(lockoutDurationSeconds));
+
+            // Lockout the user if max attempts reached
+            if (attempts >= maxAttempts)
+            {
+                _memoryCache.Set(lockoutKey, DateTime.Now.AddSeconds(lockoutDurationSeconds), TimeSpan.FromSeconds(lockoutDurationSeconds));
+                _memoryCache.Remove(attemptKey); // Reset attempts after lockout
+                return new { success = false, message = $"Account is locked. Try again in {lockoutDurationSeconds} seconds." };
+            }
+
+            return new { success = false, message = $"Invalid credentials. You have {maxAttempts - attempts} attempts left." };
         }
 
         //This method will send token to user's email for password reset
         public async Task<object> TokenSenderViaEmail(string email)
         {
             //Fetching user by email
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            var user = await _context.TblUsers.FirstOrDefaultAsync(u => u.Email == email);
 
             if (user == null)
             {
@@ -72,7 +113,7 @@ namespace WMS_Application.Repositories.Auth
         {
             //_memoryCache.Remove(token);
 
-            var user = _context.Users.FirstOrDefault(u => u.Email == creds || u.Username == creds);
+            var user = _context.TblUsers.FirstOrDefault(u => u.Email == creds || u.Username == creds);
             if (user != null)
             {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);

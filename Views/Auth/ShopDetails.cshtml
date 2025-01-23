@@ -1,4 +1,4 @@
-﻿    @model WMS_Application.Models.Shop
+﻿    @model WMS_Application.Models.TblShop
 
 @{
     Layout = "/Views/Shared/_mainLayout.cshtml";
@@ -25,7 +25,6 @@
                                         <h3>More Details</h3>
                                     </div>
                                     <div class="row">
-                                        <form id="shopDetails" enctype="multipart/form-data">
                                             <div class="col-lg-8 col-sm-9 col-12">
                                                 <div class="form-group">
                                                     <label>Shop Name</label>
@@ -105,10 +104,12 @@
                                             </div>
                                             <div class="row">
                                                 <div class="col-lg-12">
-                                                    <button type="submit" id="btnShopDetails" class="btn btn-submit me-2">Next</button>
+                                                    <button type="submit" id="btnShopDetails" class="btn btn-submit me-2">
+                                                        <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                                                        Next
+                                                    </button>
                                                 </div>
                                             </div>
-                                        </form>
                                     </div>
                                 </div>
                             </div>

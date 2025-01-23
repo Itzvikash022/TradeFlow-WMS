@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace WMS_Application.Models;
 
-public partial class Company
+public partial class TblCompany
 {
     public int CompanyId { get; set; }
 

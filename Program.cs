@@ -3,12 +3,13 @@ using System.Net.Mail;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Auth;
 using WMS_Application.Repositories.Interfaces;
+using WMS_Application.Repositories.Sidebar;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
-builder.Services.AddSingleton<IEmailSender, EmailSenderRepository>(); // Email service interface and implementation
+builder.Services.AddSingleton<IEmailSenderRepository, EmailSenderRepository>(); // Email service interface and implementation
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -24,8 +25,9 @@ builder.Services.AddSession(options =>
 builder.Services.AddHttpContextAccessor();
 
 
-builder.Services.AddScoped<IUsers, UsersRepository>();
-builder.Services.AddScoped<ILogin, LoginRepository>();
+builder.Services.AddScoped<IUsersRepository, UsersRepository>();
+builder.Services.AddScoped<ILoginRepository, LoginRepository>();
+builder.Services.AddScoped<ISidebarRepository, SidebarRepository>();
 builder.Services.AddMemoryCache();
 var app = builder.Build();
 app.UseSession();

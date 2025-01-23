@@ -102,26 +102,35 @@
             const formData = new FormData(form);
 
             const formattedPhoneNumber = phoneInput.getNumber(intlTelInputUtils.numberFormat.E164);
-            console.log("Formatted Phone Number:", formattedPhoneNumber); // Debug output
             formData.set("PhoneNumber", formattedPhoneNumber); 
+            const btnRegister = $("#btnMoreDetails");
+            const btnLoader = $("#btnLoader");
 
-            // AJAX submission
-            $.ajax({
-                url: '/Auth/MoreDetails',
-                type: 'POST',
-                processData: false,
-                contentType: false,
-                data: formData,
-                success: function (result) {
-                    alert(result.message);
-                    if (result.success) {
-                        window.location.href = '/Auth/ShopDetails';
+            setTimeout(function () {
+
+                // AJAX submission
+                $.ajax({
+                    url: '/Auth/MoreDetails',
+                    type: 'POST',
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    success: function (result) {
+                        alert(result.message);
+                        if (result.success) {
+                            window.location.href = '/Auth/ShopDetails';
+                        }
+                    },
+                    complete: function () {
+                        // Re-enable button and hide loader
+                        btnRegister.prop("disabled", false);
+                        btnLoader.addClass("d-none");
+                    },
+                    error: function () {
+                        alert('An error occurred while registering the user.');
                     }
-                },
-                error: function () {
-                    alert('An error occurred while registering the user.');
-                }
-            });
+                });
+            }, 2000);
         }
     });
 

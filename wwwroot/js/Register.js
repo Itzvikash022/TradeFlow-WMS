@@ -61,7 +61,12 @@
         
         submitHandler: function (form, event) {
             event.preventDefault()
+            const btnRegister = $("#btnRegister");
+            const btnLoader = $("#btnLoader");
 
+            // Disable button and show loader
+            btnRegister.prop("disabled", true);
+            btnLoader.removeClass("d-none");
             const formData = new FormData(form);
 
             // AJAX submission
@@ -77,6 +82,11 @@
                         window.location.href = '/Auth/OtpCheck';
                     }
                 },
+                complete: function () {
+                    // Re-enable button and hide loader
+                    btnRegister.prop("disabled", false);
+                    btnLoader.addClass("d-none");
+                },
                 error: function () {
                     alert('An error occurred while registering the user.');
                 }
@@ -85,31 +95,45 @@
     });
 
     $("#OtpCheck").submit(function (event) {
-        event.preventDefault()
+        event.preventDefault();
 
         const formData = {
             Email: $('#Email').val(),
             Otp: $('#Otp').val()
-        }
+        };
 
-        console.log(formData.Email)
-        console.log(formData.Otp)
-        // AJAX submission
-        $.ajax({
-            url: '/Auth/OtpCheck',
-            type: 'POST',
-            data: formData,
-            success: function (result) {
-                alert(result.message);
-                if (result.success) {
-                    window.location.href = '/Auth/MoreDetails';
+        const btnVerify = $("#btnVerify");
+        const btnLoader = $("#btnLoader");
+
+        // Disable button and show loader immediately
+        btnVerify.prop("disabled", true);
+        btnLoader.removeClass("d-none");
+
+        // Add a 5-second delay before making the AJAX request
+        setTimeout(function () {
+            // AJAX submission
+            $.ajax({
+                url: '/Auth/OtpCheck',
+                type: 'POST',
+                data: formData,
+                success: function (result) {
+                    alert(result.message);
+                    if (result.success) {
+                        window.location.href = '/Auth/MoreDetails';
+                    }
+                },
+                complete: function () {
+                    // Re-enable button and hide loader
+                    btnVerify.prop("disabled", false);
+                    btnLoader.addClass("d-none");
+                },
+                error: function () {
+                    alert('An error occurred while registering the user.');
                 }
-            },
-            error: function () {
-                alert('An error occurred while registering the user.');
-            }
-        });
+            });
+        }, 2000);
     });
+
 
     // Custom method for letters only
     $.validator.addMethod("lettersOnly", function (value, element) {

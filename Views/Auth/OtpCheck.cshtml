@@ -1,4 +1,4 @@
-﻿@model WMS_Application.Models.User
+﻿@model WMS_Application.Models.TblUser
 
 @{
     Layout = "/Views/Shared/_mainLayout.cshtml";
@@ -45,7 +45,10 @@
                                 <p id="timer" style="font-size: 14px; color: gray;">Time remaining: 01:00</p> <!-- Timer Display -->
                             </div>
                             <div class="form-login">
-                                <button type="submit" id="btnVerify" class="btn btn-login">Verify</button>
+                                <button type="submit" id="btnVerify" class="btn btn-login">
+                                    <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                                    Verify
+                                </button>
                             </div>
                             <div id="resend-section" style="display: none; margin-top: 10px;">
                                 <button id="resend-btn" class="btn btn-secondary">Resend OTP</button>

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WMS_Application.Models;
 
-public partial class Shop
+public partial class TblShop
 {
     public int ShopId { get; set; }
 
@@ -13,8 +13,7 @@ public partial class Shop
     public int AdminId { get; set; }
 
     public string? ShopImagePath { get; set; }
-    [NotMapped]
-    public IFormFile? ShopImage { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public string? State { get; set; }
@@ -28,4 +27,6 @@ public partial class Shop
     public TimeOnly? StartTime { get; set; }
 
     public TimeOnly? ClosingTime { get; set; }
+    [NotMapped]
+    public IFormFile? ShopImage { get; set; }
 }

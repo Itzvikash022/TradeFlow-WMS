@@ -1,0 +1,174 @@
+﻿@{
+    var user = ViewBag.UserDetails as TblUser;
+    var admin = ViewBag.AdminInfo as TblAdminInfo;
+    var shop = ViewBag.ShopInfo as TblShop;
+}
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="content">
+            <div class="page-header">
+                <div class="page-title">
+                    <h4>Owner Details</h4>
+                    <h6>Full details of a Owners/Admins Registered</h6>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8 col-sm-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Shop Information</h5>
+                            <div>
+                                <img src="@shop.ShopImagePath" alt="shopImage" class="img-fluid rounded border border-black" style="width: 100px; height: 100px; border-width: 3px;">
+                            </div>
+                            <div class="productdetails">
+                                <ul class="product-bar">
+                                    <li>
+                                        <h4>Shop Name</h4>
+                                        <h6>@shop.ShopName</h6>
+                                    </li>
+                                    <li>
+                                        <h4>State</h4>
+                                        <h6>@shop.State</h6>
+                                    </li>
+                                    <li>
+                                        <h4>City</h4>
+                                        <h6>@shop.City</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Postal Code</h4>
+                                        <h6>@shop.Pincode</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Full Address</h4>
+                                        <h6>@shop.Address</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Opening Time</h4>
+                                        <h6>@shop.StartTime</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Closing Time</h4>
+                                        <h6>@shop.ClosingTime</h6>
+                                    </li>
+                                </ul>
+                            </div>
+                            <hr />
+                            <h5 class="card-title">Verification Documents</h5>
+                            <div class="productdetails">
+                                <ul class="product-bar">
+                                    <li>
+                                        <h4>Identity Proof Type</h4>
+                                        <h6>@admin.IdentityDocType</h6>
+                                    </li>
+                                    <li>
+                                        <h4>@admin.IdentityDocType No.</h4>
+                                        <h6>@admin.IdentityDocNo</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Admin @admin.IdentityDocType</h4>
+                                        <h6>
+                                            <a href="@Url.Content(admin.IdentityDocPath)" target="_blank" rel="noopener noreferrer">
+                                                <i class="bi bi-file-earmark-pdf me-2"></i> View @admin.IdentityDocType
+                                            </a>
+                                        </h6>
+                                    </li>
+                                    <li>
+                                        <h4>Address Proof</h4>
+                                        <h6>
+                                            <a href="@Url.Content(admin.AddressProofPath)" target="_blank" rel="noopener noreferrer">
+                                                <i class="bi bi-file-earmark-pdf me-2"></i> View Address Proof
+                                            </a>
+                                        </h6>
+                                    </li>
+                                    <li>
+                                        <h4>Shop License No.</h4>
+                                        <h6>@admin.ShopLicenseNo</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Shop License</h4>
+                                        <h6>
+                                            <a href="@Url.Content(admin.ShopLicensePath)" target="_blank" rel="noopener noreferrer">
+                                                <i class="bi bi-file-earmark-pdf me-2"></i> View License
+                                            </a>
+                                        </h6>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-sm-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Personal Information</h5>
+                            <div class="row">
+                                    <div class="form-group align-center">
+                                    <img src="@user.ProfileImgPath" alt="img" class="img-fluid rounded-circle border border-black" style="width: 100px; height: 100px; border-width: 3px;">
+
+                                    </div>
+                                    <div class="align-center">
+                                         <label class="col-form-label">@user.FirstName @user.LastName</label>
+                                    </div>
+
+                                <div class="productdetails">
+                                    <ul class="product-bar">
+                                        <li>
+                                            <h4>Username</h4>
+                                            <h6>@user.Username</h6>
+                                        </li>
+                                        <li>
+                                            <h4>Email</h4>
+                                            <h6>@user.Email</h6>
+                                        </li>
+                                        <li>
+                                            <h4>Contact</h4>
+                                            <h6>@user.PhoneNumber</h6>
+                                        </li>
+                                        <li>
+                                            <h4>Date Of birth</h4>
+                                            <h6>@user.DateOfBirth</h6>
+                                        </li>
+                                        <li>
+                                            <h4>Registered on</h4>
+                                            <h6>@user.CreatedAt</h6>
+                                        </li>
+                                        <li>
+                                            <h4>Remark</h4>
+                                            <h6><input type="text" placeholder="Super admin Remark"/></h6>
+                                        </li>
+                                    </ul>
+                                    <input hidden readonly id="AdminId" value="@admin.AdminId" />
+                                        <div class="align-center mt-2">
+
+                                                @if(admin.VerificationStatus == "Pending")
+                                                {
+                                                    <div class="mx-3">
+                                                        <button type="submit" class="badges bg-lightgreen" id="btnAccept">Accept</button>
+
+                                                        <button type="submit" class="badges bg-danger" id="btnReject">Reject</button>
+                                                    </div>
+                                                }
+                                                else{
+                                                    if(admin.VerificationStatus == "Rejected"){
+                                                        <h6 class="badges bg-danger">@admin.VerificationStatus</h6>
+                                                    }
+                                                    else{
+                                                        <h6 class="badges bg-lightgreen">@admin.VerificationStatus</h6>
+                                                    }
+                                                }
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/AdminsStatus.js"></script>
+}

@@ -1,4 +1,4 @@
-﻿@model List<SidebarModel>
+﻿@* @model List<SidebarModel> *@
 
 
 <!DOCTYPE html>
@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - WMS_Application</title>
+    <title>@ViewData["Title"]Hehe Application</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WMS_Application.styles.css" asp-append-version="true" />
@@ -37,10 +37,10 @@
 
             <div class="header-left active">
                 <a href="index.html" class="logo">
-                    <img src="assets/img/logo.png" alt="">
+                    <img src="~/assets/img/logo.png" alt="">
                 </a>
                 <a href="index.html" class="logo-small">
-                    <img src="assets/img/logo-small.png" alt="">
+                    <img src="~/assets/img/logo-small.png" alt="">
                 </a>
                 <a id="toggle_btn" href="javascript:void(0);">
                 </a>
@@ -65,7 +65,7 @@
                             <div class="searchinputs">
                                 <input type="text" placeholder="Search Here ...">
                                 <div class="search-addon">
-                                    <span><img src="assets/img/icons/closes.svg" alt="img"></span>
+                                    <span><img src="~/assets/img/icons/closes.svg" alt="img"></span>
                                 </div>
                             </div>
                             <a class="btn" id="searchdiv"><img src="assets/img/icons/search.svg" alt="img"></a>
@@ -87,7 +87,7 @@
                 <div class="sidebar-inner slimscroll">
                     <div id="sidebar-menu" class="sidebar-menu">
                         <ul>
-                            @foreach (var tab in Model)
+                            @foreach (var tab in (List<SidebarModel>)ViewBag.SidebarTabs)
                             {
                                 var res = "";
                                 bool subtabs = tab.SubTabs != null && tab.SubTabs.Any();

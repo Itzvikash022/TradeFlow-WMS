@@ -4,23 +4,21 @@ using WMS_Application.Repositories.Interfaces;
 
 namespace WMS_Application.Controllers
 {
-    public class DashboardController : Controller
+    public class DashboardController : BaseController
     {
         private readonly dbMain _context;
-        private readonly ISidebarRepository _sidebar;
-        public DashboardController(dbMain context, ISidebarRepository sidebar)
+        //private readonly ISidebarRepository _sidebar;
+        public DashboardController(dbMain context, ISidebarRepository sidebar) : base(sidebar)
         {
             _context = context;
-            _sidebar = sidebar;
+            //_sidebar = sidebar;
         }   
 
 
         [Route("dashboard")]
         public async Task<IActionResult> Index()
         {
-            int roleId = (int) HttpContext.Session.GetInt32("UserRoleId");
-            var tabs = await _sidebar.GetTabsByRoleIdAsync(roleId);
-            return View(tabs);
+            return View();
         }
     }
 }

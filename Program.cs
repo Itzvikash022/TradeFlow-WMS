@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Net.Mail;
 using WMS_Application.Models;
+using WMS_Application.Repositories;
 using WMS_Application.Repositories.Auth;
 using WMS_Application.Repositories.Interfaces;
 using WMS_Application.Repositories.Sidebar;
@@ -28,6 +29,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<ILoginRepository, LoginRepository>();
 builder.Services.AddScoped<ISidebarRepository, SidebarRepository>();
+builder.Services.AddScoped<IAdminsRepository, AdminsRepository>();
 builder.Services.AddMemoryCache();
 var app = builder.Build();
 app.UseSession();

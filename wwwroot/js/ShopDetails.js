@@ -143,6 +143,8 @@
             const formData = new FormData(form);
             const btnRegister = $("#btnShopDetails");
             const btnLoader = $("#btnLoader");
+            btnRegister.prop("disabled", true);
+            btnLoader.removeClass("d-none");
             setTimeout(function () {
 
                 // AJAX submission

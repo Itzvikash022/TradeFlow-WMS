@@ -114,7 +114,7 @@ namespace WMS_Application.Controllers
             string RedirectTo = "Dashboard";
 
             const int maxAttempts = 5; // Maximum allowed attempts
-            const int lockoutDurationSeconds = 300; // Lockout duration in seconds
+            const int lockoutDurationSeconds = 60; // Lockout duration in seconds
 
             // Define cache keys for tracking attempts and lockout status
             var attemptKey = $"LoginAttempts_{login.EmailOrUsername}";

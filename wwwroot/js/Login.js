@@ -42,7 +42,8 @@
             const btnRegister = $("#btnLogin");
             const btnLoader = $("#btnLoader");
             // AJAX submission
-
+            btnRegister.prop("disabled", true);
+            btnLoader.removeClass("d-none");
             setTimeout(function () {
 
                 $.ajax({

@@ -105,7 +105,8 @@
             formData.set("PhoneNumber", formattedPhoneNumber); 
             const btnRegister = $("#btnMoreDetails");
             const btnLoader = $("#btnLoader");
-
+            btnRegister.prop("disabled", true);
+            btnLoader.removeClass("d-none");
             setTimeout(function () {
 
                 // AJAX submission

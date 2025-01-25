@@ -42,4 +42,7 @@ public partial class TblUser
 
     [NotMapped]
     public IFormFile? ProfileImage { get; set; }
+    [NotMapped]
+    public string VerificationStatus { get; set; }
+
 }

@@ -7,9 +7,6 @@ namespace WMS_Application.Repositories.Interfaces
         Task<object> SaveUsers(TblUser user);
         Task<bool> IsUsernameExists(string Username);
         Task<bool> IsEmailExists(string Email);
-        //Task<bool> IsAdminExists(string AdminRef);
-        //Task<List<Designation>> GetDesignations();
-        //Task<List<string>> GetAdminUsernames();
         Task<bool> OtpVerification(string Otp);
         Task<object> updateStatus(string Email);
         Task<object> SaveMoreDetails(TblUser user);

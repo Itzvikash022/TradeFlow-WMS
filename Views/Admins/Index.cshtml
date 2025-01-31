@@ -5,11 +5,11 @@
 <div class="content">
     <div class="page-header">
         <div class="page-title">
-            <h4>Expenses LIST </h4>
-            <h6>Manage your purchases</h6>
+            <h4>Admins List</h4>
+            <h6>Manage your Admins</h6>
         </div>
         <div class="page-btn">
-            <a href="createexpense.html" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New Expense</a>
+            <a href="/Admins/SaveAdmin" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New Admin</a>
         </div>
     </div>
 
@@ -92,18 +92,12 @@
                 <table class="table  datanew">
                     <thead>
                         <tr>
-                            <th>
-                                <label class="checkboxs">
-                                    <input type="checkbox" id="select-all">
-                                    <span class="checkmarks"></span>
-                                </label>
-                            </th>
-                            <th>Category name</th>
-                            <th>Reference</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Amount</th>
-                            <th>Description</th>
+                            <th>Profile</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Phone No.</th>
+                            <th>Registered On</th>
+                            <th>Current Status</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -114,8 +108,7 @@
                                     <td>
                                         <img src="@admin.ProfileImgPath" alt="img" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
                                     </td>
-                                    <td>@admin.FirstName</td>
-                                    <td>@admin.LastName</td>
+                                    <td>@admin.FirstName @admin.LastName</td>
                                     <td>@admin.Email</td>
                                     <td>@admin.PhoneNumber</td>
                                     <td>@admin.CreatedAt</td>
@@ -135,7 +128,7 @@
                                         <a class="me-3" href="@Url.Action("Details", "Admins", new { id =  admin.UserId})">
                                             <img src="~/assets/img/icons/eye.svg" alt="img">
                                         </a>
-                                        <a class="me-3" href="~/Admins/Edit">
+                                        <a class="me-3" href="@Url.Action("SaveAdmin", "Admins", new { id =  admin.UserId})">
                                             <img src="~/assets/img/icons/edit.svg" alt="img">
                                         </a>
                                         <a class="me-3 confirm-text" href="~/Admins/Delete">

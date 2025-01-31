@@ -18,6 +18,16 @@ public partial class TblUser
 
     public string Email { get; set; } = null!;
 
+
+    [NotMapped]
+    public string? Designation { get; set; }
+
+    [NotMapped]
+    public string? ConfirmPassword { get; set; }
+
+    [NotMapped]
+    public IFormFile? ProfileImage { get; set; }
+
     public string? PhoneNumber { get; set; }
 
     public int RoleId { get; set; }
@@ -28,8 +38,6 @@ public partial class TblUser
 
     public string? ProfileImgPath { get; set; }
 
-    public int? DesignationIdRef { get; set; }
-
     public string? AdminRef { get; set; }
 
     public string? Otp { get; set; }
@@ -37,12 +45,8 @@ public partial class TblUser
     public DateTime? OtpExpiry { get; set; }
 
     public bool IsVerified { get; set; }
-    [NotMapped]
-    public string? ConfirmPassword { get; set; }
 
-    [NotMapped]
-    public IFormFile? ProfileImage { get; set; }
-    [NotMapped]
-    public string VerificationStatus { get; set; }
+    public string? VerifiedBy { get; set; }
 
+    public string? VerificationStatus { get; set; }
 }

@@ -186,6 +186,19 @@ namespace WMS_Application.Controllers
                     }
                 }
 
+                if(RedirectTo == "OtpCheck")
+                {
+                    var user = await _context.TblUsers.FirstOrDefaultAsync(x => x.Email == email);
+                    if (user != null)
+                    {
+                        user.Otp = _emailSender.GenerateOtp();
+                        user.OtpExpiry = DateTime.Now.AddMinutes(5);
+                        await _emailSender.SendEmailAsync(user.Email, "OTP Verification!!", user.Otp);
+                        await _context.SaveChangesAsync();
+                    }
+
+                }
+
                 // Reset login attempts after successful login
                 _memoryCache.Remove(attemptKey);
 

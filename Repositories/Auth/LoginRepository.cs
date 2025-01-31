@@ -28,8 +28,7 @@ namespace WMS_Application.Repositories.Auth
             var lockoutKey = $"Lockout_{emailOrUsername}";
 
             //Fetching user by email or username
-            var user = await _context.TblUsers
-           .FirstOrDefaultAsync(u => u.Email == emailOrUsername || u.Username == emailOrUsername);
+            var user = await _context.TblUsers.FirstOrDefaultAsync(u => u.Email == emailOrUsername || u.Username == emailOrUsername);
 
             if (user == null)
             {
@@ -44,9 +43,16 @@ namespace WMS_Application.Repositories.Auth
             {
                 if(user.RoleId != 1)
                 {
-                    if(info.VerificationStatus == "Pending")
+                    if(info != null)
                     {
-                        return new { success = false, message = "You're yet to be verified by the SuperAdmins, please wait for awhile." };
+                        if (user.VerificationStatus == "Rejected")
+                        {
+                            return new { success = false, message = "You're rejected by the SuperAdmins, please contact them for more information." };
+                        }
+                        if (user.VerificationStatus == "Pending")
+                        {
+                            return new { success = false, message = "You're yet to be verified by the SuperAdmins, please wait for awhile." };
+                        }
                     }
                 }
                 _memoryCache.Remove(attemptKey);

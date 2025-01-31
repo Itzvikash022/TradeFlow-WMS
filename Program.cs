@@ -4,7 +4,6 @@ using WMS_Application.Models;
 using WMS_Application.Repositories;
 using WMS_Application.Repositories.Auth;
 using WMS_Application.Repositories.Interfaces;
-using WMS_Application.Repositories.Sidebar;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +29,11 @@ builder.Services.AddScoped<IUsersRepository, UsersRepository>();
 builder.Services.AddScoped<ILoginRepository, LoginRepository>();
 builder.Services.AddScoped<ISidebarRepository, SidebarRepository>();
 builder.Services.AddScoped<IAdminsRepository, AdminsRepository>();
+builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
+builder.Services.AddScoped<IRolesRepository, RolesRepository>();
+builder.Services.AddScoped<IShopRepository, ShopRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IOrdersRepository, OrdersRepository>();
 builder.Services.AddMemoryCache();
 var app = builder.Build();
 app.UseSession();

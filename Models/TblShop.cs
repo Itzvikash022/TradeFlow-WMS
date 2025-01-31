@@ -27,6 +27,11 @@ public partial class TblShop
     public TimeOnly? StartTime { get; set; }
 
     public TimeOnly? ClosingTime { get; set; }
+
     [NotMapped]
     public IFormFile? ShopImage { get; set; }
+
+    [NotMapped]
+    public string ShopOwner { get; set; }
+    public virtual ICollection<TblStock> TblStocks { get; set; } = new List<TblStock>();
 }

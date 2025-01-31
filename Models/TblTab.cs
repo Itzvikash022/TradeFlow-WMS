@@ -11,9 +11,9 @@ public partial class TblTab
 
     public string TabUrl { get; set; } = null!;
 
-    public virtual ICollection<TblPermission> TblPermissions { get; set; } = new List<TblPermission>();
-
     public int? ParentId { get; set; }
 
-    public string IconPath { get; set; }
+    public string? IconPath { get; set; }
+
+    public virtual ICollection<TblPermission> TblPermissions { get; set; } = new List<TblPermission>();
 }

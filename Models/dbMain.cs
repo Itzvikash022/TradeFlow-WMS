@@ -15,11 +15,19 @@ public partial class dbMain : DbContext
     {
     }
 
+    public virtual DbSet<TblActivityLog> TblActivityLogs { get; set; }
+
     public virtual DbSet<TblAdminInfo> TblAdminInfos { get; set; }
 
     public virtual DbSet<TblCompany> TblCompanies { get; set; }
 
+    public virtual DbSet<TblOrder> TblOrders { get; set; }
+
+    public virtual DbSet<TblOrderDetail> TblOrderDetails { get; set; }
+
     public virtual DbSet<TblPermission> TblPermissions { get; set; }
+
+    public virtual DbSet<TblProduct> TblProducts { get; set; }
 
     public virtual DbSet<TblRole> TblRoles { get; set; }
 
@@ -27,7 +35,11 @@ public partial class dbMain : DbContext
 
     public virtual DbSet<TblShopCategory> TblShopCategories { get; set; }
 
+    public virtual DbSet<TblStock> TblStocks { get; set; }
+
     public virtual DbSet<TblTab> TblTabs { get; set; }
+
+    public virtual DbSet<TblTransaction> TblTransactions { get; set; }
 
     public virtual DbSet<TblUser> TblUsers { get; set; }
 
@@ -37,6 +49,29 @@ public partial class dbMain : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<TblActivityLog>(entity =>
+        {
+            entity.HasKey(e => e.LogId).HasName("PK__tblActiv__5E5499A8A7383945");
+
+            entity.ToTable("tblActivityLog");
+
+            entity.Property(e => e.LogId).HasColumnName("LogID");
+            entity.Property(e => e.ActionDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ActionType)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.EntityId).HasColumnName("EntityID");
+            entity.Property(e => e.EntityType)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Remarks)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.UserId).HasColumnName("UserID");
+        });
+
         modelBuilder.Entity<TblAdminInfo>(entity =>
         {
             entity.HasKey(e => e.InfoId).HasName("PK__AdminInf__4DEC9D9AB00D761C");
@@ -58,12 +93,6 @@ public partial class dbMain : DbContext
                 .HasMaxLength(30)
                 .IsUnicode(false);
             entity.Property(e => e.ShopLicensePath).IsUnicode(false);
-            entity.Property(e => e.VerificationStatus)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.VerifiedBy)
-                .HasMaxLength(50)
-                .IsUnicode(false);
         });
 
         modelBuilder.Entity<TblCompany>(entity =>
@@ -98,6 +127,50 @@ public partial class dbMain : DbContext
             entity.Property(e => e.ReputationScore).HasDefaultValue(100);
         });
 
+        modelBuilder.Entity<TblOrder>(entity =>
+        {
+            entity.HasKey(e => e.OrderId).HasName("PK__tblOrder__C3905BCFF87972BB");
+
+            entity.ToTable("tblOrders");
+
+            entity.Property(e => e.OrderDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.OrderStatus)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasDefaultValue("Pending");
+            entity.Property(e => e.OrderType)
+                .HasMaxLength(30)
+                .IsUnicode(false);
+            entity.Property(e => e.Remarks)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.TotalAmount).HasColumnType("decimal(10, 2)");
+        });
+
+        modelBuilder.Entity<TblOrderDetail>(entity =>
+        {
+            entity.HasKey(e => e.OrderDetailId).HasName("PK__tblOrder__D3B9D30C0BAE6D27");
+
+            entity.ToTable("tblOrderDetails");
+
+            entity.Property(e => e.OrderDetailId).HasColumnName("OrderDetailID");
+            entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.OrderId).HasColumnName("OrderID");
+            entity.Property(e => e.PricePerUnit).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.ProductId).HasColumnName("ProductID");
+
+            entity.HasOne(d => d.Order).WithMany(p => p.TblOrderDetails)
+                .HasForeignKey(d => d.OrderId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK__tblOrderD__Order__093F5D4E");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.TblOrderDetails)
+                .HasForeignKey(d => d.ProductId)
+                .HasConstraintName("FK__tblOrderD__Produ__0A338187");
+        });
+
         modelBuilder.Entity<TblPermission>(entity =>
         {
             entity.HasKey(e => e.PermissionId).HasName("PK__tblPermi__EFA6FB2F766BECD4");
@@ -108,6 +181,30 @@ public partial class dbMain : DbContext
                 .HasForeignKey(d => d.TabId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__tblPermis__TabId__59904A2C");
+        });
+
+        modelBuilder.Entity<TblProduct>(entity =>
+        {
+            entity.HasKey(e => e.ProductId).HasName("PK__tblProdu__B40CC6EDD77ECDDD");
+
+            entity.ToTable("tblProducts");
+
+            entity.Property(e => e.ProductId).HasColumnName("ProductID");
+            entity.Property(e => e.Category)
+                .HasMaxLength(30)
+                .IsUnicode(false);
+            entity.Property(e => e.CompanyId).HasColumnName("CompanyID");
+            entity.Property(e => e.CreateAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.Manufacturer)
+                .HasMaxLength(30)
+                .IsUnicode(false);
+            entity.Property(e => e.PricePerUnit).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.ProductImagePath).IsUnicode(false);
+            entity.Property(e => e.ProductName)
+                .HasMaxLength(30)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<TblRole>(entity =>
@@ -160,34 +257,80 @@ public partial class dbMain : DbContext
                 .IsUnicode(false);
         });
 
+        modelBuilder.Entity<TblStock>(entity =>
+        {
+            entity.HasKey(e => e.StockId).HasName("PK__tblStock__2C83A9E2A20396A9");
+
+            entity.ToTable("tblStock");
+
+            entity.Property(e => e.StockId).HasColumnName("StockID");
+            entity.Property(e => e.LastUpdated)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.ProductId).HasColumnName("ProductID");
+            entity.Property(e => e.ShopId).HasColumnName("ShopID");
+
+            entity.HasOne(d => d.Product).WithMany(p => p.TblStocks)
+                .HasForeignKey(d => d.ProductId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK__tblStock__Produc__7EC1CEDB");
+
+            entity.HasOne(d => d.Shop).WithMany(p => p.TblStocks)
+                .HasForeignKey(d => d.ShopId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK__tblStock__ShopID__7FB5F314");
+        });
+
         modelBuilder.Entity<TblTab>(entity =>
         {
             entity.HasKey(e => e.TabId).HasName("PK__tblTabs__80E37C18457ADDD7");
 
             entity.ToTable("tblTabs");
 
+            entity.Property(e => e.IconPath).IsUnicode(false);
             entity.Property(e => e.TabName)
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.TabUrl)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-            entity.Property(e => e.ParentId)
-                .IsUnicode(false);
-            entity.Property(e => e.IconPath)
-                .IsUnicode(false);
+        });
 
+        modelBuilder.Entity<TblTransaction>(entity =>
+        {
+            entity.HasKey(e => e.TransactionId).HasName("PK__tblTrans__55433A4BB862A767");
+
+            entity.ToTable("tblTransactions");
+
+            entity.Property(e => e.TransactionId).HasColumnName("TransactionID");
+            entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.CreditOrDebit)
+                .HasMaxLength(1)
+                .IsUnicode(false)
+                .IsFixedLength();
+            entity.Property(e => e.ProductId).HasColumnName("ProductID");
+            entity.Property(e => e.Remarks)
+                .HasMaxLength(255)
+                .IsUnicode(false);
+            entity.Property(e => e.ShopId).HasColumnName("ShopID");
+            entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
+            entity.Property(e => e.TransactionDate)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime");
+            entity.Property(e => e.TransactionType)
+                .HasMaxLength(20)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<TblUser>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Users__1788CCAC6F310873");
+            entity.HasKey(e => e.UserId).HasName("PK__tblUsers__1788CCAC46059246");
 
             entity.ToTable("tblUsers");
 
-            entity.HasIndex(e => e.Username, "UQ__Users__536C85E4C3F7304A").IsUnique();
+            entity.HasIndex(e => e.Username, "UQ__tblUsers__536C85E49B6EBFE9").IsUnique();
 
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D105348B239E19").IsUnique();
+            entity.HasIndex(e => e.Email, "UQ__tblUsers__A9D1053455EE6088").IsUnique();
 
             entity.Property(e => e.UserId).HasColumnName("UserID");
             entity.Property(e => e.AdminRef)
@@ -196,7 +339,6 @@ public partial class dbMain : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.DesignationIdRef).HasColumnName("DesignationID_Ref");
             entity.Property(e => e.Email)
                 .HasMaxLength(50)
                 .IsUnicode(false);
@@ -215,11 +357,14 @@ public partial class dbMain : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false);
             entity.Property(e => e.ProfileImgPath).IsUnicode(false);
-            entity.Property(e => e.RoleId)
-                .HasMaxLength(20)
-                .IsUnicode(false);
             entity.Property(e => e.Username)
                 .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.VerificationStatus)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.VerifiedBy)
+                .HasMaxLength(30)
                 .IsUnicode(false);
         });
 

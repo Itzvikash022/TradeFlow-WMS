@@ -2,6 +2,14 @@
     var user = ViewBag.UserDetails as TblUser;
     var admin = ViewBag.AdminInfo as TblAdminInfo;
     var shop = ViewBag.ShopInfo as TblShop;
+
+    if(shop == null){
+        shop = new TblShop();
+    }
+    if (admin == null)
+    {
+        admin = new TblAdminInfo();
+    }
 }
 
 <div class="page-wrapper">
@@ -142,7 +150,7 @@
                                     <input hidden readonly id="AdminId" value="@admin.AdminId" />
                                         <div class="align-center mt-2">
 
-                                                @if(admin.VerificationStatus == "Pending")
+                                                @if(user.VerificationStatus == "Pending")
                                                 {
                                                     <div class="mx-3">
                                                         <button type="submit" class="badges bg-lightgreen" id="btnAccept">Accept</button>
@@ -151,11 +159,11 @@
                                                     </div>
                                                 }
                                                 else{
-                                                    if(admin.VerificationStatus == "Rejected"){
-                                                        <h6 class="badges bg-danger">@admin.VerificationStatus</h6>
+                                                    if(user.VerificationStatus == "Rejected"){
+                                                        <h6 class="badges bg-danger">@user.VerificationStatus</h6>
                                                     }
                                                     else{
-                                                        <h6 class="badges bg-lightgreen">@admin.VerificationStatus</h6>
+                                                        <h6 class="badges bg-lightgreen">@user.VerificationStatus</h6>
                                                     }
                                                 }
                                         </div>

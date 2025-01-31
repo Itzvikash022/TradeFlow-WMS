@@ -3,7 +3,7 @@ using WMS_Application.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace WMS_Application.Repositories.Sidebar
+namespace WMS_Application.Repositories
 {
     public class SidebarRepository : ISidebarRepository
     {

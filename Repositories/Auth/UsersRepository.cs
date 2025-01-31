@@ -75,6 +75,7 @@ namespace WMS_Application.Repositories.Auth
             string subj = "OTP Verification!!";
             await _emailSender.SendEmailAsync(user.Email, subj, user.Otp);
             user.RoleId = 2;
+            user.VerificationStatus = "Pending";
             //Saving all given data to db
             await _context.TblUsers.AddAsync(user);
             await _context.SaveChangesAsync();
@@ -251,7 +252,6 @@ namespace WMS_Application.Repositories.Auth
                 info.ShopLicensePath = "\\ShopUploads\\Documents\\LicenseDoc\\" + uniqueFileName;
                 info.ShopLicense = null;
             }
-            info.VerificationStatus = "Pending";
             info.AdminId = id;
             await _context.TblAdminInfos.AddAsync(info);
             await _context.SaveChangesAsync();

@@ -3,15 +3,20 @@ using WMS_Application.Repositories.Interfaces;
 
 namespace WMS_Application.Controllers
 {
-   
     public class EmployeeController : BaseController
     {
-        public EmployeeController(ISidebarRepository sidebar) : base(sidebar)
+        private readonly IEmployeeRepository _employee;
+        public EmployeeController(ISidebarRepository sidebar, IEmployeeRepository employee) : base(sidebar)
         {
-
+            _employee = employee;
         }
         [Route("Employees")]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
+        {
+            return View(await _employee.GetAllEmployees());
+        }
+        
+        public IActionResult SaveEmployee()
         {
             return View();
         }

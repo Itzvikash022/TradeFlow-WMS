@@ -14,12 +14,6 @@ public partial class TblAdminInfo
 
     public string IdentityDocType { get; set; } = null!;
 
-    [NotMapped]
-    public IFormFile IdentityDoc { get; set; }
-    [NotMapped]
-    public IFormFile ShopLicense { get; set; }
-    [NotMapped]
-    public IFormFile AddressProof { get; set; } 
     public string IdentityDocNo { get; set; } = null!;
 
     public string AddressProofPath { get; set; } = null!;
@@ -28,9 +22,11 @@ public partial class TblAdminInfo
 
     public string ShopLicenseNo { get; set; } = null!;
 
-    public string VerificationStatus { get; set; } = null!;
-
-    public string? VerifiedBy { get; set; }
-
     public DateOnly? CreatedAt { get; set; }
+    [NotMapped]
+    public IFormFile IdentityDoc { get; set; }
+    [NotMapped]
+    public IFormFile ShopLicense { get; set; }
+    [NotMapped]
+    public IFormFile AddressProof { get; set; }
 }

@@ -18,35 +18,42 @@ namespace WMS_Application.Repositories
 
         public async Task<List<TblUser>> GetAllAdminsData()
         {
-            var query = from admin in _context.TblUsers
-                        join adminInfo in _context.TblAdminInfos on admin.UserId equals adminInfo.AdminId
-                        where admin.RoleId == 2 // Filter by RoleId = 2
-                        select new TblUser
-                        {
-                            UserId = admin.UserId,
-                            Username = admin.Username,
-                            FirstName = admin.FirstName,
-                            LastName = admin.LastName,
-                            Email = admin.Email,
-                            RoleId = admin.RoleId,
-                            PhoneNumber = admin.PhoneNumber,
-                            CreatedAt = admin.CreatedAt,
-                            ProfileImgPath = admin.ProfileImgPath,
-                            VerificationStatus = adminInfo.VerificationStatus
-                        };
-            return await query.ToListAsync();
+            //var query = from admin in _context.TblUsers
+            //            join adminInfo in _context.TblAdminInfos on admin.UserId equals adminInfo.AdminId
+            //            where admin.RoleId == 2 // Filter by RoleId = 2
+            //            select new TblUser
+            //            {
+            //                UserId = admin.UserId,
+            //                Username = admin.Username,
+            //                FirstName = admin.FirstName,
+            //                LastName = admin.LastName,
+            //                Email = admin.Email,
+            //                RoleId = admin.RoleId,
+            //                PhoneNumber = admin.PhoneNumber,
+            //                CreatedAt = admin.CreatedAt,    
+            //                ProfileImgPath = admin.ProfileImgPath,
+            //                VerificationStatus = adminInfo.VerificationStatus
+            //            };
+            var user = _context.TblUsers.Where(x => x.RoleId != 1).ToList();
+            return user;
         }
 
-        public async Task<object> UpdateStatus(int adminId, bool status)
+        public async Task<List<TblRole>> GetAllRoles()
         {
-            var admin = await _context.TblAdminInfos.FirstOrDefaultAsync(u => u.AdminId == adminId);
-            if (admin == null) return new { success = false, message = "User not found." };
+            return await _context.TblRoles.ToListAsync();
+        }
 
-            admin.VerificationStatus = status ? "Approved" : "Rejected";
-            _context.TblAdminInfos.Update(admin);
+        public async Task<object> UpdateStatus(int userId, bool status, string verifier)
+        {
+            var user = await _context.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId);
+            if (user == null) return new { success = false, message = "User not found." };
+
+            user.VerificationStatus = status ? "Approved" : "Rejected";
+            user.VerifiedBy = verifier;
+            _context.TblUsers.Update(user);
             await _context.SaveChangesAsync();
 
-            var user = await _context.TblUsers.FirstOrDefaultAsync(u => u.UserId == adminId);
+            var userData = await _context.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId);
             var subject = status ? "Account Approved" : "Account Rejected";
             var body = status
                 ? $"Hi {user.Username},<br>Your account is approved. Log in to start."
@@ -54,6 +61,82 @@ namespace WMS_Application.Repositories
             await _emailSender.SendEmailAsync(user.Email, subject, body);
 
             return new { success = true, message = status ? "User approved." : "User rejected." };
+        }
+
+
+        public TblUser checkExistence(string Username, string email,  int UserId)
+        {
+            var existingUser = _context.TblUsers
+            .Where(u => u.UserId != UserId) // Exclude the current admin being edited
+            .FirstOrDefault(u => u.Email == email || u.Username == Username);
+
+            return existingUser;
+        }
+
+        public async Task<object> SaveUsers(TblUser user)
+        {
+            var UpdatedUser = await _context.TblUsers.FirstOrDefaultAsync(u => u.UserId == user.UserId);
+            string imgPath = "";
+            if (user.ProfileImage != null)
+            {
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+
+                // Maximum allowed file size (5 MB in bytes)
+                //const long maxFileSize = 5  1024  1024;
+
+                // Get file extension and check if it is allowed
+                string fileExtension = Path.GetExtension(user.ProfileImage.FileName).ToLower();
+                if (!allowedExtensions.Contains(fileExtension))
+                {
+                    return new { success = false, message = "Invalid file type. Only .jpg, .jpeg, and .png are allowed." };
+                }
+
+                string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\UserUploads");
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + user.ProfileImage.FileName;
+
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    user.ProfileImage.CopyTo(stream);
+                }
+
+                imgPath = "\\UserUploads\\" + uniqueFileName;
+            }
+            if(user.UserId > 0)
+            {
+                
+                UpdatedUser.Username = user.Username;
+                UpdatedUser.FirstName = user.FirstName;
+                UpdatedUser.LastName = user.LastName;
+                UpdatedUser.PhoneNumber = user.PhoneNumber;
+                UpdatedUser.CreatedAt = user.CreatedAt;
+                if(user.ProfileImage != null)
+                {
+                    UpdatedUser.ProfileImgPath = imgPath;
+                }
+                UpdatedUser.Email = user.Email;
+            }
+            if (user.PasswordHash != null)
+            {
+                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
+            }
+            user.ProfileImage = null;
+            user.ProfileImgPath = imgPath;
+            user.VerificationStatus = "Approved";
+            string msg = "";
+            if (user.UserId > 0)
+            {
+                _context.Update(UpdatedUser);
+                msg = "Admin data has been updated successfully";
+            }
+            else
+            {
+                _context.AddAsync(user);
+                msg = "New admin has been added successfully";
+            }
+            await _context.SaveChangesAsync();
+
+            return new { success = true, message = msg };
         }
     }
 }

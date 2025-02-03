@@ -18,23 +18,7 @@ namespace WMS_Application.Repositories
 
         public async Task<List<TblUser>> GetAllAdminsData()
         {
-            //var query = from admin in _context.TblUsers
-            //            join adminInfo in _context.TblAdminInfos on admin.UserId equals adminInfo.AdminId
-            //            where admin.RoleId == 2 // Filter by RoleId = 2
-            //            select new TblUser
-            //            {
-            //                UserId = admin.UserId,
-            //                Username = admin.Username,
-            //                FirstName = admin.FirstName,
-            //                LastName = admin.LastName,
-            //                Email = admin.Email,
-            //                RoleId = admin.RoleId,
-            //                PhoneNumber = admin.PhoneNumber,
-            //                CreatedAt = admin.CreatedAt,    
-            //                ProfileImgPath = admin.ProfileImgPath,
-            //                VerificationStatus = adminInfo.VerificationStatus
-            //            };
-            var user = _context.TblUsers.Where(x => x.RoleId != 1).ToList();
+            var user = _context.TblUsers.Where(x => x.RoleId == 2).ToList();
             return user;
         }
 

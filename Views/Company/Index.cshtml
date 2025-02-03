@@ -1,12 +1,14 @@
-﻿<div class="page-wrapper">
+﻿
+<div class="page-wrapper">
     <div class="content">
         <div class="page-header">
             <div class="page-title">
-                <h4>Products LIST </h4>
-                <h6>Manage your Products</h6>
+                <h4>company LIST </h4>
+                <h6>Manage your Employees</h6>
             </div>
             <div class="page-btn">
-                <a href="createexpense.html" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New product</a>
+                @* <a href="/company/SaveEmployee" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New company</a> *@
+                <a href="@Url.Action("SaveCompany", "Company")" class="btn btn-added"><img src="assets/img/icons/plus.svg" alt="img" class="me-1">Add New Company</a>
             </div>
         </div>
 
@@ -86,38 +88,47 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table datanew">
+                    <table class="table  datanew">
                         <thead>
                             <tr>
-                                <th>Category </th>
-                                <th>Brand</th>
-                                <th>price</th>
-                                <th>Unit</th>
-                                <th>Qty</th>
-                                <th>Created By</th>
-                                <th>Action</th>
+                                <th>
+                                    <label class="checkboxs">
+                                        <input type="checkbox" id="select-all">
+                                        <span class="checkmarks"></span>
+                                    </label>
+                                </th>
+                                <th>Company Name</th>
+                                <th>Contact Person</th>
+                                <th>Email</th>
+                                <th>Phone Number</th>
+                                <th>Location</th>
+                                <th>LastOrderDate</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var product in Model)
+                            @foreach (var company in Model)
                             {
                                 <tr>
                                     <td>
-                                        <img src="@product.ProductImagePath" alt="img" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
+                                        <img src="@company.CompanyLogo" alt="img" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
                                     </td>
-                                    <td>@product.ProductName</td>
-                                    <td>@product.Category</td>
-                                    <td>@product.CompanyName</td>
-                                    <td>@product.PricePerUnit</td>
-                                    <td>@product.Manufacturer</td>
+                                    <td>@company.CompanyName</td>
+                                    <td>@company.ContactPerson</td>
+                                    <td>@company.Email</td>
+                                    <td>@company.PhoneNumber</td>
+                                    <td>@company.Location</td>
+                                    <td>@company.LastOrderDate</td>
                                     <td>
-                                        <a class="me-3" href="@Url.Action("Details", "Product", new { id =  product.ProductId})">
-                                            <img src="~/assets/img/icons/eye.svg" alt="img">
-                                        </a>
-                                        <a class="me-3" href="~/product/Edit">
+                                        @* <a class="me-3" href="@Url.Action("Details", "company", new { id =  company.UserId})"> *@
+                                        @*     <img src="~/assets/img/icons/eye.svg" alt="img"> *@
+                                        @* </a> *@
+                                        <a class="me-3" href="@Url.Action("SaveAdmin", "Admins", new { id = company.CompanyId, from = "company" })">
                                             <img src="~/assets/img/icons/edit.svg" alt="img">
                                         </a>
-                                        <a class="me-3 confirm-text" href="~/product/Delete">
+                                        <a class="me-3" href="~/company/Edit">
+                                            <img src="~/assets/img/icons/edit.svg" alt="img">
+                                        </a>
+                                        <a class="me-3 confirm-text" href="~/company/Delete">
                                             <img src="~/assets/img/icons/delete.svg" alt="img">
                                         </a>
                                     </td>

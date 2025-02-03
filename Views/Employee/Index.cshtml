@@ -6,7 +6,8 @@
                 <h6>Manage your Employees</h6>
             </div>
             <div class="page-btn">
-                <a href="/Employee/SaveEmployee" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New Employee</a>
+                @* <a href="/Employee/SaveEmployee" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New Employee</a> *@
+                <a href="@Url.Action("SaveAdmin", "Admins", new { from = "employee" })" class="btn btn-added"><img src="assets/img/icons/plus.svg" alt="img" class="me-1">Add New Employee</a>
             </div>
         </div>
 
@@ -118,8 +119,11 @@
                                     <td>@employee.CreatedAt</td>
                                     <td>@employee.Designation</td>
                                     <td>
-                                        <a class="me-3" href="@Url.Action("Details", "Employee", new { id =  employee.UserId})">
-                                            <img src="~/assets/img/icons/eye.svg" alt="img">
+                                        @* <a class="me-3" href="@Url.Action("Details", "Employee", new { id =  employee.UserId})"> *@
+                                        @*     <img src="~/assets/img/icons/eye.svg" alt="img"> *@
+                                        @* </a> *@
+                                        <a class="me-3" href="@Url.Action("SaveAdmin", "Admins", new { id = employee.UserId, from = "employee" })">
+                                            <img src="~/assets/img/icons/edit.svg" alt="img">
                                         </a>
                                         <a class="me-3" href="~/Employee/Edit">
                                             <img src="~/assets/img/icons/edit.svg" alt="img">

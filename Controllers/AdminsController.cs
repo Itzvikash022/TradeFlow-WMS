@@ -40,10 +40,10 @@ namespace WMS_Application.Controllers
         //public IActionResult 
 
         [HttpPost]
-        public async Task<IActionResult> UpdateStatus(int AdminId, bool Status)
+        public async Task<IActionResult> UpdateStatus(int UserId, bool Status)
         {   
-            string verifier = HttpContext.Session.GetString("Username");
-            var result = await _admins.UpdateStatus(AdminId, Status, verifier);
+            string verifier = ((int) HttpContext.Session.GetInt32("UserId")).ToString();
+            var result = await _admins.UpdateStatus(UserId, Status, verifier);
             return Json(result);
         }
 
@@ -100,6 +100,10 @@ namespace WMS_Application.Controllers
                 int ResId = (int) HttpContext.Session.GetInt32("UserId");
                 string verifier = ResId.ToString();
                 user.VerifiedBy = verifier;
+                if(user.RoleId > 2)
+                {
+                    user.AdminRef = verifier;
+                }
                 var res = await _admins.SaveUsers(user);
 
                 if(id > 0)

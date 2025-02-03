@@ -2,8 +2,10 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WMS_Application.Controllers
 {
@@ -168,16 +170,19 @@ namespace WMS_Application.Controllers
                 {
                     if (await _users.IsVerified(login.EmailOrUsername))
                     {
-                        if (await _users.hasShopDetails(id))
+                        if(data.RoleId == 2)
                         {
-                            if (!await _users.hasAdminDoc(id))
+                            if (await _users.hasShopDetails(id))
                             {
-                                RedirectTo = "AdminDoc";
+                                if (!await _users.hasAdminDoc(id))
+                                {
+                                    RedirectTo = "AdminDoc";
+                                }
                             }
-                        }
-                        else
-                        {
-                            RedirectTo = "ShopDetails"; // Redirect to shop details if not filled
+                            else
+                            {
+                                RedirectTo = "ShopDetails"; // Redirect to shop details if not filled
+                            }
                         }
                     }
                     else
@@ -248,14 +253,24 @@ namespace WMS_Application.Controllers
             int id = (int)HttpContext.Session.GetInt32("UserId");
             if (id != null)
             {
+
+                string subject = "";
+                string body = "";
                 string email = HttpContext.Session.GetString("UserEmail");
                 var user =await _users.GetUserDataByEmail(email); 
-
                 string adminEmail = "vikash.my022@gmail.com";
-                string subject = "New User Registration - Pending Approval";
                 string resetUrl = "http://localhost:5026/Admins";
-                string body = $"User: {user.Username}<br>Email: {user.Email}<br>Date: {DateTime.UtcNow}<br>Click <a href='{resetUrl}'>here</a> to go to admin panel.";
-
+                
+                if (user.VerificationStatus != "Pending")
+                {
+                    subject = "Admin has logged for first time";
+                    body = $"{user.Username} has logged in for the first time and has saved their doc info and shop details, <br>Email: {user.Email}<br>Click <a href='{resetUrl}'>here</a> to go to admin panel. ";
+                }
+                else
+                {
+                    subject = "New User Registration - Pending Approval";
+                    body = $"User: {user.Username}<br>Email: {user.Email}<br>Date: {DateTime.UtcNow}<br>Click <a href='{resetUrl}'>here</a> to go to admin panel.";
+                }
                 await _emailSender.SendEmailAsync(adminEmail, subject, body);
                 return Json(await _users.SaveAdminDoc(info, id));
             }
@@ -284,7 +299,7 @@ namespace WMS_Application.Controllers
         {
             try
             {
-                String email = HttpContext.Session.GetString("UserEmail");
+                string email = HttpContext.Session.GetString("UserEmail");
                 if (await _users.IsEmailExists(email))
                 {
                     if (await _users.OtpVerification(user.Otp))

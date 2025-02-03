@@ -26,6 +26,35 @@
         }
     });
 
+        // Function to get URL query parameters
+        function getQueryParam(param) {
+            let urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(param);
+        }
+
+        // Get the 'from' URL parameter or default to "employee"
+        let formSource = getQueryParam("from") || "employee"; // Default to "employee"
+
+        // If the form is being accessed from "admin" or it's an Admin form, set the role to 2 (Admin)
+        if (formSource === "admin") {
+            $("#RoleId").val(2); // Set the role to Admin (Admin role = 2)
+            $("#designationDropdown").find("select").prop("disabled", true); // Disable the designation dropdown
+            $("#designationDropdown").hide();
+        } else {
+            // If it's Employee, show the designation dropdown and enable it
+            $("#designationDropdown").find("select").prop("disabled", false);
+            $("#designationDropdown").show();   
+        }
+
+        // Handle designation change (only for Employee role)
+        $("#designation").change(function () {
+            let selectedDesignation = $(this).val();
+            if (selectedDesignation) {
+                $("#RoleId").val(selectedDesignation); // Set role to the selected designation ID (e.g., 3 for Manager)
+            }
+        });
+
+
     const phoneInputField = document.querySelector("#PhoneNumber");
     phoneInput = window.intlTelInput(phoneInputField, {
         initialCountry: "IN", // Set initial country (auto or a specific code like "us")

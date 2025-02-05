@@ -124,6 +124,12 @@ public partial class dbMain : DbContext
             entity.Property(e => e.Location)
                 .HasMaxLength(30)
                 .IsUnicode(false);
+            entity.Property(e => e.City)
+    .HasMaxLength(30)
+    .IsUnicode(false);
+            entity.Property(e => e.State)
+    .HasMaxLength(30)
+    .IsUnicode(false);
             entity.Property(e => e.ReputationScore).HasDefaultValue(100);
         });
 

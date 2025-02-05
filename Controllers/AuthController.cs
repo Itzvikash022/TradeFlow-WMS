@@ -227,6 +227,7 @@ namespace WMS_Application.Controllers
         }
         public async Task<IActionResult> ShopDetails()
         {
+            ViewBag.ShopCategory = await _context.TblShopCategories.ToListAsync();
             var model = new TblShop();
             int id = (int) HttpContext.Session.GetInt32("UserId");
             if(id != 0)

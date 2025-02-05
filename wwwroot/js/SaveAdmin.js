@@ -143,7 +143,7 @@
                     success: function (result) {
                         alert(result.message);
                         if (result.success) {
-                            window.location.href = '/Admins';
+                            window.location.href = '/' + result.role;
                         }
                     },
                     complete: function () {

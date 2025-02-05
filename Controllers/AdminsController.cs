@@ -37,6 +37,32 @@ namespace WMS_Application.Controllers
             return View();
         }
 
+        [HttpPost]
+        public IActionResult DeleteAdmin(int id)
+        {
+            if (id == 0)  // Handle the case if the ID is invalid
+            {
+                return Json(new { success = false, message = "Invalid admin ID." });
+            }
+
+            // Try deleting the admin from the database or perform your logic here
+            try
+            {
+                var admin = _context.TblUsers.Find(id);
+                _context.TblUsers.Remove(admin);
+                _context.SaveChanges();
+
+                // If successful, redirect to Index
+                return Json(new { success = true, message = "Admin deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions during the deletion
+                Console.WriteLine("Error deleting admin: " + ex.Message);
+                return Json(new { success = false, message = "Error deleting admin." });
+            }
+        }
+
         //public IActionResult 
 
         [HttpPost]
@@ -72,11 +98,11 @@ namespace WMS_Application.Controllers
                     {
                         if(resData.Email == user.Email)
                         {
-                            return Json(new { success = false, message = "Email already exists" });
+                            return Json(new { success = false, message = "Email already exists - edit" });
                         }
                         if(resData.Username == user.Username)
                         {
-                            return Json(new { success = false, message = "Username already exists" });
+                            return Json(new { success = false, message = "Username already exists - edit" });
                         }
                     }
                 }
@@ -84,25 +110,24 @@ namespace WMS_Application.Controllers
                 { 
                     if (await _users.IsUsernameExists(user.Username))
                     {
-                        return Json(new { success = false, message = "Username already exists - edit" });
+                        return Json(new { success = false, message = "Username already exists" });
                     }
                     if (await _users.IsEmailExists(user.Email))
                     {
-                        return Json(new { success = false, message = "Email already exists - edit" });
+                        return Json(new { success = false, message = "Email already exists" });
                     }
                 }
-                string username = user.Username;
-                string firstname = user.FirstName;
                 string password = user.PasswordHash;
-                string email = user.Email;
                 int id = user.UserId;
 
                 int ResId = (int) HttpContext.Session.GetInt32("UserId");
                 string verifier = ResId.ToString();
                 user.VerifiedBy = verifier;
+                string type = "Admin";
                 if(user.RoleId > 2)
                 {
                     user.AdminRef = verifier;
+                    type = "Employee";
                 }
                 var res = await _admins.SaveUsers(user);
 
@@ -110,7 +135,7 @@ namespace WMS_Application.Controllers
                 {
                     if (((dynamic)res).success)
                     {
-                        string subject = "Admin account has been updated by the SuperAdmin";
+                        string subject = $"{type} account has been updated";
                         string body = $"Hello there {user.FirstName}, your account has been successfully update by the SuperAdmin and you can access your account now, some information has been update and your username and email has been mailed regardless of any changes, you can now login under the given credentials. UserName : {user.Username}, Email : {user.Email}, Password : you old same pass. But keep in mind, this is a sensitive information, so plz don't share it with anyone else. Thank you";
                         _emailSender.SendEmailAsync(user.Email, subject, body);
                     }
@@ -119,8 +144,8 @@ namespace WMS_Application.Controllers
                 {
                     if (((dynamic)res).success)
                     {
-                        string subject = "Admin account has been created by the SuperAdmin";
-                        string body = $"Hello there {firstname}, welcome to our WMS Application, you account has been successfully created and you can access your account under the given credentials. UserName : {username}, Email : {email}, Password : {password} and after login, you can fill out your extra informations. But keep in mind, this is a sensitive information, so plz don't share it with anyone else. Thank you";
+                        string subject = $"{type} account has been created";
+                        string body = $"Hello there {user.FirstName}, welcome to our WMS Application, you account has been successfully created and you can access your account under the given credentials. UserName : {user.Username}, Email : {user.Email}, Password : {password} and after login, you can fill out your extra informations. But keep in mind, this is a sensitive information, so plz don't share it with anyone else. Thank you";
                         _emailSender.SendEmailAsync(user.Email, subject, body);
                     }
                 }

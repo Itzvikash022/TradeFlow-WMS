@@ -18,11 +18,13 @@ public partial class TblProduct
 
     public DateTime? CreateAt { get; set; }
 
-    public DateOnly? LastUpdateDate { get; set; }
+    public DateTime? LastUpdateDate { get; set; }
 
     public string? Manufacturer { get; set; }
 
     public string? ProductImagePath { get; set; }
+    [NotMapped]
+    public IFormFile? ProductImage { get; set; }
 
     public virtual ICollection<TblOrderDetail> TblOrderDetails { get; set; } = new List<TblOrderDetail>();
 
@@ -30,4 +32,6 @@ public partial class TblProduct
 
     [NotMapped]
     public string CompanyName { get; set; }
+    [NotMapped]
+    public int ProductQty { get; set; }
 }

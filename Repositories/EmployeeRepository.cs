@@ -11,11 +11,11 @@ namespace WMS_Application.Repositories
             _context = context;
         }
 
-        public async Task<List<TblUser>> GetAllEmployees()
+        public async Task<List<TblUser>> GetAllEmployees(string id)
         {
             var employees = from employee in _context.TblUsers
                             join role in _context.TblRoles on employee.RoleId equals role.RoleId
-                            where employee.RoleId != 1 && employee.RoleId != 2
+                            where employee.RoleId != 1 && employee.RoleId != 2 && employee.AdminRef == id
                             select new TblUser
                             {
                                 UserId = employee.UserId,

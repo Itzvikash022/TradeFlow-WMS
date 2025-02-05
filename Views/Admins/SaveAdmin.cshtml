@@ -58,6 +58,7 @@
                                     </div>
                                 </div>
                             }
+                            
                             <div class="col-lg-3 col-sm-6 col-12">
                                 <div class="form-group">
                                     <label>Phone</label>
@@ -67,7 +68,7 @@
                             <div class="col-lg-3 col-sm-6 col-12">
                                 <div class="form-group">
                                     <label>Email</label>
-                                    <input type="text" asp-for="Email">
+                                    <input type="text" asp-for="Email" readonly="@(Model.UserId != 0)" />
                                 </div>
                             </div>
                             @* <div class="col-lg-3 col-sm-6 col-12"> *@

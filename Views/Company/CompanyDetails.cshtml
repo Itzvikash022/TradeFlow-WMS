@@ -1,0 +1,79 @@
+﻿@model WMS_Application.Models.TblCompany;
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Company Details</h4>
+                <h6>Full details of a company</h6>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="productdetails">
+                            <ul class="product-bar">
+                                <li>
+                                    <h4>Company Name</h4>
+                                    <h6>@Model.CompanyName</h6>
+                                </li>
+                                <li>
+                                    <h4>Contact Person</h4>
+                                    <h6>@Model.ContactPerson</h6>
+                                </li>
+                                <li>
+                                    <h4>Phone Number</h4>
+                                    <h6>@Model.PhoneNumber</h6>
+                                </li>
+                                <li>
+                                    <h4>Email</h4>
+                                    <h6>@Model.Email</h6>
+                                </li>
+                                <li>
+                                    <h4>State</h4>
+                                    <h6>@Model.State</h6>
+                                </li>
+                                <li>
+                                    <h4>City</h4>
+                                    <h6>@Model.City</h6>
+                                </li>
+                                <li>
+                                    <h4>Pincode</h4>
+                                    <h6>@Model.Pincode</h6>
+                                </li>
+                                <li>
+                                    <h4>Address</h4>
+                                    <h6>@Model.Location</h6>
+                                </li>
+                                <li>
+                                    <h4>GST</h4>
+                                    <h6>@Model.Gst</h6>
+                                </li>
+                                <li>
+                                    <h4>Added On</h4>
+                                    <h6>@Model.CreatedAt</h6>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="slider-product-details">
+                                <div class="slider-product">
+                                    <img src="@Model.CompanyLogo" alt="img">
+                                </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+

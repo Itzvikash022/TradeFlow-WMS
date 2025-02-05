@@ -1,4 +1,7 @@
-﻿<div class="page-wrapper">
+﻿@using Microsoft.Extensions.Primitives
+@model IEnumerable<WMS_Application.Models.TblProduct>;
+
+<div class="page-wrapper">
     <div class="content">
         <div class="page-header">
             <div class="page-title">
@@ -6,8 +9,23 @@
                 <h6>Manage your Products</h6>
             </div>
             <div class="page-btn">
-                <a href="createexpense.html" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New product</a>
+                @if (Context.Request.Query["companyId"] != StringValues.Empty)
+                {
+                    <!-- If companyId exists in the URL -->
+                    <a href="/Company/AddProducts" class="btn btn-added">
+                        <img src="~/assets/img/icons/plus.svg" class="me-2" alt="img">Add New product for Company
+                    </a>
+                }
+                else
+                {
+                    <!-- If no companyId exists -->
+                    <a href="/Product/AddProduct" class="btn btn-added">
+                        <img src="~/assets/img/icons/plus.svg" class="me-2" alt="img">Add New Shop product
+                    </a>
+                }
             </div>
+
+
         </div>
 
         <div class="card">
@@ -16,26 +34,26 @@
                     <div class="search-set">
                         <div class="search-path">
                             <a class="btn btn-filter" id="filter_search">
-                                <img src="assets/img/icons/filter.svg" alt="img">
-                                <span><img src="assets/img/icons/closes.svg" alt="img"></span>
+                                <img src="~/assets/img/icons/filter.svg" alt="img">
+                                <span><img src="~/assets/img/icons/closes.svg" alt="img"></span>
                             </a>
                         </div>
                         <div class="search-input">
                             <a class="btn btn-searchset">
-                                <img src="assets/img/icons/search-white.svg" alt="img">
+                                <img src="~/assets/img/icons/search-white.svg" alt="img">
                             </a>
                         </div>
                     </div>
                     <div class="wordset">
                         <ul>
                             <li>
-                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img src="assets/img/icons/pdf.svg" alt="img"></a>
+                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img src="~/assets/img/icons/pdf.svg" alt="img"></a>
                             </li>
                             <li>
-                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img src="assets/img/icons/excel.svg" alt="img"></a>
+                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img src="~/assets/img/icons/excel.svg" alt="img"></a>
                             </li>
                             <li>
-                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img src="assets/img/icons/printer.svg" alt="img"></a>
+                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img src="~/assets/img/icons/printer.svg" alt="img"></a>
                             </li>
                         </ul>
                     </div>
@@ -49,7 +67,7 @@
                                     <div class="input-groupicon">
                                         <input type="text" class="datetimepicker cal-icon" placeholder="Choose Date">
                                         <div class="addonset">
-                                            <img src="assets/img/icons/calendars.svg" alt="img">
+                                            <img src="~/assets/img/icons/calendars.svg" alt="img">
                                         </div>
                                     </div>
                                 </div>
@@ -78,7 +96,7 @@
                             </div>
                             <div class="col-lg-1 col-sm-6 col-12 ms-auto">
                                 <div class="form-group">
-                                    <a class="btn btn-filters ms-auto"><img src="assets/img/icons/search-whites.svg" alt="img"></a>
+                                    <a class="btn btn-filters ms-auto"><img src="~/assets/img/icons/search-whites.svg" alt="img"></a>
                                 </div>
                             </div>
                         </div>
@@ -89,12 +107,14 @@
                     <table class="table datanew">
                         <thead>
                             <tr>
-                                <th>Category </th>
-                                <th>Brand</th>
-                                <th>price</th>
-                                <th>Unit</th>
-                                <th>Qty</th>
-                                <th>Created By</th>
+                                <th>Product</th>
+                                <th>Product Name</th>
+                                <th>Category</th>
+                                <th>Company Name</th>
+                                <th>Price Per Unit</th>
+                                <th>Manufacturer</th>
+                                <th>Qty In Shop</th>
+                                <th>Buy Now</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -110,6 +130,10 @@
                                     <td>@product.CompanyName</td>
                                     <td>@product.PricePerUnit</td>
                                     <td>@product.Manufacturer</td>
+                                    <td>
+                                        @(product.ProductQty > 0 ? product.ProductQty.ToString() : "None")
+                                    </td>
+                                    <td><a href="#"><span class="badges bg-lightgreen">Buy Now</span></a></td>
                                     <td>
                                         <a class="me-3" href="@Url.Action("Details", "Product", new { id =  product.ProductId})">
                                             <img src="~/assets/img/icons/eye.svg" alt="img">

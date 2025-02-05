@@ -1,4 +1,6 @@
-﻿<div class="page-wrapper">
+﻿<link rel="stylesheet" href="~/css/DeleteModal.css" />
+
+<div class="page-wrapper">
     <div class="content">
         <div class="page-header">
             <div class="page-title">
@@ -119,23 +121,40 @@
                                     <td>@employee.CreatedAt</td>
                                     <td>@employee.Designation</td>
                                     <td>
-                                        @* <a class="me-3" href="@Url.Action("Details", "Employee", new { id =  employee.UserId})"> *@
-                                        @*     <img src="~/assets/img/icons/eye.svg" alt="img"> *@
+
+                                        @* <a href="@Url.Action("Details", "Employee", new { id =  employee.UserId})"> *@
+                                        @*     <button class="me-3 btn"> *@
+                                        @*         <img src="~/assets/img/icons/eye.svg" alt="img"> *@
+                                        @*     </button> *@
                                         @* </a> *@
-                                        <a class="me-3" href="@Url.Action("SaveAdmin", "Admins", new { id = employee.UserId, from = "employee" })">
-                                            <img src="~/assets/img/icons/edit.svg" alt="img">
+                                        <a href="@Url.Action("SaveAdmin", "Admins", new { id = employee.UserId, from = "employee" })">
+                                            <button class="me-3 btn">
+                                                <img src="~/assets/img/icons/edit.svg" alt="img">
+                                            </button>
                                         </a>
-                                        <a class="me-3" href="~/Employee/Edit">
-                                            <img src="~/assets/img/icons/edit.svg" alt="img">
-                                        </a>
-                                        <a class="me-3 confirm-text" href="~/Employee/Delete">
-                                            <img src="~/assets/img/icons/delete.svg" alt="img">
-                                        </a>
+                                            <button class="me-3 btn delete-btn" data-id="@employee.UserId">
+                                                <img src="~/assets/img/icons/delete.svg" alt="img">
+                                            </button>
                                     </td>
                                 </tr>
                             }
                         </tbody>
                     </table>
+                    <!-- Modal Structure -->
+                    <div id="deleteModal" class="modal" style="display:none;">
+                        <div class="modal-content">
+                            <h2>Are you sure?</h2>
+                            <p>You won't be able to revert this!</p>
+                            <button id="confirmDeleteBtn" class="btn btn-danger">Yes, delete it!</button>
+                            <button id="cancelDeleteBtn" class="btn btn-secondary">No</button>
+                        </div>
+                    </div>
+
+                    <!-- Hidden form for delete action -->
+                    <form id="deleteForm" action="/Employee/DeleteEmployee" method="post" style="display:none;">
+                        <input type="hidden" name="id" id="adminIdToDelete">
+                    </form>
+
                 </div>
             </div>
         </div>
@@ -143,5 +162,10 @@
     </div>
 </div>
 @section Scripts {
-
+    <script src="/js/Delete.js"></script>
+    <script>
+        $(document).ready(function () {
+             initializeDeleteButtons('@Url.Action("DeleteEmployee", "Employee")');
+        });
+    </script>
 }

@@ -1,11 +1,10 @@
-﻿<link rel="stylesheet" href="~/css/DeleteModal.css" />
-
+﻿
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
             <div class="page-title">
-                <h4>Company List</h4>
-                <h6>Manage your Companies</h6>
+                <h4>company LIST </h4>
+                <h6>Manage your Employees</h6>
             </div>
             <div class="page-btn">
                 @* <a href="/company/SaveEmployee" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New company</a> *@
@@ -119,40 +118,22 @@
                                     <td>@company.Email</td>
                                     <td>@company.PhoneNumber</td>
                                     <td>@company.Location</td>
-                                    <td><a href="/Products?companyId=@company.CompanyId"><span class="badges bg-lightgreen">Get Products</span></a></td>
+                                    <td>@company.LastOrderDate</td>
                                     <td>
-                                        <a href="@Url.Action("CompanyDetails", "Company", new { id =  company.CompanyId})">
-                                            <button class="me-3 btn">
-                                                <img src="~/assets/img/icons/eye.svg" alt="img">
-                                            </button>
+                                        <a class="me-3" href="@Url.Action("Details", "company", new { id =  company.UserId})">
+                                            <img src="~/assets/img/icons/eye.svg" alt="img">
                                         </a>
-                                        <a href="@Url.Action("SaveCompany", "Company", new { id = company.CompanyId})">
-                                            <button class="me-3 btn">
-                                                <img src="~/assets/img/icons/edit.svg" alt="img">
-                                            </button>
+                                        <a class="me-3" href="@Url.Action("SaveAdmin", "Admins", new { id = company.CompanyId, from = "company" })">
+                                            <img src="~/assets/img/icons/edit.svg" alt="img">
                                         </a>
-                                        <button class="me-3 btn delete-btn" data-id="@company.CompanyId">
+                                        <a class="me-3 confirm-text" href="~/company/Delete">
                                             <img src="~/assets/img/icons/delete.svg" alt="img">
-                                        </button>
+                                        </a>
                                     </td>
                                 </tr>
                             }
                         </tbody>
                     </table>
-                    <!-- Modal Structure -->
-                    <div id="deleteModal" class="modal" style="display:none;">
-                        <div class="modal-content">
-                            <h2>Are you sure?</h2>
-                            <p>You won't be able to revert this!</p>
-                            <button id="confirmDeleteBtn" class="btn btn-danger">Yes, delete it!</button>
-                            <button id="cancelDeleteBtn" class="btn btn-secondary">No</button>
-                        </div>
-                    </div>
-
-                    <!-- Hidden form for delete action -->
-                    <form id="deleteForm" action="/Company/DeleteCompany" method="post" style="display:none;">
-                        <input type="hidden" name="id" id="adminIdToDelete">
-                    </form>
                 </div>
             </div>
         </div>
@@ -160,10 +141,5 @@
     </div>
 </div>
 @section Scripts {
-    <script src="~/js/Delete.js"></script>
-    <script>
-        $(document).ready(function () {
-             initializeDeleteButtons('@Url.Action("DeleteCompany", "Company")');
-        });
-    </script>
+
 }

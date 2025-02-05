@@ -98,7 +98,6 @@ namespace WMS_Application.Repositories
                 {
                     UpdatedUser.ProfileImgPath = imgPath;
                 }
-                UpdatedUser.Email = user.Email;
             }
             if (user.PasswordHash != null)
             {
@@ -108,19 +107,24 @@ namespace WMS_Application.Repositories
             user.ProfileImgPath = imgPath;
             user.VerificationStatus = "Approved";
             string msg = "";
+            string type = "Admins";
+            if(user.RoleId > 2)
+            {
+                type = "Employees";
+            }
             if (user.UserId > 0)
             {
-                _context.Update(UpdatedUser);
-                msg = "Admin data has been updated successfully";
+                _context.TblUsers.Update(UpdatedUser);
+                msg = $"{type} data has been updated successfully";
             }
             else
             {
-                _context.AddAsync(user);
-                msg = "New admin has been added successfully";
+                _context.TblUsers.AddAsync(user);
+                msg = $"New {type} has been added successfully";
             }
             await _context.SaveChangesAsync();
 
-            return new { success = true, message = msg };
+            return new { success = true, message = msg, role = type };
         }
     }
 }

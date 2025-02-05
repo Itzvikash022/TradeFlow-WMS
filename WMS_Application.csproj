@@ -19,6 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="wwwroot\CompanyUploads\" />
+    <Folder Include="wwwroot\ProductUploads\" />
     <Folder Include="wwwroot\ShopUploads\Documents\LicenseDoc\" />
     <Folder Include="wwwroot\ShopUploads\Documents\AddressDoc\" />
     <Folder Include="wwwroot\ShopUploads\Documents\IdentityDoc\" />

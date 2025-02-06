@@ -1,0 +1,146 @@
+﻿<link href="~/css/CreateOrder.css" rel="stylesheet" />
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>New Order</h4>
+                <h6>Create new Order</h6>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Product Name</label>
+                            <input type="text">
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Company</label>
+                            <select class="select">
+                                <option>Choose Company</option>
+                                <option>Computers</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Category</label>
+                            <select class="select">
+                                <option>Choose Category</option>
+                                <option>Computers</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-12">
+                        <button id="btnSubmit" class="btn btn-submit me-2">
+                            <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                            Submit
+                        </button>
+                        <button href="productlist.html" class="btn btn-cancel">
+                            <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                            Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+        <div class="row">
+            <div class="col-lg-8 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-top">
+                            <div class="search-set">
+                                <div class="search-path">
+                                </div>
+                                <div class="search-input">
+                                    <a class="btn btn-searchset">
+                                        <img src="~/assets/img/icons/search-white.svg" alt="img" />
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+                        <div class="table-responsive">
+                            <table class="table datanew">
+                                <thead>
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Company</th>
+                                        <th>Category</th>
+                                        <th>Price</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="productimgname">
+                                            <a href="javascript:void(0);" class="product-img">
+                                                <img src="~/assets/img/product/product1.jpg"
+                                                     alt="product" />
+                                            </a>
+                                            <a href="javascript:void(0);">Macbook pro</a>
+                                        </td>
+                                        <td>PT001</td>
+                                        <td>Computers</td>
+                                        <td>50</td>
+                                        <td class="product-qty">
+                                            <div class="qty-container">
+                                                <input type="number" class="form-control small-input" />
+                                                <img src="~/assets/img/icons/plus-circle.svg" alt="img" class="plus-icon" onclick="addToCart(this)" />
+                                            </div>
+                                        </td>
+
+
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-sm-12">
+                <div class="card" style="max-height: 400px; overflow-y: auto;">
+                    <div class="card-body">
+                        <h5>Selected Products</h5>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product Name</th>
+                                    <th>Qty</th>
+                                    <th>Total Price</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="selected-products">
+                                <!-- Selected products will be appended here -->
+                            </tbody>
+                        </table>
+                        <hr>
+                        <p><strong>Total Products:</strong> <span id="total-products">0</span></p>
+                        <p><strong>Total Quantity:</strong> <span id="total-qty">0</span></p>
+                        <p><strong>Total Bill:</strong> $<span id="total-bill">0.00</span></p>
+                    </div>
+                </div>
+                <form id="order-form" action="order-summary.php" method="POST">
+                    <input type="hidden" name="orderData" id="order-data">
+                    <button type="submit" class="btn btn-submit mt-2">Submit Order</button>
+                </form>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/CreateOrder.js"></script>
+}

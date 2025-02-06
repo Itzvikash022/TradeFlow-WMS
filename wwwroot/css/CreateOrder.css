@@ -1,0 +1,37 @@
+﻿.qty-container {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Adjust spacing between input and icon */
+}
+
+.small-input {
+    width: 60px; /* Adjust input box width */
+    padding: 4px;
+    text-align: center;
+}
+
+.plus-icon {
+    width: 24px; /* Make the plus icon bigger */
+    height: 24px;
+    cursor: pointer;
+}
+
+.scrollable-card {
+    max-height: 300px; /* Adjust height as needed */
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    padding: 10px;
+}
+
+.selected-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px;
+    border-bottom: 1px solid #ccc;
+}
+
+.remove-item {
+    cursor: pointer;
+    color: red;
+}
+

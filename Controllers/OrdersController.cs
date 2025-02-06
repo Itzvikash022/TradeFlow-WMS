@@ -15,5 +15,10 @@ namespace WMS_Application.Controllers
         {
             return View(await _orders.GetAllOrders());
         }
+
+        public IActionResult CreateOrder()
+        {
+            return View();
+        }
     }
 }

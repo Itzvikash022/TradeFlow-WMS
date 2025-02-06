@@ -10,7 +10,7 @@ public partial class TblCompany
 
     public string CompanyName { get; set; } = null!;
 
-    public int? ReputationScore { get; set; }
+    public int? AddedBy { get; set; }
 
     public string? ContactPerson { get; set; }
 
@@ -20,7 +20,7 @@ public partial class TblCompany
 
     public string? Email { get; set; }
 
-    public string? Location { get; set; }
+    public string? Address { get; set; }
 
     public string? CompanyLogo { get; set; }
     [NotMapped]

@@ -25,7 +25,6 @@ function initializeDeleteButtons(deleteApiUrl) {
                         Swal.fire("Deleted!", response.message, "success");
                         $("#deleteModal").fadeOut();  // Hide the modal after deletion
                         adminIdToDelete = null;  // Reset admin ID
-                        // Optionally, you could remove the row from the table here if necessary
                         //window.location.reload(); // Reload the page after successful update
 
                     } else {

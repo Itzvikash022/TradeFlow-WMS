@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.IO;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
@@ -12,9 +13,9 @@ namespace WMS_Application.Repositories
         {
             _context = context;
         }
-        public async Task<List<TblCompany>> GetAllCompanies()
+        public List<TblCompany> GetAllCompanies(int id)
         {
-            var comp = _context.TblCompanies.ToList();
+            var comp = _context.TblCompanies.Where(x => x.AddedBy == id).ToList();
             return comp;
         }
 
@@ -45,6 +46,7 @@ namespace WMS_Application.Repositories
                     company.LogoFile.CopyTo(stream);
                 }
 
+
                 imgPath = "\\CompanyUploads\\" + uniqueFileName;
             }
             if (company.CompanyId > 0)
@@ -57,7 +59,7 @@ namespace WMS_Application.Repositories
                 UpdatedCompany.State = company.State;
                 UpdatedCompany.City = company.City;
                 UpdatedCompany.Pincode = company.Pincode;
-                UpdatedCompany.Location = company.Location;
+                UpdatedCompany.Address = company.Address;
                 if (company.LogoFile!= null)
                 {
                     UpdatedCompany.CompanyLogo= imgPath;

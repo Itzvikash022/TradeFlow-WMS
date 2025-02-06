@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace WMS_Application.Controllers
 {
@@ -17,7 +18,8 @@ namespace WMS_Application.Controllers
         [Route("Company")]
         public async Task<IActionResult> Index()
         {
-            return View(await _company.GetAllCompanies());
+            int id = (int)HttpContext.Session.GetInt32("UserId");
+            return View(_company.GetAllCompanies(id));
         }
 
         public async Task<IActionResult> Products()
@@ -39,13 +41,17 @@ namespace WMS_Application.Controllers
         [HttpPost]
         public async Task<IActionResult> SaveCompany(TblCompany model)
         {
+            int id = (int)HttpContext.Session.GetInt32("UserId");
+            model.AddedBy = id;
             return Ok(await _company.SaveCompany(model));
         }
 
         [HttpGet]
         public async Task<IActionResult> AddProducts(int? id)
         {
-            ViewBag.company = await _context.TblCompanies.ToListAsync();
+            int UserId = (int)HttpContext.Session.GetInt32("UserId");
+            ViewBag.company = _company.GetAllCompanies(UserId);
+            ViewBag.company = await _context.TblCompanies.Where(x => x.AddedBy == UserId).ToListAsync();
             TblProduct model = new TblProduct();
             if(id > 0)
             {
@@ -67,7 +73,7 @@ namespace WMS_Application.Controllers
             return View(company);
         }
 
-        [HttpGet]
+        [HttpPost]
         public async Task<IActionResult> DeleteCompany(int id)
         {
             if (id == 0)  // Handle the case if the ID is invalid
@@ -88,8 +94,8 @@ namespace WMS_Application.Controllers
             catch (Exception ex)
             {
                 // Handle any exceptions during the deletion
-                Console.WriteLine("Error deleting admin: " + ex.Message);
-                return Json(new { success = false, message = "Error deleting admin." });
+                Console.WriteLine("Error deleting company: " + ex.Message);
+                return Json(new { success = false, message = "Error deleting company." });
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿<link rel="stylesheet" href="~/css/DeleteModal.css" />
+@model IEnumerable<WMS_Application.Models.TblCompany>
 
 <div class="page-wrapper">
     <div class="content">
@@ -118,7 +119,7 @@
                                     <td>@company.ContactPerson</td>
                                     <td>@company.Email</td>
                                     <td>@company.PhoneNumber</td>
-                                    <td>@company.Location</td>
+                                    <td>@company.Address</td>
                                     <td><a href="/Products?companyId=@company.CompanyId"><span class="badges bg-lightgreen">Get Products</span></a></td>
                                     <td>
                                         <a href="@Url.Action("CompanyDetails", "Company", new { id =  company.CompanyId})">

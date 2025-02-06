@@ -175,7 +175,7 @@
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while registering the user.');
+                        alert('An error occurred while registering the company.');
                     }
                 });
             }, 2000);

@@ -101,8 +101,6 @@ public partial class dbMain : DbContext
 
             entity.ToTable("tblCompanies");
 
-            entity.HasIndex(e => e.CompanyName, "UQ__Companie__9BCE05DC3980D1EE").IsUnique();
-
             entity.Property(e => e.CompanyId).HasColumnName("CompanyID");
             entity.Property(e => e.CompanyLogo).IsUnicode(false);
             entity.Property(e => e.CompanyName)
@@ -121,8 +119,7 @@ public partial class dbMain : DbContext
                 .IsUnicode(false)
                 .HasColumnName("GST");
             entity.Property(e => e.LastOrderDate).HasColumnType("datetime");
-            entity.Property(e => e.Location)
-                .HasMaxLength(30)
+            entity.Property(e => e.Address)
                 .IsUnicode(false);
             entity.Property(e => e.City)
     .HasMaxLength(30)
@@ -130,7 +127,7 @@ public partial class dbMain : DbContext
             entity.Property(e => e.State)
     .HasMaxLength(30)
     .IsUnicode(false);
-            entity.Property(e => e.ReputationScore).HasDefaultValue(100);
+            entity.Property(e => e.AddedBy).HasDefaultValue(100);
         });
 
         modelBuilder.Entity<TblOrder>(entity =>

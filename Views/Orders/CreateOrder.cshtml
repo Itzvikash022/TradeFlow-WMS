@@ -180,6 +180,7 @@
             <div class="col-lg-8 col-sm-12">
                 <div class="card">
                     <div class="card-body">
+
                         <h5>Product List</h5>
                         <div class="table-responsive">
                             <table class="table datanew" id="productTable">
@@ -226,7 +227,7 @@
 
                 <!-- Hidden Inputs for Order Details -->
                 @* <input type="hidden" id="companyId" value="123">  <!-- Replace with actual Company ID --> *@
-                <input type="hidden" id="shopId" value="1019">     <!-- Replace with logged-in Shop ID -->
+                <input type="hidden" id="shopId" value="@Context.Session.GetInt32("UserShopId")">     <!-- Replace with logged-in Shop ID -->
                 <!-- Submit Order (Handled via AJAX) -->
                 <button type="button" id="placeOrderBtn" class="btn btn-submit mt-2">Submit Order</button>
             </div>

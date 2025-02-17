@@ -5,7 +5,7 @@ namespace WMS_Application.Repositories.Interfaces
 {
     public interface IOrdersRepository
     {
-        Task<List<TblOrder>> GetAllOrders();
+        Task<List<TblOrder>> GetAllOrders(int loggedInShopId);
         List<ProductS2SBuyDto> GetProductsC2S(string? productName, string? category, string? company);
         List<ProductS2SBuyDto> GetProductsS2SBuy(string? productName, string? category, int? shop, int userId);
         List<TblShop> GetShopDetails(int currentAdminId);

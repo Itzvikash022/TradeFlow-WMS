@@ -24,17 +24,36 @@ namespace WMS_Application.Controllers
         [Route("Orders")]
         public async Task<IActionResult> Index()
         {
-            return View(await _orders.GetAllOrders());
+            int adminId = (int)HttpContext.Session.GetInt32("UserId");
+            var ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
+            HttpContext.Session.SetInt32("UserShopId", ShopData.ShopId);
+
+            var orders = await _orders.GetAllOrders(ShopData.ShopId);
+
+            foreach(var order in orders)
+            {
+                if(order.SellerId == ShopData.ShopId)
+                {
+                    order.OrderType = "Sale";
+                }
+                else
+                {
+                    order.OrderType = "Purchase";
+                }
+            }
+            return View(orders);
         }
 
         public IActionResult CreateOrder()
         {
+            int adminId = (int)HttpContext.Session.GetInt32("UserId");
+            var ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
+            HttpContext.Session.SetInt32("UserShopId", ShopData.ShopId);
             int currentAdminId = (int)HttpContext.Session.GetInt32("UserId");
             var shops = _orders.GetShopDetails(currentAdminId);
             ViewBag.ShopData = shops;
             return View();
         }
-
         public IActionResult GetFilteredProducts(string? productName, string? category, string? company)
         {
             var result = _orders.GetProductsC2S(productName, category, company);
@@ -112,9 +131,8 @@ namespace WMS_Application.Controllers
             }
 
             //Fetching product
-            int adminId = (int)HttpContext.Session.GetInt32("UserId");
-            var ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
-            var result = _orders.GetAllProducts(0, ShopData.ShopId);
+            int shopId = (int)HttpContext.Session.GetInt32("UserShopId");
+            var result = _orders.GetAllProducts(0, shopId);
             if(result == null)
             {
                 return Ok(new { text = "No products available." });
@@ -218,6 +236,62 @@ namespace WMS_Application.Controllers
                 return StatusCode(500, "Error placing order: " + ex.Message);
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> UpdateOrderStatus([FromBody] UpdateOrderStatusRequestDto request)
+        {
+           if (string.IsNullOrEmpty(request.NewStatus))
+    {
+        return Json(new { success = false, message = "Invalid status." });
+    }
+
+
+            try
+            {
+                // Fetch the order using the orderId
+                var order = await _context.TblOrders.Include(o => o.TblOrderDetails)
+                                                   .FirstOrDefaultAsync(o => o.OrderId == request.OrderId);
+
+                if (order == null)
+                {
+                    return Json(new { success = false, message = "Order not found." });
+                }
+
+                // Update the order status
+                order.OrderStatus = request.NewStatus;
+
+                // Only update stock if the status is "Success"
+                if (request.NewStatus == "Success")
+                {
+                    // Fetch product details for stock updates
+                    var orderDetails = order.TblOrderDetails;
+
+                    // Loop through products in order and update stock
+                    foreach (var orderDetail in orderDetails)
+                    {
+                        var product = new ProductDto
+                        {
+                            ProductID = (int) orderDetail.ProductId,
+                            qty = orderDetail.Quantity,
+                            PricePerUnit = orderDetail.PricePerUnit
+                        };
+
+                        // Reuse UpdateStockAsync to update seller and buyer stock
+                        await _orders.UpdateStockAsync(order.OrderType, new List<ProductDto> { product }, (int)order.SellerId, (int)order.BuyerId);
+                    }
+                }
+
+                // Save the updated order status to the database
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "Order status updated successfully." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred: " + ex.Message });
+            }
+        }
+
+
 
     }
 }

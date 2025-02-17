@@ -26,8 +26,8 @@ public partial class TblOrder
     [NotMapped]
     public string? SellerName { get; set; }
     [NotMapped]
-
     public string? BuyerName { get; set; }
-
+    [NotMapped]
+    public bool CanEditStatus { get; set; }
     public virtual ICollection<TblOrderDetail> TblOrderDetails { get; set; } = new List<TblOrderDetail>();
 }

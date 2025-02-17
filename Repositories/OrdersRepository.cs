@@ -14,7 +14,7 @@ namespace WMS_Application.Repositories
             _context = context;
         }
 
-        public async Task<List<TblOrder>> GetAllOrders()
+        public async Task<List<TblOrder>> GetAllOrders(int loggedInShopId)
         {
             var orders = await (from o in _context.TblOrders
 
@@ -34,12 +34,15 @@ namespace WMS_Application.Repositories
                                 join cust in _context.TblCustomers on o.BuyerId equals cust.CustomerId into custJoin
                                 from cust in custJoin.DefaultIfEmpty()
 
+                                where o.SellerId == loggedInShopId || o.BuyerId == loggedInShopId
+
                                 select new TblOrder
                                 {
                                     OrderId = o.OrderId,
                                     OrderDate = o.OrderDate,
                                     OrderType = o.OrderType,
-
+                                    SellerId = o.SellerId,
+                                    BuyerId = o.BuyerId,
                                     // **✅ Fix: Correctly fetching Seller Name**
                                     SellerName = o.OrderType == "ShopToShopBuy" || o.OrderType == "ShopToShopSell" ? sShop.ShopName :
                                                  o.OrderType == "CompanyToShop" ? comp.CompanyName :
@@ -55,6 +58,7 @@ namespace WMS_Application.Repositories
                                     TotalAmount = o.TotalAmount,
                                     Remarks = o.Remarks,
                                     OrderStatus = o.OrderStatus,
+                                    CanEditStatus = o.SellerId == loggedInShopId,
                                     TotalQty = o.TotalQty
                                 })
                      .OrderByDescending(o => o.OrderDate).AsNoTracking()
@@ -287,9 +291,11 @@ namespace WMS_Application.Repositories
             _context.TblOrderDetails.AddRange(orderDetails);
             await _context.SaveChangesAsync();
 
-            // Update stock based on order type
-            await UpdateStockAsync(orderType, products, sellerId, buyerId);
-
+            if (orderType != "ShopToShopBuy")
+            {
+                // Update stock based on order type
+                await UpdateStockAsync(orderType, products, sellerId, buyerId);
+            }
             return orderId;
         }
 

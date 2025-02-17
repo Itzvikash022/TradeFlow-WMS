@@ -20,6 +20,7 @@ public partial class TblOrder
 
     public string OrderStatus { get; set; } = null!;
 
+    public int TotalQty { get; set; }
     public string? Remarks { get; set; }
 
     [NotMapped]

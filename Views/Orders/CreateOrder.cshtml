@@ -8,106 +8,200 @@
                 <h6>Create new Order</h6>
             </div>
         </div>
+        <!-- Order Type Selection -->
         <div class="card">
             <div class="card-body">
+                <div class="form-group">
+                    <label>Order Type</label>
+                    <select id="orderTypeSelect" class="select">
+                        <option value="companyToShop">Company to Shop</option>
+                        <option value="shopToCustomer">Shop to Customer</option>
+                        <option value="shopToShopBuy">Shop to Shop - Buying</option>
+                        <option value="shopToShopSell">Shop to Shop - Selling</option>
+                    </select>
+
+                </div>
+            </div>
+        </div>
+        <div class="card">
+
+        <!-- Shop to Shop Section -->
+        <div class="order-section" id="shopToShopBuy">
+            <div class="card-body">
+                <p>Shop to Shop - Buying</p>
                 <div class="row">
                     <div class="col-lg-4 col-sm-6 col-12">
                         <div class="form-group">
                             <label>Product Name</label>
-                            <input type="text">
+                            <input type="text" id="productNameShop">
                         </div>
                     </div>
                     <div class="col-lg-4 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Company</label>
-                            <select class="select">
-                                <option>Choose Company</option>
-                                <option>Computers</option>
+                            <label>Shop</label>
+                            <select class="select" id="shopDropdown">
+                                <option value="">Choose Shop</option>
+                                    <option value="1022">PreetBank</option>
+                                    <option value="1021">Maurya Electronics</option>
                             </select>
                         </div>
                     </div>
                     <div class="col-lg-4 col-sm-6 col-12">
                         <div class="form-group">
                             <label>Category</label>
-                            <select class="select">
-                                <option>Choose Category</option>
-                                <option>Computers</option>
+                                <select class="select" id="ctDropdown">
+                                    <option value="">Choose Category</option>
+                                    <option value="Computers">Computers</option>
+                                </select>
+                        </div>
+                    </div>
+                        <div class="col-lg-12">
+                            <button id="btnSubmitS2SBuying" class="btn btn-submit me-2">
+                                <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                                Submit
+                            </button>
+                        </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <div class="order-section" id="shopToShopSell">
+            <div class="card-body">
+                <p>Shop to Shop - Selling</p>
+                <div class="row">
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Shop</label>
+                                <select class="select" id="shopDropdownSell">
+                                <option value="">Choose Shop</option>
+                               @foreach (var shop in (List<TblShop>)ViewBag.ShopData)
+                               {
+                                    <option value="@shop.ShopId">@shop.ShopName</option>
+                               }
                             </select>
                         </div>
                     </div>
-
-                    <div class="col-lg-12">
-                        <button id="btnSubmit" class="btn btn-submit me-2">
-                            <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
-                            Submit
-                        </button>
-                        <button href="productlist.html" class="btn btn-cancel">
-                            <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
-                            Reset
-                        </button>
-                    </div>
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Owner Name</label>
+                                <input type="text" id="ownerName" readonly/>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Address</label>
+                                <input type="text" id="shopAddress" readonly>
+                            </div>
+                        </div>
                 </div>
             </div>
         </div>
 
+        <!-- Company to Shop Section -->
+        <div class="order-section" id="companyToShop">
+            <div class="card-body">
+                <p>Company to Shop</p>
+                <div class="row">
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Product Name</label>
+                                <input type="text" id="productName">
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Company</label>
+                                <select class="select" id="companyDropdown">
+                                <option value="">Choose Company</option>
+                                    <option value="Visitorz.io">Visitorz.io</option>
+                                    <option value="Vikash Corporation">Vikash Corporation</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Category</label>
+                                <select class="select" id="categoryDropdown">
+                                <option value="">Choose Category</option>
+                                    <option value="Computers">Computers</option>
+                            </select>
+                        </div>
+                    </div>
+                        <div class="col-lg-12">
+                            <button id="btnSubmitC2S" class="btn btn-submit me-2">
+                                <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                                Submit
+                            </button>
+                        </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shop to Customer Section -->
+        <div class="order-section" id="shopToCustomer">
+            <div class="card-body">
+                <p>Shop to Customer</p>
+                <div class="row">
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Customer Name</label>
+                                <input type="text" id="customerName">
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Customer Email</label>
+                                <input type="text" id="customerEmail">
+                        </div>
+                    </div>
+                        <input type="hidden" id="customerId">
+
+                    <div class="col-lg-4 col-sm-6 col-12">
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                                <input type="text" id="customerPhone">
+                        </div>
+                    </div>
+                        <div class="col-lg-12">
+                            <button id="btnSubmitS2C" class="btn btn-submit me-2">
+                                <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                                Submit
+                            </button>
+                        </div>
+                </div>
+            </div>
+        </div>
+        </div>
 
 
+        <!-- Product Table (Always Visible) -->
         <div class="row">
             <div class="col-lg-8 col-sm-12">
                 <div class="card">
                     <div class="card-body">
-                        <div class="table-top">
-                            <div class="search-set">
-                                <div class="search-path">
-                                </div>
-                                <div class="search-input">
-                                    <a class="btn btn-searchset">
-                                        <img src="~/assets/img/icons/search-white.svg" alt="img" />
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-
-
+                        <h5>Product List</h5>
                         <div class="table-responsive">
-                            <table class="table datanew">
+                            <table class="table datanew" id="productTable">
                                 <thead>
                                     <tr>
                                         <th>Product Name</th>
-                                        <th>Company</th>
+                                        <th>Primises</th>
                                         <th>Category</th>
                                         <th>Price</th>
+                                        <th>Avlb Qty</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td class="productimgname">
-                                            <a href="javascript:void(0);" class="product-img">
-                                                <img src="~/assets/img/product/product1.jpg"
-                                                     alt="product" />
-                                            </a>
-                                            <a href="javascript:void(0);">Macbook pro</a>
-                                        </td>
-                                        <td>PT001</td>
-                                        <td>Computers</td>
-                                        <td>50</td>
-                                        <td class="product-qty">
-                                            <div class="qty-container">
-                                                <input type="number" class="form-control small-input" />
-                                                <img src="~/assets/img/icons/plus-circle.svg" alt="img" class="plus-icon" onclick="addToCart(this)" />
-                                            </div>
-                                        </td>
-
-
-                                    </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <!-- Order Summary -->
             <div class="col-lg-4 col-sm-12">
                 <div class="card" style="max-height: 400px; overflow-y: auto;">
                     <div class="card-body">
@@ -121,9 +215,7 @@
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="selected-products">
-                                <!-- Selected products will be appended here -->
-                            </tbody>
+                            <tbody id="selected-products"></tbody>
                         </table>
                         <hr>
                         <p><strong>Total Products:</strong> <span id="total-products">0</span></p>
@@ -131,16 +223,19 @@
                         <p><strong>Total Bill:</strong> $<span id="total-bill">0.00</span></p>
                     </div>
                 </div>
-                <form id="order-form" action="order-summary.php" method="POST">
-                    <input type="hidden" name="orderData" id="order-data">
-                    <button type="submit" class="btn btn-submit mt-2">Submit Order</button>
-                </form>
+
+                <!-- Hidden Inputs for Order Details -->
+                @* <input type="hidden" id="companyId" value="123">  <!-- Replace with actual Company ID --> *@
+                <input type="hidden" id="shopId" value="1019">     <!-- Replace with logged-in Shop ID -->
+                <!-- Submit Order (Handled via AJAX) -->
+                <button type="button" id="placeOrderBtn" class="btn btn-submit mt-2">Submit Order</button>
             </div>
 
-        </div>
 
+        </div>
     </div>
 </div>
+
 @section Scripts {
     <script src="~/js/CreateOrder.js"></script>
 }

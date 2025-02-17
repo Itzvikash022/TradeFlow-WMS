@@ -32,6 +32,5 @@ public partial class TblProduct
 
     [NotMapped]
     public string CompanyName { get; set; }
-    [NotMapped]
     public int ProductQty { get; set; }
 }

@@ -21,6 +21,8 @@ public partial class dbMain : DbContext
 
     public virtual DbSet<TblCompany> TblCompanies { get; set; }
 
+    public virtual DbSet<TblCustomer> TblCustomers { get; set; }
+
     public virtual DbSet<TblOrder> TblOrders { get; set; }
 
     public virtual DbSet<TblOrderDetail> TblOrderDetails { get; set; }
@@ -102,6 +104,11 @@ public partial class dbMain : DbContext
             entity.ToTable("tblCompanies");
 
             entity.Property(e => e.CompanyId).HasColumnName("CompanyID");
+            entity.Property(e => e.AddedBy).HasDefaultValue(100);
+            entity.Property(e => e.Address).IsUnicode(false);
+            entity.Property(e => e.City)
+                .HasMaxLength(30)
+                .IsUnicode(false);
             entity.Property(e => e.CompanyLogo).IsUnicode(false);
             entity.Property(e => e.CompanyName)
                 .HasMaxLength(30)
@@ -119,15 +126,27 @@ public partial class dbMain : DbContext
                 .IsUnicode(false)
                 .HasColumnName("GST");
             entity.Property(e => e.LastOrderDate).HasColumnType("datetime");
-            entity.Property(e => e.Address)
-                .IsUnicode(false);
-            entity.Property(e => e.City)
-    .HasMaxLength(30)
-    .IsUnicode(false);
             entity.Property(e => e.State)
-    .HasMaxLength(30)
-    .IsUnicode(false);
-            entity.Property(e => e.AddedBy).HasDefaultValue(100);
+                .HasMaxLength(30)
+                .IsUnicode(false);
+        });
+
+        modelBuilder.Entity<TblCustomer>(entity =>
+        {
+            entity.HasKey(e => e.CustomerId).HasName("PK__tblCusto__A4AE64B843E78226");
+
+            entity.ToTable("tblCustomers");
+
+            entity.Property(e => e.CustomerId).HasColumnName("CustomerID");
+            entity.Property(e => e.Contact)
+                .HasMaxLength(16)
+                .IsUnicode(false);
+            entity.Property(e => e.CustomerName)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.Email)
+                .HasMaxLength(50)
+                .IsUnicode(false);
         });
 
         modelBuilder.Entity<TblOrder>(entity =>
@@ -150,6 +169,7 @@ public partial class dbMain : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false);
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.TotalQty);
         });
 
         modelBuilder.Entity<TblOrderDetail>(entity =>
@@ -200,10 +220,12 @@ public partial class dbMain : DbContext
             entity.Property(e => e.CreateAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.LastUpdateDate).HasColumnType("datetime");
             entity.Property(e => e.Manufacturer)
                 .HasMaxLength(30)
                 .IsUnicode(false);
             entity.Property(e => e.PricePerUnit).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.ProductQty);
             entity.Property(e => e.ProductImagePath).IsUnicode(false);
             entity.Property(e => e.ProductName)
                 .HasMaxLength(30)
@@ -236,6 +258,7 @@ public partial class dbMain : DbContext
             entity.Property(e => e.City)
                 .HasMaxLength(30)
                 .IsUnicode(false);
+            entity.Property(e => e.ClosingTime).HasPrecision(0);
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
@@ -243,6 +266,7 @@ public partial class dbMain : DbContext
             entity.Property(e => e.ShopName)
                 .HasMaxLength(20)
                 .IsUnicode(false);
+            entity.Property(e => e.StartTime).HasPrecision(0);
             entity.Property(e => e.State)
                 .HasMaxLength(20)
                 .IsUnicode(false);
@@ -270,6 +294,7 @@ public partial class dbMain : DbContext
             entity.Property(e => e.LastUpdated)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.ShopPrice).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.ProductId).HasColumnName("ProductID");
             entity.Property(e => e.ShopId).HasColumnName("ShopID");
 

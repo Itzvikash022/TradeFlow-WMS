@@ -162,6 +162,9 @@ public partial class dbMain : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasDefaultValue("Pending");
+            entity.Property(e => e.PaymentStatus)
+                .HasMaxLength(15)
+                .IsUnicode(false);
             entity.Property(e => e.OrderType)
                 .HasMaxLength(30)
                 .IsUnicode(false);
@@ -332,20 +335,19 @@ public partial class dbMain : DbContext
 
             entity.Property(e => e.TransactionId).HasColumnName("TransactionID");
             entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
-            entity.Property(e => e.CreditOrDebit)
-                .HasMaxLength(1)
-                .IsUnicode(false)
-                .IsFixedLength();
-            entity.Property(e => e.ProductId).HasColumnName("ProductID");
             entity.Property(e => e.Remarks)
                 .HasMaxLength(255)
                 .IsUnicode(false);
-            entity.Property(e => e.ShopId).HasColumnName("ShopID");
-            entity.Property(e => e.SupplierId).HasColumnName("SupplierID");
             entity.Property(e => e.TransactionDate)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
             entity.Property(e => e.TransactionType)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.ReferenceNo)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.ReceiptPath)
                 .HasMaxLength(20)
                 .IsUnicode(false);
         });

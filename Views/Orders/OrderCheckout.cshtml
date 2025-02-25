@@ -1,0 +1,116 @@
+﻿@* @model WMS_Application.Models.TblOrder; *@
+@model WMS_Application.DTO.OrderDetailsDTO;
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Payment Details</h4>
+                <h6>Complete your Order here</h6>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="productdetails">
+                            <ul class="product-bar">
+                                <li>
+                                    <h4>Order ID :</h4>
+                                    <h6>@Model.OrderId</h6>
+                                </li>
+                                <li>
+                                    <h4>Order Date :</h4>
+                                    <h6>@Model.OrderDate</h6>
+                                </li>
+                                <li>
+                                    <h4>Buyer :</h4>
+                                    <h6>@Model.BuyerName</h6>
+                                </li>
+                                <li>
+                                    <h4>Seller :</h4>
+                                    <h6>@Model.SellerName</h6>
+                                </li>
+                                <li>
+                                    <h4>Total Quantity :</h4>
+                                    <h6>@Model.TotalQuantity</h6>
+                                </li>
+                                <li>
+                                    <h4>Total Amount :</h4>
+                                    <h6>@Model.TotalAmount</h6>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="form-group row">
+                            <form id="TransactionForm">
+                                <input id="OrderId" value="@Model.OrderId" hidden readonly />
+                                <input id="BuyerName" value="@Model.BuyerName" hidden readonly />
+                                <input id="SellerName" value="@Model.SellerName" hidden readonly />
+                                <input id="Amount" value="@Model.TotalAmount" hidden readonly />
+                                <label class="col-form-label">Transaction Type</label>
+                                    <select class="form-select" asp-for="@Model.PaymentType" id="TransactionType">
+                                        <option value="">-- Select --</option>
+                                        <option value="Online">Online</option>
+                                        <option value="Cash">Cash</option>
+                                        <option value="Cheque">Cheque</option>
+                                        <option value="Card">Card</option>
+                                    </select>
+                                <label class="col-form-label">Reference Number</label>
+                                <input type="text" asp-for="@Model.ReferenceNumber" id="ReferenceNo" class="form-control" placeholder="TransactionID/CheckSRL/CashMemo">
+                                <label class="col-form-label">Remark</label>
+                                <input type="text" class="form-control" asp-for="@Model.Remarks">
+                                <button type="submit" class="btn btn-submit mt-3 me-2">
+                                    <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                                    Complete Order
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Product Name</th>
+                                <th>Price Per Unit</th>
+                                <th>Quantity</th>
+                                <th>Total Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.Products)
+                            {
+                                <tr>
+                                    <td class="productimgname">
+                                        <a class="product-img">
+                                            <img src="@item.ProductImage"
+                                                 alt="product" />
+                                        </a>
+                                    </td>
+                                    <td>@item.ProductName</td>
+                                    <td>@item.PricePerUnit</td>
+                                    <td>@item.Quantity</td>
+                                    <td>@item.TotalAmount</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/Transactions.js"></script>
+}

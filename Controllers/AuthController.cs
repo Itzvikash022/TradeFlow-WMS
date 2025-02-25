@@ -30,8 +30,6 @@ namespace WMS_Application.Controllers
 
         public IActionResult Index()
         {
-            Console.WriteLine("ehehehhhhhehhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh");
-            Console.WriteLine(HttpContext.Session.GetString("Cred"));
             return View();
         }
 
@@ -162,7 +160,9 @@ namespace WMS_Application.Controllers
 
                 var data = await _users.GetUserDataByEmail(email);
                 int id = data.UserId;
+                var shopData = _context.TblShops.FirstOrDefault(x => x.AdminId == id);
                 HttpContext.Session.SetInt32("UserId", id);
+                HttpContext.Session.SetInt32("ShopId", shopData.ShopId);
                 HttpContext.Session.SetInt32("UserRoleId", data.RoleId);
 
                 // Determine redirection based on user verification and shop details

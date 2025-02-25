@@ -147,10 +147,11 @@
                         alert("Order placed successfully!");
                         selectedProducts = [];
                         updateSelectedProducts();
+                        window.location.href = "OrderCheckout/" + response.orderId;
                     },
                     error: function (xhr) {
                         alert("Failed to place order. Please try again.");
-                    }
+                    }   
                 });
             });
 

@@ -43,6 +43,42 @@ namespace WMS_Application.Repositories.Auth
             }
         }
 
+        //Email generation with File
+        public async Task SendEmailAsync(string toEmail, string subject, string body, byte[] attachmentBytes = null, string attachmentFilename = null)
+        {
+            try
+            {
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("TradeFlow", "tester.vikash022@gmail.com"));
+                message.To.Add(new MailboxAddress("User", toEmail));
+                message.Subject = subject;
+
+                var bodyBuilder = new BodyBuilder { HtmlBody = body };
+
+                // 🔥 Attach PDF if available
+                if (attachmentBytes != null && !string.IsNullOrEmpty(attachmentFilename))
+                {
+                    bodyBuilder.Attachments.Add(attachmentFilename, attachmentBytes, ContentType.Parse("application/pdf"));
+                }
+
+                message.Body = bodyBuilder.ToMessageBody();
+
+                using (var smtpClient = new SmtpClient())
+                {
+                    await smtpClient.ConnectAsync(_smtpSettings.Server, _smtpSettings.Port, SecureSocketOptions.StartTls);
+                    await smtpClient.AuthenticateAsync(_smtpSettings.SenderEmail, _smtpSettings.SenderPassword);
+                    await smtpClient.SendAsync(message);
+                    await smtpClient.DisconnectAsync(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error sending email: {ex.Message}");
+                throw;
+            }
+        }
+
+
         //We are generating OTP here which will be sent to user's email and saved in db
         public string GenerateOtp()
         {

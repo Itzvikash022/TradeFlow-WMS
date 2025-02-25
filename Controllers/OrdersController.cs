@@ -14,12 +14,14 @@ namespace WMS_Application.Controllers
         private dbMain _context;
         private IProductRepository _product;
         private ICustomerRepository _customer;
-        public OrdersController(ISidebarRepository sidebar, IOrdersRepository orders, dbMain context, IProductRepository product, ICustomerRepository customer) : base(sidebar)
+        private IEmailSenderRepository _emailSender;
+        public OrdersController(ISidebarRepository sidebar, IOrdersRepository orders, dbMain context, IProductRepository product, ICustomerRepository customer, IEmailSenderRepository emailSender) : base(sidebar)
         {
             _orders = orders;
             _context = context;
             _product = product;
             _customer = customer;
+            _emailSender = emailSender;
         }
         [Route("Orders")]
         public async Task<IActionResult> Index()
@@ -44,6 +46,15 @@ namespace WMS_Application.Controllers
             return View(orders);
         }
 
+        [HttpGet]
+        //Order Details View
+        public IActionResult OrderDetails(int id)
+        {
+            return View(_orders.GetOrderDetails(id));
+        }
+
+
+        //Order Create View
         public IActionResult CreateOrder()
         {
             int adminId = (int)HttpContext.Session.GetInt32("UserId");
@@ -54,6 +65,64 @@ namespace WMS_Application.Controllers
             ViewBag.ShopData = shops;
             return View();
         }
+
+        public async Task<IActionResult> SendReminder(string buyerEmail)
+        {
+            _emailSender.SendEmailAsync(buyerEmail, "Payment Reminder", "Paise Baaki hai order ke bhar de");
+            return Ok(new
+            {
+                message = "Reminder Email Sent Successfully"
+            });
+        }
+
+        [HttpGet]
+        public IActionResult DownloadReceipt(int orderId)
+        {
+            var receiptPath = _context.TblTransactions
+                .Where(t => t.OrderId == orderId)
+                .Select(t => t.ReceiptPath)
+                .FirstOrDefault();
+
+            if (string.IsNullOrEmpty(receiptPath))
+            {
+                return NotFound(new { message = "Receipt not found for this order." });
+            }
+
+            var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", receiptPath.TrimStart('\\'));
+
+            if (!System.IO.File.Exists(fullPath))
+            {
+                return NotFound(new { message = "Receipt file missing from storage." });
+            }
+
+            // Return the file to the user
+            var fileBytes = System.IO.File.ReadAllBytes(fullPath);
+            return File(fileBytes, "application/pdf", Path.GetFileName(fullPath));
+        }
+
+
+        //Transaction Details + Reciept View Return
+        [Route("orders/OrderCheckout/{orderId:int}")]
+        [HttpGet]
+        public async Task<IActionResult> OrderCheckout(int orderId)
+        {
+            int shopId = (int)HttpContext.Session.GetInt32("ShopId");
+
+            //TblOrder OrderDetails = new TblOrder();
+            //var AllOrders = await _orders.GetAllOrders(shopId);
+            var OrderDetails = _orders.GetOrderDetails(orderId);
+
+            //foreach(var data in AllOrders)
+            //{
+            //    if(data.OrderId == orderId)
+            //    {
+            //        OrderDetails = data;
+            //    }
+            //}
+            return View(OrderDetails);
+        }
+
+        //Fetching All Products based on their Companies
         public IActionResult GetFilteredProducts(string? productName, string? category, string? company)
         {
             var result = _orders.GetProductsC2S(productName, category, company);
@@ -70,6 +139,7 @@ namespace WMS_Application.Controllers
 
         }
 
+        //Fetching All Products of other shops
         public IActionResult GetFilteredProductsShop(string? productName, string? category, int? shop)
         {
             int userId = (int) HttpContext.Session.GetInt32("UserId");
@@ -86,6 +156,8 @@ namespace WMS_Application.Controllers
             });
         }
 
+
+        //Fetching all my Shop Products
         public async Task<IActionResult> GetProductsShopSell(int selectedShopId)
         {
             var ShopKeeperDetails = _orders.GetShopKeepersDetails(selectedShopId);
@@ -105,6 +177,7 @@ namespace WMS_Application.Controllers
             });
         }
 
+        //Saving or Checking Customer Details and Fetching all my shop products
         public async Task<IActionResult> GetProductsS2C(string customerName, string customerEmail, string customerPhone)
         {
             TblCustomer customer = new TblCustomer()
@@ -143,6 +216,8 @@ namespace WMS_Application.Controllers
             });
         }
 
+
+        //Fetchsing all Shop Admin's details
         [HttpGet]
         public async Task<IActionResult> GetShopKeepersDetails(int selectedShopId)
         {
@@ -150,6 +225,7 @@ namespace WMS_Application.Controllers
             return Json(shopData);
         }
 
+        //Fetching all mu shhop Products
         [HttpGet]
         public async Task<IActionResult> GetMyShopProducts()
         {
@@ -165,6 +241,7 @@ namespace WMS_Application.Controllers
         }
 
 
+        //Create Order Action
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] OrderRequestDto orderDto)
         {
@@ -188,7 +265,8 @@ namespace WMS_Application.Controllers
                         orderDto.TotalQty,
                         orderDto.TotalAmount,
                         orderDto.Products,
-                        "Success"
+                        "Pending",
+                        "Pending"
                     );
                 }
                 else if (orderDto.SellerShopId > 0 && orderDto.SellerShopId != ShopData.ShopId) // Shop-to-Shop Buying (S2SB)
@@ -200,6 +278,7 @@ namespace WMS_Application.Controllers
                         orderDto.TotalQty,
                         orderDto.TotalAmount,
                         orderDto.Products,
+                        "Pending",
                         "Pending"
                     );
                 }
@@ -212,7 +291,8 @@ namespace WMS_Application.Controllers
                         orderDto.TotalQty,
                         orderDto.TotalAmount,
                         orderDto.Products,
-                        "Success"
+                        "Pending", 
+                        "Pending"
                     );
                 }
                 else
@@ -225,25 +305,28 @@ namespace WMS_Application.Controllers
                         orderDto.TotalQty,
                         orderDto.TotalAmount,
                         orderDto.Products,
-                        "Success"
+                        "Pending",
+                        "Pending"
                     );
                 }
 
                 return Ok(new { message = "Order placed successfully!", orderId });
+                //return RedirectToAction($"OrderCheckout/{orderId}");
             }
             catch (Exception ex)
             {
                 return StatusCode(500, "Error placing order: " + ex.Message);
             }
         }
+
+        //Updating qty of Products in tblStock
         [HttpPost]
         public async Task<IActionResult> UpdateOrderStatus([FromBody] UpdateOrderStatusRequestDto request)
         {
            if (string.IsNullOrEmpty(request.NewStatus))
-    {
-        return Json(new { success = false, message = "Invalid status." });
-    }
-
+            {
+                return Json(new { success = false, message = "Invalid status." });
+            }
 
             try
             {
@@ -261,24 +344,26 @@ namespace WMS_Application.Controllers
 
                 // Only update stock if the status is "Success"
                 if (request.NewStatus == "Success")
+{
+                // Fetch product details for stock updates
+                var orderDetails = order.TblOrderDetails;
+                var productList = new List<ProductDto>(); // ✅ Store all products
+
+                // Loop through products in order and add to the list
+                foreach (var orderDetail in orderDetails)
                 {
-                    // Fetch product details for stock updates
-                    var orderDetails = order.TblOrderDetails;
-
-                    // Loop through products in order and update stock
-                    foreach (var orderDetail in orderDetails)
+                    productList.Add(new ProductDto
                     {
-                        var product = new ProductDto
-                        {
-                            ProductID = (int) orderDetail.ProductId,
-                            qty = orderDetail.Quantity,
-                            PricePerUnit = orderDetail.PricePerUnit
-                        };
-
-                        // Reuse UpdateStockAsync to update seller and buyer stock
-                        await _orders.UpdateStockAsync(order.OrderType, new List<ProductDto> { product }, (int)order.SellerId, (int)order.BuyerId);
-                    }
+                        ProductID = (int)orderDetail.ProductId,
+                        qty = orderDetail.Quantity,
+                        PricePerUnit = orderDetail.PricePerUnit
+                    });
                 }
+
+                // ✅ Now send the complete product list for stock update
+                await _orders.UpdateStockAsync(order.OrderType, productList, (int)order.SellerId, (int)order.BuyerId);
+}
+
 
                 // Save the updated order status to the database
                 await _context.SaveChangesAsync();
@@ -291,7 +376,19 @@ namespace WMS_Application.Controllers
             }
         }
 
-
-
+        //Add Transactions
+        [HttpPost]
+        public async Task<IActionResult> AddTransaction([FromBody] TblTransaction transaction)
+            {
+            try
+            {
+                await _orders.AddTransactionInfo(transaction);
+                return Ok(new { message = "Transaction added successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error adding transaction: " + ex.Message);
+            }
+        }
     }
 }

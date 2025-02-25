@@ -10,9 +10,11 @@ namespace WMS_Application.Repositories.Interfaces
         List<ProductS2SBuyDto> GetProductsS2SBuy(string? productName, string? category, int? shop, int userId);
         List<TblShop> GetShopDetails(int currentAdminId);
         ShopDetailsDTO GetShopKeepersDetails(int selectedShopId);
-        Task<int> CreateOrderAsync(int companyId, int shopId, string orderType, int totalQty, decimal totalAmount, List<ProductDto> products, string status);
+        Task<int> CreateOrderAsync(int companyId, int shopId, string orderType, int totalQty, decimal totalAmount, List<ProductDto> products, string status, string paymentStatus);
         Task UpdateStockAsync(string orderType, List<ProductDto> products, int sellerId, int buyerId);
         Task<List<ProductS2SBuyDto>> GetAllProducts(int companyId, int shopId);
+        Task<object> AddTransactionInfo(TblTransaction transaction);
+        OrderDetailsDTO GetOrderDetails(int orderId);
 
     }
 }

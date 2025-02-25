@@ -1,0 +1,161 @@
+﻿@model WMS_Application.DTO.OrderDetailsDTO;
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <h4 class="card-title">Order Details</h4>
+
+                                    <table class="table mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <td>Order Date : </td>
+                                                <td>@Model.OrderDate</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Buyer Name : </td>
+                                                <td>@Model.BuyerName</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Seller Name : </td>
+                                                <td>@Model.SellerName</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Seller Email : </td>
+                                                <td>@Model.SellerEmail</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Seller Address : </td>
+                                                <td>@Model.SellerAddress</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Buyer Contact : </td>
+                                                <td>@Model.BuyerContact</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Order Quantity : </td>
+                                                <td>@Model.TotalQuantity</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Current Status : </td>
+                                                <td>@Model.OrderStatus</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <h4 class="card-title">Payment Details</h4>
+
+                                    <table class="table mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <td>Payment Status : </td>
+                                                <td>@Model.PaymentStatus</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Reference No. : </td>
+                                                <td>@Model.ReferenceNumber</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Payment Type : </td>
+                                                <td>@Model.PaymentType</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Transaction Amount : </td>
+                                                <td>@Model.TotalAmount</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    @if (Model.PaymentStatus == "Pending" && Model.BuyerId == Context.Session.GetInt32("ShopId"))
+                                    {
+                                        <div class="col-lg-12 mt-4 btn btn-login">
+                                            <a href="@Url.Action("OrderCheckout", "Orders", new { orderId = Model.OrderId })" class="btn btn-submit me-2">
+                                                Complete Payment
+                                            </a>
+                                        </div>
+                                    }
+                                    else if (Model.PaymentStatus == "Pending" && Model.BuyerId != Context.Session.GetInt32("ShopId"))
+                                    {
+                                        <div class="col-lg-12 mt-4 btn btn-login">
+                                            <button class="btn btn-submit me-2" onclick="sendReminder('@Model.BuyerEmail')">
+                                                Payment Yet to be Completed
+                                            </button>
+                                        </div>
+                                        <div class="col-lg-12 mt-4 btn btn-login">
+                                            <a href="@Url.Action("OrderCheckout", "Orders", new { orderId = Model.OrderId })" class="btn btn-submit me-2">
+                                                Manual Update Payment Info?
+                                            </a>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="col-lg-12 mt-4 btn btn-login">
+                                            <a href="@Url.Action("DownloadReceipt", "Orders", new { orderId = Model.OrderId})" class="btn btn-submit me-2">
+                                                Download Receipt
+                                            </a>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Product Name</th>
+                                    <th>Price Per Unit</th>
+                                    <th>Quantity</th>
+                                    <th>Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach(var item in Model.Products)
+                                {
+                                    <tr>
+                                        <td class="productimgname">
+                                            <a class="product-img">
+                                                <img src="@item.ProductImage"
+                                                     alt="product" />
+                                            </a>
+                                        </td>
+                                        <td>@item.ProductName</td>
+                                        <td>@item.PricePerUnit</td>
+                                        <td>@item.Quantity</td>
+                                        <td>@item.TotalAmount</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+
+            function sendReminder(buyerEmail) {
+                $.post('/Orders/SendReminder', { buyerEmail: buyerEmail }, function(response) {
+            alert(response.message);
+        });
+    }
+    </script>
+}

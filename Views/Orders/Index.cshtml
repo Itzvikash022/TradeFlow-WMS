@@ -93,9 +93,10 @@
                                                 <th>Seller</th>
                                                 <th>Date</th>
                                                 <th>Status</th>
-                                                <th>Order Type</th>
+                                                <th>Type</th>
                                                 <th>Amount</th>
-                                                <th>Product Qty</th>
+                                                <th>Qty</th>
+                                                <th>Payment</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
@@ -115,11 +116,13 @@
                                                     <td>@order.TotalAmount</td>
                                                     <td>@order.TotalQty</td>
                                                     <td>
-                                                        <a class="me-3" href="@Url.Action("Details", "Orders", new { id = order.OrderId })">
+                                                        <span class="badges @(order.PaymentStatus == "Pending" ? "bg-warning" : order.PaymentStatus == "Paid" ? "bg-lightgreen" : "bg-danger")">
+                                                            @order.PaymentStatus
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <a class="me-3" href="@Url.Action("OrderDetails", "Orders", new { id = order.OrderId })">
                                                             <img src="~/assets/img/icons/eye.svg" alt="img">
-                                                        </a>
-                                                        <a class="me-3 confirm-text" href="~/Admins/Delete">
-                                                            <img src="~/assets/img/icons/delete.svg" alt="img">
                                                         </a>
                                                     </td>
                                                 </tr>
@@ -145,7 +148,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Requests</h5>
+          <h5 class="modal-title">Purchase Requests</h5>
           <button
             type="button"
             class="close"
@@ -156,7 +159,6 @@
           </button>
         </div>
         <div class="modal-body">
-                <h3>Product Requests</h3>
                 <table class="table datanew table-bordered">
                     <thead>
                         <tr>
@@ -171,7 +173,7 @@
                     <tbody>
                         @foreach (var order in Model)
                         {
-                            @if (order.OrderStatus == "Pending" && order.CanEditStatus)
+                            @if (order.OrderStatus == "Pending" && order.CanEditStatus && order.PaymentStatus == "Paid")
                             {
                                 <tr>
                                     <td>@order.BuyerName</td>

@@ -1,17 +1,27 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.Design;
+﻿using iText.Kernel.Pdf;
+using iText.Layout.Element;
+using Microsoft.EntityFrameworkCore;
+using iText.Layout;
+using System;
 using WMS_Application.DTO;
+using iText.Kernel.Font;
+using iText.IO.Font.Constants;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using iText.IO.Font;
+using MailKit.Search;
+using System.Transactions;
 namespace WMS_Application.Repositories
 {
     public class OrdersRepository : IOrdersRepository
     {
         private readonly dbMain _context;
-        public OrdersRepository(dbMain context)
+        private readonly IEmailSenderRepository _emailSender;
+        public OrdersRepository(dbMain context, IEmailSenderRepository emailSender)
         {
             _context = context;
+            _emailSender = emailSender;
         }
 
         public async Task<List<TblOrder>> GetAllOrders(int loggedInShopId)
@@ -59,7 +69,8 @@ namespace WMS_Application.Repositories
                                     Remarks = o.Remarks,
                                     OrderStatus = o.OrderStatus,
                                     CanEditStatus = o.SellerId == loggedInShopId,
-                                    TotalQty = o.TotalQty
+                                    TotalQty = o.TotalQty,
+                                    PaymentStatus = o.PaymentStatus
                                 })
                      .OrderByDescending(o => o.OrderDate).AsNoTracking()
                      .ToListAsync();
@@ -200,7 +211,7 @@ namespace WMS_Application.Repositories
             {
                 query = query.Where(s => s.Product.ProductName.Contains(productName));
             }
-                
+
             if (!string.IsNullOrEmpty(category))
             {
                 query = query.Where(s => s.Product.Category == category);
@@ -228,7 +239,7 @@ namespace WMS_Application.Repositories
 
         public List<TblShop> GetShopDetails(int currentAdminId)
         {
-            
+
             var shops = _context.TblShops
                 .Where(s => s.AdminId != currentAdminId) // Exclude current shop
                 .ToList();
@@ -237,26 +248,26 @@ namespace WMS_Application.Repositories
         }
 
         public ShopDetailsDTO GetShopKeepersDetails(int selectedShopId)
-            {
-                var selectedShopDetails = _context.TblShops
-                    .Where(s => s.ShopId == selectedShopId)
-                    .Select(s => new ShopDetailsDTO
-                    {
-                        OwnerName = _context.TblUsers
-                            .Where(u => u.UserId == s.AdminId)
-                            .Select(u => u.Username)
-                            .FirstOrDefault(),
-                        ShopAddress = s.Address
-                    })
-                    .FirstOrDefault();
+        {
+            var selectedShopDetails = _context.TblShops
+                .Where(s => s.ShopId == selectedShopId)
+                .Select(s => new ShopDetailsDTO
+                {
+                    OwnerName = _context.TblUsers
+                        .Where(u => u.UserId == s.AdminId)
+                        .Select(u => u.Username)
+                        .FirstOrDefault(),
+                    ShopAddress = s.Address
+                })
+                .FirstOrDefault();
 
-                return selectedShopDetails;
-            }
+            return selectedShopDetails;
+        }
 
 
         //Inserting Orders data in tblOrders
         // Generalized function to handle both C2S and S2Cst orders
-        public async Task<int> CreateOrderAsync(int sellerId, int buyerId, string orderType, int totalQty, decimal totalAmount, List<ProductDto> products, string status)
+        public async Task<int> CreateOrderAsync(int sellerId, int buyerId, string orderType, int totalQty, decimal totalAmount, List<ProductDto> products, string status, string paymentStatus)
         {
             if (products == null || products.Count == 0)
                 throw new ArgumentException("No products provided for the order.");
@@ -271,7 +282,8 @@ namespace WMS_Application.Repositories
                 TotalAmount = totalAmount,
                 OrderStatus = status,
                 Remarks = "ok",
-                TotalQty = totalQty
+                TotalQty = totalQty,
+                PaymentStatus = paymentStatus
             };
 
             _context.TblOrders.Add(newOrder);
@@ -291,17 +303,14 @@ namespace WMS_Application.Repositories
             _context.TblOrderDetails.AddRange(orderDetails);
             await _context.SaveChangesAsync();
 
-            if (orderType != "ShopToShopBuy")
-            {
-                // Update stock based on order type
-                await UpdateStockAsync(orderType, products, sellerId, buyerId);
-            }
+
             return orderId;
         }
 
         // Generalized stock update function
         public async Task UpdateStockAsync(string orderType, List<ProductDto> products, int sellerId, int buyerId)
         {
+            //Check qty
             foreach (var product in products)
             {
                 if (orderType == "CompanyToShop")
@@ -310,14 +319,45 @@ namespace WMS_Application.Repositories
                     var companyProduct = await _context.TblProducts
                         .FirstOrDefaultAsync(p => p.ProductId == product.ProductID);
 
-                    if (companyProduct != null && companyProduct.ProductQty >= product.qty)
+                    if (companyProduct != null && companyProduct.ProductQty < product.qty)
                     {
+                        throw new Exception($"Insufficient stock for selected product");
+                    }
+                }
+                else if (orderType == "ShopToCustomer")
+                {
+                    // Reduce stock from the seller's shop (tblStock)
+                    var shopStock = await _context.TblStocks
+                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == sellerId);
+
+                    if (shopStock != null && shopStock.Quantity < product.qty)
+                    {
+                        throw new Exception($"Insufficient stock for product ID {product.ProductID} in shop.");
+                    }
+                }
+                else if (orderType == "ShopToShopBuy" || orderType == "ShopToShopSell")
+                {
+                    // Reduce stock from the seller's shop (Shop 1)
+                    var sellerStock = await _context.TblStocks
+                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == sellerId);
+
+                    if (sellerStock != null && sellerStock.Quantity < product.qty)
+                    {
+                        throw new Exception($"Insufficient stock for product ID {product.ProductID} in seller shop.");
+                    }
+                }
+            }
+
+            //Update qty
+            foreach (var product in products)
+            {
+                if (orderType == "CompanyToShop")
+                {
+                    // Reduce stock from tblProducts (Company stock)
+                    var companyProduct = await _context.TblProducts
+                        .FirstOrDefaultAsync(p => p.ProductId == product.ProductID);
+
                         companyProduct.ProductQty -= product.qty;
-                    }
-                    else
-                    {
-                        throw new Exception($"Insufficient stock for product ID {product.ProductID}");
-                    }
 
                     // Increase stock in the buyer's shop (tblStock)
                     var shopStock = await _context.TblStocks
@@ -344,14 +384,7 @@ namespace WMS_Application.Repositories
                     var shopStock = await _context.TblStocks
                         .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == sellerId);
 
-                    if (shopStock != null && shopStock.Quantity >= product.qty)
-                    {
                         shopStock.Quantity -= product.qty;
-                    }
-                    else
-                    {
-                        throw new Exception($"Insufficient stock for product ID {product.ProductID} in shop.");
-                    }
                 }
                 else if (orderType == "ShopToShopBuy" || orderType == "ShopToShopSell")
                 {
@@ -359,14 +392,7 @@ namespace WMS_Application.Repositories
                     var sellerStock = await _context.TblStocks
                         .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == sellerId);
 
-                    if (sellerStock != null && sellerStock.Quantity >= product.qty)
-                    {
                         sellerStock.Quantity -= product.qty;
-                    }
-                    else
-                    {
-                        throw new Exception($"Insufficient stock for product ID {product.ProductID} in seller shop.");
-                    }
 
                     // Increase stock in the buyer's shop (Shop 2)
                     var buyerStock = await _context.TblStocks
@@ -393,8 +419,382 @@ namespace WMS_Application.Repositories
         }
 
 
+        //Saving Transaction Info
+        public async Task<object> AddTransactionInfo(TblTransaction transaction)
+        {
+            try
+            {
+                var order = await _context.TblOrders
+                    .FirstOrDefaultAsync(u => u.OrderId == transaction.OrderId);
+
+                if (order == null)
+                    return new { success = false, message = $"Order Not Found" };
 
 
+                // ✅ Pre-check stock BEFORE inserting the transaction
+                var products = await _context.TblOrderDetails
+                  .Where(od => od.OrderId == transaction.OrderId)
+                  .Select(od => new ProductDto
+                  {
+                      ProductID = (int)od.ProductId,
+                      PricePerUnit = od.PricePerUnit,
+                      qty = od.Quantity
+                  })
+                  .ToListAsync();
 
+                foreach (var product in products)
+                {
+                    if (order.OrderType == "CompanyToShop")
+                    {
+                        var companyProduct = await _context.TblProducts
+                            .FirstOrDefaultAsync(p => p.ProductId == product.ProductID);
+
+                        if (companyProduct == null || companyProduct.ProductQty < product.qty)
+                            //return new { success = false, message = $"Insufficient stock for Product ID {product.ProductID}" };
+                            throw new Exception($"Insufficient stock for Product ID {product.ProductID}");
+                    }
+                    else if (order.OrderType == "ShopToCustomer")
+                    {
+                        var shopStock = await _context.TblStocks
+                            .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == order.SellerId);
+
+                        if (shopStock == null || shopStock.Quantity < product.qty)
+                            //return new { success = false, message = $"Insufficient stock for Product ID {product.ProductID} in shop." };
+                            throw new Exception($"Insufficient stock for Product ID {product.ProductID} in shop.");
+                    }
+                    else if (order.OrderType == "ShopToShopBuy" || order.OrderType == "ShopToShopSell")
+                    {
+                        var sellerStock = await _context.TblStocks
+                            .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == order.SellerId);
+
+                        if (sellerStock == null || sellerStock.Quantity < product.qty)
+                            //return new { success = false, message = $"Insufficient stock for Product ID {product.ProductID} in seller shop." };
+                            throw new Exception($"Insufficient stock for Product ID {product.ProductID} in seller shop.");
+                    }
+                }
+
+
+                // ✅ Generate receipt & send email AFTER everything is successfully saved
+                if (transaction.OrderId != 0)
+                {
+                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Receipts");
+                    string uniqueFileName = $"Receipt_{transaction.OrderId}_{Guid.NewGuid()}.pdf";
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
+
+                    var receiptBytes = await GenerateReceiptAsync(transaction);
+                    if (receiptBytes != null)
+                    {
+                        await File.WriteAllBytesAsync(filePath, receiptBytes);
+                        transaction.ReceiptPath = "\\Receipts\\" + uniqueFileName;
+
+                        string buyerEmail;
+                        if (order.OrderType == "ShopToCustomer")
+                        {
+                            buyerEmail = await _context.TblCustomers
+                                .Where(u => u.CustomerId == order.BuyerId)
+                                .Select(u => u.Email)
+                                .FirstOrDefaultAsync();
+                        }
+                        else
+                        {
+                            int buyerId = await _context.TblShops
+                                .Where(u => u.ShopId == order.BuyerId)
+                                .Select(u => u.AdminId)
+                                .FirstOrDefaultAsync();
+
+                            buyerEmail = await _context.TblUsers
+                                .Where(u => u.UserId == buyerId)
+                                .Select(u => u.Email)
+                                .FirstOrDefaultAsync();
+                        }
+
+                        string fileName = $"Receipt_{transaction.OrderId}.pdf";
+                        await _emailSender.SendEmailAsync(
+                            toEmail: buyerEmail,
+                            subject: "Your Order Receipt",
+                            body: "<p>Thank you for your order! Find your receipt attached.</p>",
+                            attachmentBytes: receiptBytes,
+                            attachmentFilename: fileName
+                        );
+                    }
+                }
+
+                // ✅ Stock is available, proceed with transaction insertion
+                await _context.TblTransactions.AddAsync(transaction);
+                await _context.SaveChangesAsync();
+
+                // ✅ Update stock AFTER transaction is successfully saved
+                await UpdateStockAsync(order.OrderType, products, (int)order.SellerId, (int)order.BuyerId);
+
+                // ✅ Now update order status & commit changes
+                order.PaymentStatus = "Paid";
+
+                if (order.OrderType != "ShopToShopBuy")
+                {
+                    order.OrderStatus = "Success";
+                }
+
+                _context.TblOrders.Update(order);
+                await _context.SaveChangesAsync();
+
+
+                // ✅ Generate receipt & send email AFTER everything is successfully saved
+                if (transaction.OrderId != 0)
+                {
+                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Receipts");
+                    string uniqueFileName = $"Receipt_{transaction.OrderId}_{Guid.NewGuid()}.pdf";
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
+
+                    var receiptBytes = await GenerateReceiptAsync(transaction);
+                    if (receiptBytes != null)
+                    {
+                        await File.WriteAllBytesAsync(filePath, receiptBytes);
+                        transaction.ReceiptPath = "\\Receipts\\" + uniqueFileName;
+
+                        string buyerEmail;
+                        if (order.OrderType == "ShopToCustomer")
+                        {
+                            buyerEmail = await _context.TblCustomers
+                                .Where(u => u.CustomerId == order.BuyerId)
+                                .Select(u => u.Email)
+                                .FirstOrDefaultAsync();
+                        }
+                        else
+                        {
+                            int buyerId = await _context.TblShops
+                                .Where(u => u.ShopId == order.BuyerId)
+                                .Select(u => u.AdminId)
+                                .FirstOrDefaultAsync();
+
+                            buyerEmail = await _context.TblUsers
+                                .Where(u => u.UserId == buyerId)
+                                .Select(u => u.Email)
+                                .FirstOrDefaultAsync();
+                        }
+
+                        string fileName = $"Receipt_{transaction.OrderId}.pdf";
+                        await _emailSender.SendEmailAsync(
+                            toEmail: buyerEmail,
+                            subject: "Your Order Receipt",
+                            body: "<p>Thank you for your order! Find your receipt attached.</p>",
+                            attachmentBytes: receiptBytes,
+                            attachmentFilename: fileName
+                        );
+                    }
+                }
+
+                return new { success = true, message = "Transaction added successfully" };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message); // Actually throw the exception
+            }
+
+        }
+
+
+        public async Task<byte[]> GenerateReceiptAsync(TblTransaction transaction)
+        {
+            var order = _context.TblOrders.FirstOrDefault(o => o.OrderId == transaction.OrderId);
+            //var orderDetails = _context.TblOrderDetails.Where(od => od.OrderId == orderId).ToList();
+
+            var orderDetails = _context.TblOrderDetails
+                .Where(od => od.OrderId == transaction.OrderId)
+                .Select(od => new
+                {
+                    od.ProductId,
+                    ProductName = _context.TblProducts
+                        .Where(p => p.ProductId == od.ProductId)
+                        .Select(p => p.ProductName)
+                        .FirstOrDefault(),
+                    od.Quantity,
+                    od.PricePerUnit,
+                    od.Amount
+                })
+                .ToList();
+
+
+            if (order == null || orderDetails.Count == 0)
+                return null;
+
+            string directoryPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Receipts");
+            if (!Directory.Exists(directoryPath))
+                Directory.CreateDirectory(directoryPath);
+
+            string filePath = Path.Combine(directoryPath, $"Receipt_{transaction.OrderId}.pdf");
+
+            try
+            {
+                // **Ensure Proper File Closing**
+                using (PdfWriter writer = new PdfWriter(filePath))
+                using (PdfDocument pdf = new PdfDocument(writer))
+                using (Document document = new Document(pdf))
+                {
+                    //PdfFont boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+                    PdfFont boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA, PdfEncodings.WINANSI, PdfFontFactory.EmbeddingStrategy.PREFER_NOT_EMBEDDED);
+
+                    document.Add(new Paragraph("Order Receipt").SetFont(boldFont).SetFontSize(20));
+
+                    document.Add(new Paragraph($"Order ID: {order.OrderId}"));
+                    document.Add(new Paragraph($"Date: {order.OrderDate}"));
+                    document.Add(new Paragraph($"Buyer : {transaction.BuyerName}"));
+                    document.Add(new Paragraph($"Seller : {transaction.SellerName}"));
+                    document.Add(new Paragraph($"Total Amount: Rs.{order.TotalAmount}"));
+                    document.Add(new Paragraph($"Payment Reference ID: {transaction.ReferenceNo}"));
+                    document.Add(new Paragraph($"Mode of Payment: {transaction.TransactionType}"));
+                    document.Add(new Paragraph(" "));
+
+                    Table table = new Table(4);
+                    table.AddCell("Product Name");
+                    table.AddCell("Quantity");
+                    table.AddCell("Price/Unit");
+                    table.AddCell("Total");
+
+                    foreach (var item in orderDetails)
+                    {
+                        table.AddCell(item.ProductName ?? "N/A");
+                        table.AddCell(item.Quantity.ToString());
+                        table.AddCell($"Rs. {item.PricePerUnit}");
+                        table.AddCell($"Rs. {item.Amount}");
+                    }
+
+                    document.Add(table);
+                    document.Add(new Paragraph("\nThank you for your purchase!"));
+                }
+
+                // **Wait Before Reading File to Avoid Locks**
+                await Task.Delay(500);
+
+                // **Ensure File is Available Before Reading**
+                if (!File.Exists(filePath))
+                    throw new Exception("PDF file was not created successfully.");
+
+                return await File.ReadAllBytesAsync(filePath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error generating receipt: {ex.Message}");
+                return null;
+            }
+        }
+
+
+        public OrderDetailsDTO GetOrderDetails(int orderId)
+        {
+            // Fetch Order Details
+            var order = _context.TblOrders.FirstOrDefault(o => o.OrderId == orderId);
+            if (order == null) return null;
+
+            // Fetch Transaction Details
+
+            //var transaction = _context.TblTransactions.FirstOrDefault(t => t.OrderId == orderId);
+            var transaction = _context.TblTransactions
+            .Where(t => t.OrderId == orderId)
+            .Select(t => new
+            {
+                ReferenceNo = t.ReferenceNo ?? "N/A",
+                TransactionType = t.TransactionType ?? "N/A",
+                Remarks = t.Remarks ?? "N/A"
+            })
+            .FirstOrDefault();
+
+
+            // Fetch Seller & Buyer Details
+            string sellerName = "", sellerAddress = "", sellerEmail = "", buyerName = "", buyerContact = "", buyerEmail = "";
+
+            if (order.OrderType == "CompanyToShop")
+            {
+                var company = _context.TblCompanies.FirstOrDefault(c => c.CompanyId == order.SellerId);
+                if (company != null)
+                {
+                    sellerName = company.CompanyName;
+                    sellerAddress = company.Address;
+                    sellerEmail = company.Email;
+                }
+            }
+            else
+            {
+                var seller = _context.TblShops.FirstOrDefault(u => u.ShopId == order.SellerId);
+                var user = _context.TblUsers.FirstOrDefault(_context => _context.UserId == seller.AdminId);
+                if (seller != null)
+                {
+                    sellerName = seller.ShopName;
+                    sellerAddress = seller.Address;
+                    sellerEmail = user.Email;
+                }
+            }
+
+            if (order.OrderType == "ShopToCustomer")
+            {
+                var customer = _context.TblCustomers.FirstOrDefault(c => c.CustomerId == order.BuyerId);
+                if (customer != null)
+                {
+                    buyerName = customer.CustomerName;
+                    buyerContact = customer.Contact;
+                    buyerEmail = customer.Email;
+                }
+            }
+            else
+            {
+                var buyer = _context.TblShops.FirstOrDefault(u => u.ShopId == order.BuyerId);
+                var user = _context.TblUsers.FirstOrDefault(_context => _context.UserId == buyer.AdminId);
+                if (buyer != null)
+                {
+                    buyerName = buyer.ShopName;
+                    buyerContact = user.PhoneNumber;
+                    buyerEmail = user.Email;
+                }
+            }
+
+            // Fetch Products in the Order
+            var orderProducts = _context.TblOrderDetails
+                .Where(od => od.OrderId == orderId)
+                .Select(od => new OrderProductDTO
+                {
+                    ProductId = (int)od.ProductId,
+                    Quantity = od.Quantity,
+                    PricePerUnit = od.PricePerUnit,
+                    TotalAmount = od.Amount,
+                    ProductName = _context.TblProducts.Where(p => p.ProductId == od.ProductId).Select(p => p.ProductName).FirstOrDefault() ?? "N/a",
+                    ProductImage = _context.TblProducts.Where(p => p.ProductId == od.ProductId).Select(p => p.ProductImagePath).FirstOrDefault() ?? "N/A"
+                })
+                .ToList();
+
+            // Construct the DTO
+            return new OrderDetailsDTO
+            {
+                // Transaction Data
+                ReferenceNumber = transaction?.ReferenceNo,
+                PaymentType = transaction?.TransactionType,
+                Remarks = transaction?.Remarks,
+                // Order Data
+                OrderId = order.OrderId,
+                OrderDate = (DateTime)order.OrderDate,
+                OrderType = order.OrderType,
+                TotalAmount = order.TotalAmount,
+                TotalQuantity = order.TotalQty,
+                OrderStatus = order.OrderStatus,
+                PaymentStatus = order.PaymentStatus,
+                BuyerId = (int) order.BuyerId,
+
+                // Seller & Buyer Data
+                SellerName = sellerName,
+                SellerAddress = sellerAddress,
+                SellerEmail = sellerEmail,
+                BuyerName = buyerName,
+                BuyerContact = buyerContact,
+                BuyerEmail = buyerEmail,
+
+                // Product List
+                Products = orderProducts
+            };
+
+        }
     }
 }

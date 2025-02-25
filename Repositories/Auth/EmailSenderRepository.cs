@@ -22,7 +22,7 @@ namespace WMS_Application.Repositories.Auth
             {
                 // Creating a MailboxAddress with both the display name and the email address
                 var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("OTP Verifier", "tester.vikash022@gmail.com"));
+                message.From.Add(new MailboxAddress("TradeFlow", "tester.vikash022@gmail.com"));
                 message.To.Add(new MailboxAddress("User", toEmail));
                 message.Subject = subject;
                 message.Body = new TextPart("html") { Text = body };

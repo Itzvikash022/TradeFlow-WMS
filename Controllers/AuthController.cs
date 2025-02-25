@@ -162,7 +162,10 @@ namespace WMS_Application.Controllers
                 int id = data.UserId;
                 var shopData = _context.TblShops.FirstOrDefault(x => x.AdminId == id);
                 HttpContext.Session.SetInt32("UserId", id);
-                HttpContext.Session.SetInt32("ShopId", shopData.ShopId);
+                if(shopData != null)
+                {
+                    HttpContext.Session.SetInt32("ShopId", shopData.ShopId);
+                }
                 HttpContext.Session.SetInt32("UserRoleId", data.RoleId);
 
                 // Determine redirection based on user verification and shop details
@@ -232,7 +235,7 @@ namespace WMS_Application.Controllers
             int id = (int) HttpContext.Session.GetInt32("UserId");
             if(id != 0)
             {
-                model = await _users.GetShopDataByUserId(id);
+                model = await _users.GetShopDataByUserId(id) ?? new TblShop();
             }
             return View(model);
         }

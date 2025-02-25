@@ -1,68 +1,48 @@
 ﻿$(document).ready(function () {
 
-    //// JavaScript to preview image
-    //document.getElementById('ProfileImage').addEventListener('change', function (e) {
-    //    var file = e.target.files[0];
-    //    if (file) {
-    //        var reader = new FileReader();
-    //        reader.onload = function (event) {
-    //            var imagePreview = document.getElementById('imagePreview');
-    //            imagePreview.src = event.target.result;
-    //            imagePreview.style.display = 'block';
-    //        };
-    //        reader.readAsDataURL(file);
-    //    }
-    //});
-
-
     const username = "itzvikash"; // Replace with your Geonames username
     const stateGeonameId = 1269750; // ID for India
 
+    // Get previously selected state & city
+    const selectedState = $("#State").attr("data-selected");
+    const selectedCity = $("#City").attr("data-selected");
+
     // Fetch States
     fetch(`http://api.geonames.org/childrenJSON?geonameId=${stateGeonameId}&username=${username}`)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
             const states = data.geonames;
             let stateOptions = `<option value="">Select State</option>`;
             states.forEach(state => {
-                // Store name as the value and geonameId in data-id
-                stateOptions += `<option value="${state.name}" data-id="${state.geonameId}">${state.name}</option>`;
+                stateOptions += `<option value="${state.name}" data-id="${state.geonameId}" 
+                ${state.name === selectedState ? "selected" : ""}>${state.name}</option>`;
             });
             $("#State").html(stateOptions);
+
+            // Trigger city fetch if state is preselected
+            if (selectedState) {
+                $("#State").trigger("change");
+            }
         })
-        .catch(error => {
-            console.error("Error fetching states:", error);
-        });
+        .catch(error => console.error("Error fetching states:", error));
 
     // Fetch Cities when a state is selected
     $("#State").on("change", function () {
-        const selectedStateGeonameId = $(this).find("option:selected").data("id"); // Get geonameId from data-id
+        const selectedStateGeonameId = $(this).find("option:selected").data("id");
 
-        if (selectedStateGeonameId) { 
+        if (selectedStateGeonameId) {
             fetch(`http://api.geonames.org/childrenJSON?geonameId=${selectedStateGeonameId}&username=${username}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     const cities = data.geonames;
                     let cityOptions = `<option value="">Select City</option>`;
                     cities.forEach(city => {
-                        // Store city name as the value and optionally include geonameId in data-id
-                        cityOptions += `<option value="${city.name}" data-id="${city.geonameId}">${city.name}</option>`;
+                        cityOptions += `<option value="${city.name}" data-id="${city.geonameId}" 
+                        ${city.name === selectedCity ? "selected" : ""}>${city.name}</option>`;
                     });
                     $("#City").html(cityOptions);
                 })
-                .catch(error => {
-                    console.error("Error fetching cities:", error);
-                });
+                .catch(error => console.error("Error fetching cities:", error));
         } else {
             $("#City").html(`<option value="">Select City</option>`); // Reset city dropdown
         }

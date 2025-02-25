@@ -1,4 +1,4 @@
-﻿    @model WMS_Application.Models.TblShop
+﻿@model WMS_Application.Models.TblShop
 
 @{
     Layout = "/Views/Shared/_mainLayout.cshtml";
@@ -22,7 +22,7 @@
                             <div class="card">
                                 <div class="card-body">
                                     <div class="login-userheading">
-                                        <h3>More Details</h3>
+                                        <h3>Shop Details</h3>
                                     </div>
                                     <div class="row">
                                         <div class="col-lg-8 col-sm-9 col-12">
@@ -57,7 +57,7 @@
                                             <div class="col-lg-4 col-sm-9 col-12">
                                                 <div class="form-group">
                                                     <label>State</label>
-                                                    <select class="js-example-basic-single select2" asp-for="State">
+                                                    <select class="js-example-basic-single select2" asp-for="State" data-selected="@Model.State">
                                                         <option value="">Select State</option>
                                                     </select>
                                                 </div>
@@ -65,7 +65,7 @@
                                             <div class="col-lg-4 col-sm-9 col-12">
                                                 <div class="form-group">
                                                     <label>City</label>
-                                                    <select class="js-example-basic-single select2" asp-for="City">
+                                                    <select class="js-example-basic-single select2" asp-for="City" data-selected="@Model.City">
                                                         <option value="">Select City</option>
                                                     </select>
                                                 </div>

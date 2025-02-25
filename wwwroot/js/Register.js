@@ -160,39 +160,50 @@
     const timerElement = $("#timer");
     const resendSection = $("#resend-section");
     const resendButton = $("#resend-btn");
-    const duration = 60;
-    let timeRemaining = duration;
+    const duration = 10;
+    function startTimer() {
+        timeRemaining = duration;
+        resendSection.hide(); // Hide the resend button
 
-    // Update the timer every second
-    const interval = setInterval(() => {
-        if (timeRemaining <= 0) {
-            clearInterval(interval);
-            timerElement.text("You can resend the OTP.");
-            resendSection.show(); // Show the resend button when timer expires
-        } else {
-            timeRemaining--;
-            const minutes = Math.floor(timeRemaining / 60).toString().padStart(2, "0");
-            const seconds = (timeRemaining % 60).toString().padStart(2, "0");
-            timerElement.text(`Time remaining: ${minutes}:${seconds}`);
-        }
-    }, 1000);
-
+        interval = setInterval(() => {
+            if (timeRemaining <= 0) {
+                clearInterval(interval);
+                timerElement.text("You can resend the OTP.");
+                resendSection.show(); // Show the resend button when timer expires
+            } else {
+                timeRemaining--;
+                const minutes = Math.floor(timeRemaining / 60).toString().padStart(2, "0");
+                const seconds = (timeRemaining % 60).toString().padStart(2, "0");
+                timerElement.text(`Time remaining: ${minutes}:${seconds}`);
+            }
+        }, 1000);
+    }
+    startTimer();
     // Resend OTP functionality
     resendButton.click(function (e) {
         e.preventDefault();
+        const btnResend = $("#resend-btn");
+        const btnLoader = $("#btnLoader2");
+
+        // Disable button and show loader immediately
+        btnResend.prop("disabled", true);
+        btnLoader.removeClass("d-none");
         $.ajax({
             url: "/Auth/ResendOTP", // Adjust the route to your server's endpoint
             method: "GET",
             success: function (data) {
                 if (data.success) {
                     alert("OTP has been resent to your email.");
-                    timeRemaining = duration; // Reset the timer
-                    resendSection.hide(); // Hide the resend button
-                    timerElement.text("Time remaining: 01:00"); // Reset the timer text
-                    setInterval(interval); // Restart the interval
+                    clearInterval(interval); // Clear the existing timer
+                    startTimer(); // Restart the timer
                 } else {
                     alert("Failed to resend OTP. Please try again.");
                 }
+            },
+            complete: function () {
+                // Re-enable button and hide loader
+                btnResend.prop("disabled", false);
+                btnLoader.addClass("d-none");
             },
             error: function (xhr, status, error) {
                 console.error("Error resending OTP:", error);

@@ -66,10 +66,10 @@ namespace WMS_Application.Controllers
         //public IActionResult 
 
         [HttpPost]
-        public async Task<IActionResult> UpdateStatus(int UserId, bool Status)
+        public async Task<IActionResult> UpdateStatus(int UserId, bool Status, string remark)
         {   
             string verifier = ((int) HttpContext.Session.GetInt32("UserId")).ToString();
-            var result = await _admins.UpdateStatus(UserId, Status, verifier);
+            var result = await _admins.UpdateStatus(UserId, Status, verifier, remark);
             return Json(result);
         }
 

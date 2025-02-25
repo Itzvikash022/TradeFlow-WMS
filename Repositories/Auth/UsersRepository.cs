@@ -150,9 +150,9 @@ namespace WMS_Application.Repositories.Auth
 
             return new { success = true, message = "More details have beed saved successfully" };
         }
-
         public async Task<object> SaveShopDetails(TblShop shop, int id)
         {
+            var UpdatedShopDetails =await _context.TblShops.FirstOrDefaultAsync(x => x.AdminId == id); 
             if (shop.ShopImage != null)
             {
                 var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
@@ -176,12 +176,28 @@ namespace WMS_Application.Repositories.Auth
                     shop.ShopImage.CopyTo(stream);
                 }
 
-                shop.ShopImagePath = "\\ShopUploads\\Images\\" + uniqueFileName;
+                    shop.ShopImagePath = "\\ShopUploads\\Images\\" + uniqueFileName;
                 shop.ShopImage = null;
             }
 
-            shop.AdminId = id;
-            await _context.TblShops.AddAsync(shop);
+            if(UpdatedShopDetails != null)
+            {
+                UpdatedShopDetails.ShopName = shop.ShopName;
+                UpdatedShopDetails.AdminId = id;
+                UpdatedShopDetails.State = shop.State;
+                UpdatedShopDetails.City = shop.City;
+                UpdatedShopDetails.Pincode = shop.Pincode;
+                UpdatedShopDetails.Address = shop.Address;
+                UpdatedShopDetails.StartTime = shop.StartTime;
+                UpdatedShopDetails.ClosingTime = shop.ClosingTime;
+                UpdatedShopDetails.ShopImagePath = shop.ShopImagePath;
+                _context.TblShops.Update(UpdatedShopDetails);
+            }
+            else
+            {
+                shop.AdminId = id;
+                await _context.TblShops.AddAsync(shop);
+            }
             await _context.SaveChangesAsync();
 
             return new { success = true, message = "Shop data added successfully enjoyy" };

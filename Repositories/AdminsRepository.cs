@@ -18,16 +18,29 @@ namespace WMS_Application.Repositories
 
         public async Task<List<TblUser>> GetAllAdminsData()
         {
-            var user = _context.TblUsers.Where(x => x.RoleId == 2).ToList();
-            return user;
+            var users = await _context.TblUsers
+                .Where(x => x.RoleId == 2 &&
+                           (x.VerificationStatus != "Pending" ||
+                            _context.TblAdminInfos.Any(a => a.AdminId == x.UserId)))
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+
+            return users;
         }
+
+        //public async Task<List<TblUser>> GetAllAdminsData()
+        //{
+        //    var user = _context.TblUsers.Where(x => x.RoleId == 2).ToList();
+        //    return user;
+        //}
+
 
         public async Task<List<TblRole>> GetAllRoles()
         {
             return await _context.TblRoles.ToListAsync();
         }
 
-        public async Task<object> UpdateStatus(int userId, bool status, string verifier)
+        public async Task<object> UpdateStatus(int userId, bool status, string verifier, string remark)
         {
             var user = await _context.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId);
             if (user == null) return new { success = false, message = "User not found." };
@@ -40,8 +53,8 @@ namespace WMS_Application.Repositories
             var userData = await _context.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId);
             var subject = status ? "Account Approved" : "Account Rejected";
             var body = status
-                ? $"Hi {user.Username},<br>Your account is approved. Log in to start."
-                : $"Hi {user.Username},<br>Your account is rejected. Please contact support.";
+                ? $"Hi {user.Username},<br>Your account is approved.<br><b>Remark:</b> {remark}<br> Log in to start."
+                : $"Hi {user.Username},<br>Your account is rejected. Please contact support. <br><b>Remark:</b> {remark}<br>";
             await _emailSender.SendEmailAsync(user.Email, subject, body);
 
             return new { success = true, message = status ? "User approved." : "User rejected." };

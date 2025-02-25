@@ -77,7 +77,7 @@
                                     <li>
                                         <h4>Admin @admin.IdentityDocType</h4>
                                         <h6>
-                                            <a href="@Url.Content(admin.IdentityDocPath)" target="_blank" rel="noopener noreferrer">
+                                            <a href="@Url.Content(admin.IdentityDocPath)" class="open-pdf" data-url="@Url.Content(admin.IdentityDocPath)">
                                                 <i class="bi bi-file-earmark-pdf me-2"></i> View @admin.IdentityDocType
                                             </a>
                                         </h6>
@@ -85,7 +85,7 @@
                                     <li>
                                         <h4>Address Proof</h4>
                                         <h6>
-                                            <a href="@Url.Content(admin.AddressProofPath)" target="_blank" rel="noopener noreferrer">
+                                            <a href="@Url.Content(admin.AddressProofPath)" class="open-pdf" data-url="@Url.Content(admin.AddressProofPath)">
                                                 <i class="bi bi-file-earmark-pdf me-2"></i> View Address Proof
                                             </a>
                                         </h6>
@@ -97,7 +97,7 @@
                                     <li>
                                         <h4>Shop License</h4>
                                         <h6>
-                                            <a href="@Url.Content(admin.ShopLicensePath)" target="_blank" rel="noopener noreferrer">
+                                            <a href="@Url.Content(admin.ShopLicensePath)" class="open-pdf" data-url="@Url.Content(admin.ShopLicensePath)">
                                                 <i class="bi bi-file-earmark-pdf me-2"></i> View License
                                             </a>
                                         </h6>
@@ -144,7 +144,7 @@
                                         </li>
                                         <li>
                                             <h4>Remark</h4>
-                                            <h6><input type="text" placeholder="Super admin Remark"/></h6>
+                                            <h6><input type="text" id="remarkInput" placeholder="Super admin Remark" /></h6>
                                         </li>
                                     </ul>
                                     <input hidden readonly id="UserId" value="@user.UserId" />
@@ -179,4 +179,15 @@
 </div>
 @section Scripts {
     <script src="~/js/AdminsStatus.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".open-pdf").forEach(link => {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const pdfUrl = this.getAttribute("data-url");
+                    window.open(pdfUrl, "_blank");
+                });
+            });
+        });
+    </script>
 }

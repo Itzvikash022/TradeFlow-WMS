@@ -34,9 +34,16 @@
 
     // For Accept button
     $("#btnAccept").on("click", function () {
+        const remark = $("#remarkInput").val().trim(); // Get remark input value
+        if (!remark) {
+            alert("Please provide a remark before approving.");
+            return;
+        }
+
         const data = {
             UserId: userId,
-            Status: true
+            Status: true,
+            Remark: remark
         };
         const btnRegister = $("#btnAccept");
         const btnLoader = $("#btnLoader");

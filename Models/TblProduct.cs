@@ -30,7 +30,10 @@ public partial class TblProduct
 
     public virtual ICollection<TblStock> TblStocks { get; set; } = new List<TblStock>();
 
+    public int UnregCompanyId { get; set; }
     [NotMapped]
     public string CompanyName { get; set; }
     public int ProductQty { get; set; }
+    [NotMapped]
+    public int ShopPrice { get; set; }
 }

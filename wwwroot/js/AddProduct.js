@@ -81,7 +81,7 @@
                     success: function (result) {
                         alert(result.message);
                         if (result.success) {
-                            window.location.href = '/Company';
+                            window.location.href = '/Products';
                         }
                     },
                     complete: function () {

@@ -19,8 +19,42 @@ namespace WMS_Application.Controllers
         public async Task<IActionResult> Index()
         {
             int id = (int)HttpContext.Session.GetInt32("UserId");
-            return View(_company.GetAllCompanies(id));
+            return View(_company.GetAllCompanies());
         }
+
+        [Route("/MyCompany")]
+        public IActionResult MyCompany()
+        {
+            int companyId = 0;
+            TblCompany companyData = new TblCompany();
+            if (HttpContext.Session.GetInt32("UserRoleId") == 5)
+            {
+                companyId = (int) HttpContext.Session.GetInt32("CompanyId");
+                companyData = _context.TblCompanies.FirstOrDefault(x => x.CompanyId == companyId); 
+                return View(companyData);
+            }
+            else
+            {
+                return View(null);
+            }
+        }
+
+        public IActionResult UpdateCompany(int? id)
+        {
+            TblCompany companyData = new TblCompany();
+            if (HttpContext.Session.GetInt32("UserRoleId") == 5)
+            {
+                int companyId = (int) HttpContext.Session.GetInt32("CompanyId");
+                companyData = _context.TblCompanies.FirstOrDefault(x => x.CompanyId == companyId);
+            }
+            else if(id > 0)
+            {
+                companyData = _context.TblCompanies.FirstOrDefault(x => x.CompanyId == id);
+            }
+            
+            return View(companyData);
+        }
+
 
         public async Task<IActionResult> Products()
         {
@@ -42,16 +76,13 @@ namespace WMS_Application.Controllers
         public async Task<IActionResult> SaveCompany(TblCompany model)
         {
             int id = (int)HttpContext.Session.GetInt32("UserId");
-            model.AddedBy = id;
+            //model.AddedBy = id;
             return Ok(await _company.SaveCompany(model));
         }
 
         [HttpGet]
         public async Task<IActionResult> AddProducts(int? id)
         {
-            int UserId = (int)HttpContext.Session.GetInt32("UserId");
-            ViewBag.company = _company.GetAllCompanies(UserId);
-            ViewBag.company = await _context.TblCompanies.Where(x => x.AddedBy == UserId).ToListAsync();
             TblProduct model = new TblProduct();
             if(id > 0)
             {
@@ -63,6 +94,8 @@ namespace WMS_Application.Controllers
         [HttpPost]
         public async Task<IActionResult> AddProducts(TblProduct product)
         {
+            int CompanyId = (int)HttpContext.Session.GetInt32("CompanyId");
+            product.CompanyId = CompanyId;
             return Ok(await _company.AddProduct(product));  
         }
 

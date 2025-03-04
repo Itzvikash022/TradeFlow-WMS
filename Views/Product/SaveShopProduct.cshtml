@@ -1,0 +1,104 @@
+﻿@model WMS_Application.Models.TblProduct;
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Product Add</h4>
+                <h6>Create new product</h6>
+            </div>
+        </div>
+
+        <div class="card">
+            <form enctype="multipart/form-data" id="SaveShopProduct">
+                <div class="card-body">
+                    <input type="text" asp-for="ProductId" hidden readonly>
+                    <input type="text" asp-for="UnregCompanyId" hidden readonly>
+
+                    <div class="row">
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Product Name</label>
+                                <input type="text" asp-for="ProductName">
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Category</label>
+                                <select class="select" asp-for="Category">
+                                    <option>Choose Category</option>
+                                    <option>Electronics</option>
+                                    <option>Food</option>
+                                    <option>Clothing</option>
+                                    <option>Auto Mobiles</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Product Quantity</label>
+                                <input type="text" asp-for="ProductQty">
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Price Per Unit</label>
+                                <input type="text" asp-for="PricePerUnit">
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Shop Price</label>
+                                <input type="text" asp-for="ShopPrice">
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Company Name</label>
+                                <input type="text" asp-for="CompanyName">
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-6 col-12">
+                            <div class="form-group">
+                                <label>Manufacturer</label>
+                                <input type="text" asp-for="Manufacturer">
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="form-group">
+                                <label> Product Image</label>
+                                <div class="image-upload">
+                                    <input type="file" asp-for="ProductImage">
+                                    <div class="image-uploads">
+                                        <img src="~/assets/img/icons/upload.svg" alt="img">
+                                        <h4>Drag and drop a file to upload</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="image-preview-container">
+                                <img src="#" alt="Image Preview" id="imagePreview" style="display: none;" />
+                                <p id="imagePreviewText">No image selected</p>
+                            </div>
+                        </div>
+                        <div class="col-lg-12">
+                            <button id="btnSubmit" class="btn btn-submit me-2">
+                                <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                                Submit
+                            </button>
+                            <button href="productlist.html" class="btn btn-cancel">
+                                <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="/js/SaveShopProduct.js"></script>
+}

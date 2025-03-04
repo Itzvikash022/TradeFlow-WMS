@@ -137,7 +137,12 @@
                     success: function (result) {
                         alert(result.message);
                         if (result.success) {
-                            window.location.href = '/Auth/AdminDoc';
+                            if (result.path != null) {
+                                window.location.href = '/' + result.path;
+                            }
+                            else {
+                                window.location.href = '/Auth/AdminDoc';
+                            }
                         }
                     },
                     complete: function () {

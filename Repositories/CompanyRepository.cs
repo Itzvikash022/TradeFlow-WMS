@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
+using NuGet.Protocol.Plugins;
 using System.IO;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
@@ -9,14 +11,41 @@ namespace WMS_Application.Repositories
     public class CompanyRepository : ICompanyRepository
     {
         private readonly dbMain _context;
-        public CompanyRepository(dbMain context)
+        private readonly IEmailSenderRepository _emailSender;
+        public CompanyRepository(dbMain context, IEmailSenderRepository emailSender)
         {
             _context = context;
+            _emailSender = emailSender;
         }
-        public List<TblCompany> GetAllCompanies(int id)
+        public List<TblCompany> GetAllCompanies()
         {
-            var comp = _context.TblCompanies.Where(x => x.AddedBy == id).ToList();
+            var comp = _context.TblCompanies.ToList();
             return comp;
+        }
+        public async Task<bool> IsEmailExists(string Email)
+        {
+            return await _context.TblCompanies.AnyAsync(x => x.Email == Email);
+        }
+        public async Task<object> AuthenticateUser(string email, string password)
+        {
+            //Fetching user by email or username
+            var company = await _context.TblCompanies.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (company == null)
+            {
+                return new { success = false, message = "Company with this email not found" };
+            }
+
+            //Comparing hashed passwords
+            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(password, company.PasswordHash);
+            if (isPasswordValid)
+            {
+                return new { success = true, message = "You are successfully logged in" };
+            }
+            else
+            {
+                return new { success = false, message = "Invalid Email or Password" };
+            }
         }
 
         public async Task<object> SaveCompany(TblCompany company)
@@ -49,12 +78,14 @@ namespace WMS_Application.Repositories
 
                 imgPath = "\\CompanyUploads\\" + uniqueFileName;
             }
+
+
             if (company.CompanyId > 0)
             {
-
+                UpdatedCompany.CompanyId = company.CompanyId;
                 UpdatedCompany.CompanyName = company.CompanyName;
-                UpdatedCompany.ContactPerson = company.ContactPerson;
                 UpdatedCompany.Email = company.Email;
+                UpdatedCompany.PhoneNumber = company.PhoneNumber;
                 UpdatedCompany.Gst = company.Gst;
                 UpdatedCompany.State = company.State;
                 UpdatedCompany.City = company.City;
@@ -76,16 +107,18 @@ namespace WMS_Application.Repositories
             }
             else
             {
+                company.PasswordHash = BCrypt.Net.BCrypt.HashPassword(company.PasswordHash);
                 _context.AddAsync(company);
                 msg = "New Company has been added successfully";
             }
             await _context.SaveChangesAsync();
 
-            return new { success = true, message = msg };
+            return new { success = true, message = msg, path = company.Path };
         }
 
         public async Task<object> AddProduct(TblProduct product)
         {
+            product.UnregCompanyId = 0;
             var UpdatedProduct = await _context.TblProducts.FirstOrDefaultAsync(u => u.ProductId == product.ProductId);
             string imgPath = "";
             if (product.ProductImage!= null)
@@ -115,7 +148,7 @@ namespace WMS_Application.Repositories
             }
             if (product.ProductId > 0)
             {
-
+                UpdatedProduct.UnregCompanyId = product.UnregCompanyId;
                 UpdatedProduct.ProductName = product.ProductName;
                 UpdatedProduct.Category = product.Category;
                 UpdatedProduct.PricePerUnit = product.PricePerUnit;

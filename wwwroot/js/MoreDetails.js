@@ -1,19 +1,6 @@
 ﻿$(document).ready(function () {
 
-    //// JavaScript to preview image
-    //document.getElementById('ProfileImage').addEventListener('change', function (e) {
-    //    var file = e.target.files[0];
-    //    if (file) {
-    //        var reader = new FileReader();
-    //        reader.onload = function (event) {
-    //            var imagePreview = document.getElementById('imagePreview');
-    //            imagePreview.src = event.target.result;
-    //            imagePreview.style.display = 'block';
-    //        };
-    //        reader.readAsDataURL(file);
-    //    }
-    //});
-
+    //For More details
     document.getElementById('ProfileImage').addEventListener('change', function (event) {
         const file = event.target.files[0];
         const previewImage = document.getElementById('imagePreview');
@@ -134,6 +121,111 @@
             }, 2000);
         }
     });
+
+
+    $("#companyRegistration").validate({
+        rules: {
+            CompanyName: {
+                required: true,
+                maxlength: 30
+            },
+            Email: {
+                required: true,
+                email: true
+            },
+            City: {
+                required: true,
+            },
+            State: {
+                required: true,
+            },
+            PhoneNumber: {
+                required: true,
+                digits: true,
+                minlength: 6,
+                maxlength: 15
+            },
+            PasswordHash: {
+                required: true,
+            },
+            Pincode: {
+                required: true,
+            },
+            Address: {
+                required: true,
+            },
+        },
+        messages: {
+            CompanyName: {
+                required: "Company Name is Required",
+                maxlength: "Name must not be greater than 30 letters"
+            },
+            Email: {
+                required: "Email is Required",
+                email: "Not a valid email"
+            },
+            State: {
+                required: "Select a state",
+            },
+            City: {
+                required: "Select a city",
+            },
+            PhoneNumber: {
+                required: "Phone Number is required",
+                digits: "Invalid Phone Number",
+                minlength: "Must be greater than 6 digit",
+                maxlength: "Must be smaller than 15 digit"
+            },
+            PasswordHash: {
+                required: "Password is Required",
+            },
+            Pincode: {
+                required: "Email is Required",
+            },
+            Address: {
+                required: "Address is Required",
+            },
+        },
+
+        submitHandler: function (form, event) {
+            event.preventDefault()
+            const formData = new FormData(form);
+
+            const formattedPhoneNumber = phoneInput.getNumber(intlTelInputUtils.numberFormat.E164);
+            formData.set("PhoneNumber", formattedPhoneNumber);
+            const btnRegister = $("#btnMoreDetails");
+            const btnLoader = $("#btnLoader");
+            btnRegister.prop("disabled", true);
+            btnLoader.removeClass("d-none");
+            setTimeout(function () {
+
+                // AJAX submission
+                $.ajax({
+                    url: '/Auth/CompanyRegistration',
+                    type: 'POST',
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    success: function (result) {
+                        alert(result.message);
+                        if (result.success) {
+                            window.location.href = '/';
+                        }
+                    },
+                    complete: function () {
+                        // Re-enable button and hide loader
+                        btnRegister.prop("disabled", false);
+                        btnLoader.addClass("d-none");
+                    },
+                    error: function () {
+                        alert('An error occurred while registering the user.');
+                    }
+                });
+            }, 2000);
+        }
+    });
+
+
 
     // Custom method for letters only
     $.validator.addMethod("lettersOnly", function (value, element) {

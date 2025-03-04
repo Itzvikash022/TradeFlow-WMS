@@ -77,6 +77,59 @@
         }
     });
 
+    $("#companyLogin").validate({
+        rules: {
+            Email: {
+                required: true,
+            },
+            PasswordHash: {
+                required: true,
+            }
+        },
+        messages: {
+            Email: {
+                required: "Please enter your Credentials."
+            },
+            PasswordHash: {
+                required: "Please enter your Password.",
+            }
+        },
+
+        submitHandler: function (form, event) {
+            event.preventDefault()
+            const formData = new FormData(form);
+            const btnRegister = $("#btnLogin");
+            const btnLoader = $("#btnLoader");
+            // AJAX submission
+            btnRegister.prop("disabled", true);
+            btnLoader.removeClass("d-none");
+            setTimeout(function () {
+
+                $.ajax({
+                    url: '/Auth/CompanyLogin',
+                    type: 'POST',
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    success: function (result) {
+                        alert(result.message);
+                        if (result.success) {
+                                window.location.href = "/Dashboard" ;
+                        }
+                    },
+                    complete: function () {
+                        // Re-enable button and hide loader
+                        btnRegister.prop("disabled", false);
+                        btnLoader.addClass("d-none");
+                    },
+                    error: function () {
+                        alert('An error occurred while login');
+                    }
+                });
+            }, 2000);
+        }
+    });
+
     $("#forgotPassword").validate({
         rules: {
             Email: {

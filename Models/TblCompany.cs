@@ -10,27 +10,30 @@ public partial class TblCompany
 
     public string CompanyName { get; set; } = null!;
 
-    public int? AddedBy { get; set; }
-
-    public string? ContactPerson { get; set; }
-
     public long? PhoneNumber { get; set; }
-
-    public DateTime? LastOrderDate { get; set; }
 
     public string? Email { get; set; }
 
+    public string? CompanyLogo { get; set; }
+
+    public string? PasswordHash { get; set; }
+
+    public string? State { get; set; }
+
+    public string? City { get; set; }
+
+    public int? Pincode { get; set; }
+
     public string? Address { get; set; }
 
-    public string? CompanyLogo { get; set; }
+    public bool? IsActive { get; set; }
+    public string? Gst { get; set; }
     [NotMapped]
     public IFormFile? LogoFile { get; set; }
 
-    public string? Gst { get; set; }
-
-    public int Pincode { get; set; }
-    public string City { get; set; }
-    public string State { get; set; }
-
     public DateTime? CreatedAt { get; set; }
+
+    [NotMapped]
+    public string Path { get; set; }
+    public virtual ICollection<TblCollab> TblCollabs { get; set; } = new List<TblCollab>();
 }

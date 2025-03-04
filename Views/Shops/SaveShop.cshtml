@@ -1,0 +1,135 @@
+﻿@model WMS_Application.Models.TblShop
+
+<div class="page-wrapper">
+
+    <div class="account-content">
+        <form id="shopDetails" enctype="multipart/form-data">
+            <div class="login-logo">
+            </div>
+            <div class="card">
+                <div class="card-body">
+                    <div class="login-userheading">
+                        <h3>Shop Details</h3>
+                    </div>
+                    <input type="hidden" asp-for="ShopId" readonly />
+                    <input type="hidden" asp-for="IsAction" value="@ViewBag.IsAction" readonly />
+
+                    <div class="row">
+                        <div class="col-lg-8 col-sm-9 col-12">
+                            <div class="form-group">
+                                <label>Shop Name</label>
+                                <input type="text" asp-for="ShopName" placeholder="Enter Shop Name">
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-9 col-12">
+                            <div class="form-group">
+                                <label>Shop Category</label>
+                                <select class="select">
+                                    @foreach (var cat in (List<TblShopCategory>)ViewBag.ShopCategory)
+                                    {
+                                        <option value="@cat.ShopCatId">@cat.ShopCategory</option>
+                                    }
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-9 col-12">
+                            <div class="form-login">
+                                <label>Opening Time</label>
+                                <input type="time" asp-for="StartTime">
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-9 col-12">
+                            <div class="form-login">
+                                <label>Closing Time</label>
+                                <input type="time" asp-for="ClosingTime">
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-9 col-12">
+                            <div class="form-group">
+                                <label>State</label>
+                                <select class="js-example-basic-single select2" asp-for="State" data-selected="@Model.State">
+                                    <option value="">Select State</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-9 col-12">
+                            <div class="form-group">
+                                <label>City</label>
+                                <select class="js-example-basic-single select2" asp-for="City" data-selected="@Model.City">
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                        </div>
+                        @if (ViewBag.IsAction == "SPAddNew")
+                        {
+                            <div class="col-lg-4 col-sm-9 col-12">
+                                <div class="form-group">
+                                    <label>Admin List</label>
+                                    <select class="js-example-basic-single select2" asp-for="AdminId">
+                                        <option value="">Select Admin</option>
+                                        @foreach(var admin in ViewBag.AdminList)
+                                        {
+                                            <option value="@admin.UserId">@admin.Username</option>
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        }
+                        else if(ViewBag.IsAction == "SPUpdate")
+                        {
+                            <div class="col-lg-4 col-sm-9 col-12">
+                                <div class="form-group">
+                                    <label>Admin/Owner</label>
+                                    <input type="text" asp-for="ShopOwner" value="@ViewBag.ShopOwner" readonly>
+                                </div>
+                            </div>
+                            <input type="hidden" asp-for="AdminId" readonly />
+                        }
+                        <div class="col-lg-4 col-sm-9 col-12">
+                            <div class="form-group">
+                                <label>Pincode</label>
+                                <input type="text" placeholder="Enter Pincode" asp-for="Pincode">
+                            </div>
+                        </div>
+                        <div class="col-lg-12">
+                            <div class="form-group">
+                                <label>Shop Address</label>
+                                <input type="text" placeholder="Enter Full Address" asp-for="Address">
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="form-group">
+                                <label> Shop Logo</label>
+                                <div class="image-upload">
+                                    <input type="file" asp-for="ShopImage">
+                                    <div class="image-uploads">
+                                        <img src="~/assets/img/icons/upload.svg" alt="img">
+                                        <h4>Drag and drop a file to upload</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="image-preview-container">
+                                <img src="#" alt="Image Preview" id="imagePreview" style="display: none;" />
+                                <p id="imagePreviewText">No image selected</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <button type="submit" id="btnShopDetails" class="btn btn-submit me-2">
+                                    <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/ShopDetails.js"></script>
+    }

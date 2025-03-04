@@ -9,20 +9,24 @@
                 <h6>Manage your Products</h6>
             </div>
             <div class="page-btn">
-                @if (Context.Request.Query["companyId"] != StringValues.Empty)
-                {
-                    <!-- If companyId exists in the URL -->
-                    <a href="/Company/AddProducts" class="btn btn-added">
-                        <img src="~/assets/img/icons/plus.svg" class="me-2" alt="img">Add New product for Company
-                    </a>
-                }
-                else
-                {
-                    <!-- If no companyId exists -->
-                    <a href="/Orders/CreateOrder" class="btn btn-added">
-                        <img src="~/assets/img/icons/plus.svg" class="me-2" alt="img">Create New Order
-                    </a>
-                }
+                <div class="row">
+                    @if (Context.Session.GetInt32("UserRoleId") == 5)
+                    {
+                        <a href="/Company/AddProducts" class="btn btn-added align-center">
+                            <img src="~/assets/img/icons/plus.svg" alt="img">Add New Product
+                        </a>
+                    }
+                    else
+                    {
+                        <a href="/Product/SaveShopProduct" class="btn btn-added align-center">
+                            <img src="~/assets/img/icons/plus.svg" alt="img">Add New Stock
+                        </a>
+
+                        <a href="/Orders/CreateOrder" class="btn btn-added mt-4 align-center">
+                            <img src="~/assets/img/icons/plus.svg" alt="img">Create New Order
+                        </a>
+                    }
+                </div>
             </div>
 
 
@@ -32,73 +36,10 @@
             <div class="card-body">
                 <div class="table-top">
                     <div class="search-set">
-                        <div class="search-path">
-                            <a class="btn btn-filter" id="filter_search">
-                                <img src="~/assets/img/icons/filter.svg" alt="img">
-                                <span><img src="~/assets/img/icons/closes.svg" alt="img"></span>
-                            </a>
-                        </div>
                         <div class="search-input">
                             <a class="btn btn-searchset">
                                 <img src="~/assets/img/icons/search-white.svg" alt="img">
                             </a>
-                        </div>
-                    </div>
-                    <div class="wordset">
-                        <ul>
-                            <li>
-                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img src="~/assets/img/icons/pdf.svg" alt="img"></a>
-                            </li>
-                            <li>
-                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img src="~/assets/img/icons/excel.svg" alt="img"></a>
-                            </li>
-                            <li>
-                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img src="~/assets/img/icons/printer.svg" alt="img"></a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-
-                <div class="card" id="filter_inputs">
-                    <div class="card-body pb-0">
-                        <div class="row">
-                            <div class="col-lg-2 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <div class="input-groupicon">
-                                        <input type="text" class="datetimepicker cal-icon" placeholder="Choose Date">
-                                        <div class="addonset">
-                                            <img src="~/assets/img/icons/calendars.svg" alt="img">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-2 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <input type="text" placeholder="Enter Reference">
-                                </div>
-                            </div>
-                            <div class="col-lg-2 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <select class="select">
-                                        <option>Choose Category</option>
-                                        <option>Computers</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-2 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <select class="select">
-                                        <option>Choose Status</option>
-                                        <option>Complete</option>
-                                        <option>Inprogress</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-1 col-sm-6 col-12 ms-auto">
-                                <div class="form-group">
-                                    <a class="btn btn-filters ms-auto"><img src="~/assets/img/icons/search-whites.svg" alt="img"></a>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -110,11 +51,20 @@
                                 <th>Product</th>
                                 <th>Product Name</th>
                                 <th>Category</th>
-                                <th>Company Name</th>
+                                @if(Context.Session.GetInt32("UserRoleId") != 5){
+                                    <th>Company Name</th>
+                                }
                                 <th>Price Per Unit</th>
                                 <th>Manufacturer</th>
-                                <th>Qty In Shop</th>
-                                <th>Buy Now</th>
+                                @if (Context.Session.GetInt32("UserRoleId") != 5)
+                                {
+                                    <th>Qty In Shop</th>
+                                    <th>Buy Now</th>
+                                }
+                                else
+                                {
+                                    <th>Stock Quantity</th>
+                                }
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -127,17 +77,22 @@
                                     </td>
                                     <td>@product.ProductName</td>
                                     <td>@product.Category</td>
-                                    <td>@product.CompanyName</td>
+                                    @if (Context.Session.GetInt32("UserRoleId") != 5)
+                                    {
+                                        <td>@product.CompanyName</td>
+                                    }
                                     <td>@product.PricePerUnit</td>
                                     <td>@product.Manufacturer</td>
                                     <td>
                                         @(product.ProductQty > 0 ? product.ProductQty.ToString() : "None")
                                     </td>
-                                    <td><a href="#"><span class="badges bg-lightgreen">Buy Now</span></a></td>
+                                        @if (Context.Session.GetInt32("UserRoleId") != 5)
+                                        {
+                                        <td>
+                                            <a href="#"><span class="badges bg-lightgreen">Buy Now</span></a>
+                                        </td>
+                                        }
                                     <td>
-                                        <a class="me-3" href="@Url.Action("Details", "Product", new { id =  product.ProductId})">
-                                            <img src="~/assets/img/icons/eye.svg" alt="img">
-                                        </a>
                                         <a class="me-3" href="~/product/Edit">
                                             <img src="~/assets/img/icons/edit.svg" alt="img">
                                         </a>

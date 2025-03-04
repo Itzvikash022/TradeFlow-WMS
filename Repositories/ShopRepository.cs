@@ -19,6 +19,7 @@ namespace WMS_Application.Repositories
                         select new TblShop
                         {
                             ShopId = shop.ShopId,
+                            AdminId = shop.AdminId,
                             ShopName = shop.ShopName,
                             ShopOwner = user.FirstName +" "+ user.LastName,
                             CreatedAt = shop.CreatedAt,
@@ -32,5 +33,6 @@ namespace WMS_Application.Repositories
                         };
             return await query.ToListAsync();
         }
+
     }
 }

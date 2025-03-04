@@ -1,7 +1,9 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
@@ -17,8 +19,9 @@ namespace WMS_Application.Controllers
         private readonly IEmailSenderRepository _emailSender;
         private readonly ILoginRepository _login;
         private readonly IMemoryCache _memoryCache;
+        private readonly ICompanyRepository _company;
             
-        public AuthController(ILogger<AuthController> logger, dbMain context, IUsersRepository users, IEmailSenderRepository emailSender, ILoginRepository login, IMemoryCache memoryCache)
+        public AuthController(ILogger<AuthController> logger, dbMain context, IUsersRepository users, IEmailSenderRepository emailSender, ILoginRepository login, IMemoryCache memoryCache, ICompanyRepository company)
         {
             _logger = logger;
             _context = context;
@@ -26,6 +29,7 @@ namespace WMS_Application.Controllers
             _emailSender = emailSender;
             _login = login;
             _memoryCache = memoryCache;
+            _company = company;
         }
 
         public IActionResult Index()
@@ -77,6 +81,46 @@ namespace WMS_Application.Controllers
         public IActionResult OtpCheck()
         {
             return View();
+        }
+        
+        public IActionResult CompanyRegistration()
+        {
+            return View(new TblCompany());
+        }
+        public IActionResult CompanyLogin()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> CompanyLogin([FromForm] string email, string passwordhash)
+        {
+            var result = await _company.AuthenticateUser(email, passwordhash);
+            var companyData = _context.TblCompanies.FirstOrDefault(x => x.Email == email);
+            if (((dynamic)result).success)
+            {
+                HttpContext.Session.SetInt32("UserRoleId", 5);
+                HttpContext.Session.SetInt32("CompanyId", companyData.CompanyId);
+            }
+            return (Json(result));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CompanyRegistration([FromForm] TblCompany company)
+        {
+            try
+            {
+                if (await _company.IsEmailExists(company.Email) && company.CompanyId == 0)
+                {
+                    return Json(new { success = false, message = "Email already exists" });
+                }
+                HttpContext.Session.SetString("UserEmail", company.Email);
+                return Json(await _company.SaveCompany(company));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.ToString);
+                return Json(new { success = false, message = "Unkown error occured" });
+            }
         }
 
         public async Task<IActionResult> MoreDetails()
@@ -160,12 +204,22 @@ namespace WMS_Application.Controllers
 
                 var data = await _users.GetUserDataByEmail(email);
                 int id = data.UserId;
-                var shopData = _context.TblShops.FirstOrDefault(x => x.AdminId == id);
-                HttpContext.Session.SetInt32("UserId", id);
-                if(shopData != null)
+
+                TblShop shopData = new TblShop();
+                if(data.RoleId <= 2)
+                {
+                    shopData = _context.TblShops.FirstOrDefault(x => x.AdminId == id);
+                }
+                else
+                {
+                    string refId = data.AdminRef;
+                    shopData = _context.TblShops.FirstOrDefault(x => x.AdminId.ToString() == refId);
+                }
+                if (shopData != null)
                 {
                     HttpContext.Session.SetInt32("ShopId", shopData.ShopId);
                 }
+                HttpContext.Session.SetInt32("UserId", id);
                 HttpContext.Session.SetInt32("UserRoleId", data.RoleId);
 
                 // Determine redirection based on user verification and shop details
@@ -287,14 +341,22 @@ namespace WMS_Application.Controllers
         [HttpPost]
         public async Task<IActionResult> ShopDetails(TblShop shop)
         {
-            int id = (int) HttpContext.Session.GetInt32("UserId");
-            if(id != null)
+            int id = 0;
+            if(shop.IsAction == "SPAddNew" || shop.IsAction == "SPUpdate")
             {
-                return Json(await _users.SaveShopDetails(shop, id));
+                return Json(await _users.SaveShopDetails(shop, shop.AdminId));
             }
             else
             {
-                return Json(new { success = false, message = "Owner Id not found" });
+                id = (int)HttpContext.Session.GetInt32("UserId");
+                if(id != null)
+                {
+                    return Json(await _users.SaveShopDetails(shop, id));
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Owner Id not found" });
+                }
             }
         }
 

@@ -1,0 +1,78 @@
+﻿@model WMS_Application.Models.TblCompany;
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>MyCompany</h4>
+                <h6>My Company details</h6>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    @if (Model == null)
+                    {
+                        <h4>No Company data found on your name</h4>
+                    }
+                    else
+                    {
+                        <div class="card-body">
+                            <div class="slider-product-details">
+                                <div class="slider-product">
+                                    <img src="@Model.CompanyLogo" alt="img" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="productdetails">
+                                <ul class="product-bar">
+                                    <li>
+                                        <h4>Company Name</h4>
+                                        <h6>@Model.CompanyName</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Phone Number</h4>
+                                        <h6>@Model.PhoneNumber</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Email</h4>
+                                        <h6>@Model.Email</h6>
+                                    </li>
+                                    <li>
+                                        <h4>City</h4>
+                                        <h6>@Model.City</h6>
+                                    </li>
+                                    <li>
+                                        <h4>State</h4>
+                                        <h6>@Model.State</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Pincode</h4>
+                                        <h6>@Model.Pincode</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Address</h4>
+                                        <h6>@Model.Address</h6>
+                                    </li>
+                                    <li>
+                                        <h4>GST</h4>
+                                        <h6>@Model.Gst</h6>
+                                    </li>
+                                    <li>
+                                        <h4>Registered On</h4>
+                                        <h6>@Model.CreatedAt</h6>
+                                    </li>
+                                </ul>
+                                <a href="/Company/UpdateCompany" id="btnRedirectToUpdate" class="btn btn-submit mt-4 align-center">
+                                    Update?
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

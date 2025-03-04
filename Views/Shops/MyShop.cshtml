@@ -1,0 +1,67 @@
+﻿@model WMS_Application.Models.TblShop;
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>MyShop</h4>
+                <h6>My Shop details</h6>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="slider-product-details">
+                            <div class="slider-product">
+                                <img src="@Model.ShopImagePath" alt="img" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="productdetails">
+                            <ul class="product-bar">
+                                <li>
+                                    <h4>Shop Name</h4>
+                                    <h6>@Model.ShopName</h6>
+                                </li>
+                                <li>
+                                    <h4>City</h4>
+                                    <h6>@Model.City</h6>
+                                </li>
+                                <li>
+                                    <h4>State</h4>
+                                    <h6>@Model.State</h6>
+                                </li>
+                                <li>
+                                    <h4>Pincode</h4>
+                                    <h6>@Model.Pincode</h6>
+                                </li>
+                                <li>
+                                    <h4>Address</h4>
+                                    <h6>@Model.Address</h6>
+                                </li>
+                                <li>
+                                    <h4>Registered On</h4>
+                                    <h6>@Model.CreatedAt</h6>
+                                </li>
+                                <li>
+                                    <h4>Opening Time</h4>
+                                    <h6>@Model.StartTime</h6>
+                                </li>
+                                <li>
+                                    <h4>GST</h4>
+                                    <h6>@Model.ClosingTime</h6>
+                                </li>
+                            </ul>
+                            <a href="/Shops/SaveShop" id="btnRedirectToUpdate" class="btn btn-submit mt-4 align-center">
+                                Update?
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

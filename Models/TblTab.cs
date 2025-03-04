@@ -15,5 +15,7 @@ public partial class TblTab
 
     public string? IconPath { get; set; }
 
+    public bool IsActive { get; set; }
+
     public virtual ICollection<TblPermission> TblPermissions { get; set; } = new List<TblPermission>();
 }

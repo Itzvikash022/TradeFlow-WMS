@@ -12,7 +12,8 @@
         <div class="card">
             <form enctype="multipart/form-data" id="SaveProduct">
             <div class="card-body">
-                    <input type="text" asp-for="ProductId" hidden readonly>
+                    <input type="text" asp-for="ProductId" hidden readonly >
+                    <input type="text" asp-for="CompanyId" hidden readonly >
 
                 <div class="row">
                     <div class="col-lg-4 col-sm-6 col-12">
@@ -35,20 +36,14 @@
                     </div>
                     <div class="col-lg-3 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Price Per Unit</label>
-                            <input type="text" asp-for="PricePerUnit">
+                            <label>Product Quantity</label>
+                                <input type="text" asp-for="ProductQty">
                         </div>
                     </div>
                     <div class="col-lg-4 col-sm-6 col-12">
                         <div class="form-group">
-                            <label>Brand</label>
-                                <select class="js-example-basic-single select2" asp-for="CompanyId">
-                                <option value="">Choose Brand</option>
-                                    @foreach (var company in (List<TblCompany>)ViewBag.company)
-                                    {
-                                        <option value="@company.CompanyId">@company.CompanyName</option>
-                                    })
-                            </select>
+                            <label>Price Per Unit</label>
+                            <input type="text" asp-for="PricePerUnit">
                         </div>
                     </div>
                     <div class="col-lg-6 col-sm-6 col-12">
@@ -85,7 +80,8 @@
                             Cancel
                         </button>
                     </div>
-                </div>
+                    </div>
+
             </div>
             </form>
         </div>

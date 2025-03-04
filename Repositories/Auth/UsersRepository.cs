@@ -177,7 +177,6 @@ namespace WMS_Application.Repositories.Auth
                 }
 
                     shop.ShopImagePath = "\\ShopUploads\\Images\\" + uniqueFileName;
-                shop.ShopImage = null;
             }
 
             if(UpdatedShopDetails != null)
@@ -190,7 +189,10 @@ namespace WMS_Application.Repositories.Auth
                 UpdatedShopDetails.Address = shop.Address;
                 UpdatedShopDetails.StartTime = shop.StartTime;
                 UpdatedShopDetails.ClosingTime = shop.ClosingTime;
-                UpdatedShopDetails.ShopImagePath = shop.ShopImagePath;
+                if(shop.ShopImage != null)
+                {
+                    UpdatedShopDetails.ShopImagePath = shop.ShopImagePath;
+                }
                 _context.TblShops.Update(UpdatedShopDetails);
             }
             else
@@ -198,9 +200,18 @@ namespace WMS_Application.Repositories.Auth
                 shop.AdminId = id;
                 await _context.TblShops.AddAsync(shop);
             }
-            await _context.SaveChangesAsync();
+            shop.ShopImage = null;
 
-            return new { success = true, message = "Shop data added successfully enjoyy" };
+            await _context.SaveChangesAsync();
+            if(shop.IsAction == "UpdateSelf")
+            {
+                return new { success = true, message = "Shop data updated successfully", path="MyShop"  };
+            }
+            else
+            {
+                return new { success = true, message = "Shop data added successfully enjoyy" };
+            }
+
         }
 
         public async Task<object> SaveAdminDoc(TblAdminInfo info, int id)

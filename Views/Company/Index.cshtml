@@ -10,7 +10,7 @@
             </div>
             <div class="page-btn">
                 @* <a href="/company/SaveEmployee" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New company</a> *@
-                <a href="@Url.Action("SaveCompany", "Company")" class="btn btn-added"><img src="assets/img/icons/plus.svg" alt="img" class="me-1">Add New Company</a>
+                <a href="@Url.Action("UpdateCompany", "Company")" class="btn btn-added"><img src="assets/img/icons/plus.svg" alt="img" class="me-1">Add New Company</a>
             </div>
         </div>
 
@@ -18,76 +18,15 @@
             <div class="card-body">
                 <div class="table-top">
                     <div class="search-set">
-                        <div class="search-path">
-                            <a class="btn btn-filter" id="filter_search">
-                                <img src="assets/img/icons/filter.svg" alt="img">
-                                <span><img src="assets/img/icons/closes.svg" alt="img"></span>
-                            </a>
-                        </div>
                         <div class="search-input">
                             <a class="btn btn-searchset">
                                 <img src="assets/img/icons/search-white.svg" alt="img">
                             </a>
                         </div>
                     </div>
-                    <div class="wordset">
-                        <ul>
-                            <li>
-                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img src="assets/img/icons/pdf.svg" alt="img"></a>
-                            </li>
-                            <li>
-                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img src="assets/img/icons/excel.svg" alt="img"></a>
-                            </li>
-                            <li>
-                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img src="assets/img/icons/printer.svg" alt="img"></a>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
 
-                <div class="card" id="filter_inputs">
-                    <div class="card-body pb-0">
-                        <div class="row">
-                            <div class="col-lg-2 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <div class="input-groupicon">
-                                        <input type="text" class="datetimepicker cal-icon" placeholder="Choose Date">
-                                        <div class="addonset">
-                                            <img src="assets/img/icons/calendars.svg" alt="img">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-2 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <input type="text" placeholder="Enter Reference">
-                                </div>
-                            </div>
-                            <div class="col-lg-2 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <select class="select">
-                                        <option>Choose Category</option>
-                                        <option>Computers</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-2 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <select class="select">
-                                        <option>Choose Status</option>
-                                        <option>Complete</option>
-                                        <option>Inprogress</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-1 col-sm-6 col-12 ms-auto">
-                                <div class="form-group">
-                                    <a class="btn btn-filters ms-auto"><img src="assets/img/icons/search-whites.svg" alt="img"></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+               
 
                 <div class="table-responsive">
                     <table class="table  datanew">
@@ -100,7 +39,6 @@
                                     </label>
                                 </th>
                                 <th>Company Name</th>
-                                <th>Contact Person</th>
                                 <th>Email</th>
                                 <th>Phone Number</th>
                                 <th>Location</th>
@@ -116,7 +54,6 @@
                                         <img src="@company.CompanyLogo" alt="img" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
                                     </td>
                                     <td>@company.CompanyName</td>
-                                    <td>@company.ContactPerson</td>
                                     <td>@company.Email</td>
                                     <td>@company.PhoneNumber</td>
                                     <td>@company.Address</td>
@@ -127,7 +64,7 @@
                                                 <img src="~/assets/img/icons/eye.svg" alt="img">
                                             </button>
                                         </a>
-                                        <a href="@Url.Action("SaveCompany", "Company", new { id = company.CompanyId})">
+                                        <a href="@Url.Action("UpdateCompany", "Company", new { id = company.CompanyId})">
                                             <button class="me-3 btn">
                                                 <img src="~/assets/img/icons/edit.svg" alt="img">
                                             </button>

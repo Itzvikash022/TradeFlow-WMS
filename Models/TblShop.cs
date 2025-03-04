@@ -30,8 +30,12 @@ public partial class TblShop
 
     [NotMapped]
     public IFormFile? ShopImage { get; set; }
+    [NotMapped]
+    public string IsAction { get; set; }
 
     [NotMapped]
     public string ShopOwner { get; set; }
     public virtual ICollection<TblStock> TblStocks { get; set; } = new List<TblStock>();
+    public virtual ICollection<TblCollab> TblCollabs { get; set; } = new List<TblCollab>();
+
 }

@@ -6,7 +6,7 @@
                 <h6>Manage your Shop</h6>
             </div>
             <div class="page-btn">
-                <a href="createexpense.html" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New Shop</a>
+                <a href="@Url.Action("SaveShop", "Shops", new { addNew = true })" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New Shop</a>
             </div>
         </div>
 
@@ -89,18 +89,16 @@
                     <table class="table  datanew">
                         <thead>
                             <tr>
-                                <th>
-                                    <label class="checkboxs">
-                                        <input type="checkbox" id="select-all">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </th>
-                                <th>Category name</th>
-                                <th>Reference</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Amount</th>
-                                <th>Description</th>
+                                <th>Shop Logo</th>
+                                <th>Shop Name</th>
+                                <th>Started On</th>
+                                <th>State</th>
+                                <th>City</th>
+                                <th>Pincode</th>
+                                <th>Address</th>
+                                <th>Start Time</th>
+                                <th>End Time</th>
+                                <th>Admin Name</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -121,10 +119,10 @@
                                     <td>@shop.ClosingTime</td>
                                     <td>@shop.ShopOwner</td>
                                     <td>
-                                        <a class="me-3" href="@Url.Action("Details", "Shops", new { id =  shop.ShopId})">
+                                        <a class="me-3" href="@Url.Action("Details", "Admins", new { id =  shop.AdminId})">
                                             <img src="~/assets/img/icons/eye.svg" alt="img">
                                         </a>
-                                        <a class="me-3" href="~/Shops/Edit">
+                                        <a class="me-3" href="@Url.Action("SaveShop", "Shops", new { id =  shop.ShopId})">
                                             <img src="~/assets/img/icons/edit.svg" alt="img">
                                         </a>
                                         <a class="me-3 confirm-text" href="~/Shops/Delete">

@@ -1,0 +1,123 @@
+﻿@model WMS_Application.Models.TblCompany
+
+<div class="page-wrapper">
+    <div class="account-content">
+        <form id="companyRegistration" enctype="multipart/form-data">
+            <div class="card">
+                <div class="card-body">
+                    <div class="login-userheading">
+                        <h3>Company Registration</h3>
+                    </div>
+                    <input type="text" asp-for="CompanyId" readonly hidden/>
+                    @if(Context.Session.GetInt32("UserRoleId") == 5)
+                    {
+                        <input type="text" asp-for="Path" value="MyCompany" readonly hidden />
+                    }
+                    else
+                    {
+                        <input type="text" asp-for="Path" value="Company" readonly hidden />
+                    }
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label>Company Name</label>
+                                <input type="text" asp-for="CompanyName" placeholder="Enter your company name here">
+                            </div>
+                        </div>
+                        <div class="col-8">
+                            <div class="form-group">
+                                <label>Email</label>
+                                @if(Model == null || Model.CompanyId == 0)
+                                {
+                                    <input type="text" asp-for="Email" placeholder="Enter email address here">
+                                }
+                                else
+                                {
+                                    <input type="text" asp-for="Email" readonly>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="form-group">
+                                <label>Phone</label>
+                                <input type="text" asp-for="PhoneNumber">
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-9 col-12">
+                            <div class="form-group">
+                                <label>State</label>
+                                <select class="js-example-basic-single select2" asp-for="State" data-selected="@Model.State">
+                                    <option value="">Select State</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-sm-9 col-12">
+                            <div class="form-group">
+                                <label>City</label>
+                                <select class="js-example-basic-single select2" asp-for="City" data-selected="@Model.City">
+                                    <option value="">Select City</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-9 col-12">
+                            <div class="form-group">
+                                <label>GST No.</label>
+                                <input type="text" asp-for="Gst" placeholder="Enter GST No. here">
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-sm-9 col-12">
+                            <div class="form-group">
+                                <label>Pincode</label>
+                                <input type="text" asp-for="Pincode" placeholder="Enter Pincode here">
+                            </div>
+                        </div>
+                        @if(Context.Session.GetInt32("UserRoleId") != 5 && (Model == null || Model.CompanyId == 0))
+                        {
+                            <div class="col-lg-4 col-sm-9 col-12">
+                                <div class="form-group">
+                                    <label>Password</label>
+                                    <input type="text" asp-for="PasswordHash" placeholder="Enter Password here">
+                                </div>
+                            </div>
+                        }
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label>Address</label>
+                                <input type="text" asp-for="Address" placeholder="Enter Address here">
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="form-group">
+                                <label>Company Logo</label>
+                                <div class="image-upload">
+                                    <input type="file" asp-for="LogoFile">
+                                    <div class="image-uploads">
+                                        <img src="~/assets/img/icons/upload.svg" alt="img">
+                                        <h4>Drag and drop a file to upload</h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="image-preview-container">
+                                <img src="#" alt="Image Preview" id="imagePreview" style="display: none;" />
+                                <p id="imagePreviewText">No image selected</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <button type="submit" id="btnCompanyRegistration" class="btn btn-submit me-2">
+                                    <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                                    Update
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/CompanyRegistration.js"></script>
+    }

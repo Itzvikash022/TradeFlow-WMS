@@ -11,5 +11,8 @@ public partial class TblPermission
 
     public int TabId { get; set; }
 
+    public bool IsActive { get; set; }
+    public string PermissionType { get; set; }
+
     public virtual TblTab Tab { get; set; } = null!;
 }

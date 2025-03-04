@@ -5,6 +5,8 @@ using WMS_Application.Models;
 using WMS_Application.DTO;
 using WMS_Application.Repositories.Interfaces;
 using MimeKit.Tnef;
+using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WMS_Application.Controllers
 {
@@ -26,21 +28,51 @@ namespace WMS_Application.Controllers
         [Route("Orders")]
         public async Task<IActionResult> Index()
         {
-            int adminId = (int)HttpContext.Session.GetInt32("UserId");
-            var ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
-            HttpContext.Session.SetInt32("UserShopId", ShopData.ShopId);
-
-            var orders = await _orders.GetAllOrders(ShopData.ShopId);
-
-            foreach(var order in orders)
+            List<TblOrder> orders = new List<TblOrder>();
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            if(roleId != 5)
             {
-                if(order.SellerId == ShopData.ShopId)
+
+                int adminId = (int)HttpContext.Session.GetInt32("UserId");
+
+                TblShop ShopData = new TblShop();
+                if (roleId <= 2)
                 {
-                    order.OrderType = "Sale";
+                    ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
                 }
                 else
                 {
-                    order.OrderType = "Purchase";
+                    string refId = _context.TblUsers.FirstOrDefault(x => x.UserId == adminId).AdminRef;
+                    ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId.ToString() == refId);
+                }
+                if (ShopData != null)
+                {
+                    HttpContext.Session.SetInt32("ShopId", ShopData.ShopId);
+                }
+                orders = await _orders.GetAllOrders(ShopData.ShopId);
+
+                foreach(var order in orders)
+                {
+                    if(order.SellerId == ShopData.ShopId)
+                    {
+                        order.OrderType = "Sale";
+                    }
+                    else
+                    {
+                        order.OrderType = "Purchase";
+                    }
+                }
+            }
+            else
+            {
+                int companyId = (int) HttpContext.Session.GetInt32("CompanyId");
+                orders = await _orders.GetAllCompanyOrders(companyId);
+                foreach (var order in orders)
+                {
+                    if (order.SellerId == companyId)
+                    {
+                        order.OrderType = "Sale";
+                    }
                 }
             }
             return View(orders);
@@ -344,31 +376,31 @@ namespace WMS_Application.Controllers
 
                 // Only update stock if the status is "Success"
                 if (request.NewStatus == "Success")
-{
-                // Fetch product details for stock updates
-                var orderDetails = order.TblOrderDetails;
-                var productList = new List<ProductDto>(); // ✅ Store all products
-
-                // Loop through products in order and add to the list
-                foreach (var orderDetail in orderDetails)
                 {
-                    productList.Add(new ProductDto
+                    // Fetch product details for stock updates
+                    var orderDetails = order.TblOrderDetails;
+                    var productList = new List<ProductDto>(); // ✅ Store all products
+
+                    // Loop through products in order and add to the list
+                    foreach (var orderDetail in orderDetails)
                     {
-                        ProductID = (int)orderDetail.ProductId,
-                        qty = orderDetail.Quantity,
-                        PricePerUnit = orderDetail.PricePerUnit
-                    });
+                        productList.Add(new ProductDto
+                        {
+                            ProductID = (int)orderDetail.ProductId,
+                            qty = orderDetail.Quantity,
+                            PricePerUnit = orderDetail.PricePerUnit
+                        });
+                    }
+                    _context.Update(order);
+                    // Save the updated order status to the database
+                    await _context.SaveChangesAsync();
+
+                    // ✅ Now send the complete product list for stock update
+                    await _orders.UpdateStockAsync(order.OrderId, productList);
+
+                    return Json(new { success = true, message = "Order status updated successfully." });
                 }
-
-                // ✅ Now send the complete product list for stock update
-                await _orders.UpdateStockAsync(order.OrderType, productList, (int)order.SellerId, (int)order.BuyerId);
-}
-
-
-                // Save the updated order status to the database
-                await _context.SaveChangesAsync();
-
-                return Json(new { success = true, message = "Order status updated successfully." });
+                return Json(new { success = true, message = "Order not successfull" });
             }
             catch (Exception ex)
             {

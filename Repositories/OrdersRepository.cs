@@ -78,6 +78,48 @@ namespace WMS_Application.Repositories
             return orders;
         }
 
+        public async Task<List<TblOrder>> GetAllCompanyOrders(int companyId)
+        {
+            var orders = await (from o in _context.TblOrders
+
+                                    // Left Join for Buyer Shop
+                                join bShop in _context.TblShops on o.BuyerId equals bShop.ShopId into bShopJoin
+                                from bShop in bShopJoin.DefaultIfEmpty()
+
+                                    // Left Join for Seller Company
+                                join comp in _context.TblCompanies on o.SellerId equals comp.CompanyId into compJoin
+                                from comp in compJoin.DefaultIfEmpty()
+
+                                where o.SellerId == companyId
+
+                                select new TblOrder
+                                {
+                                    OrderId = o.OrderId,
+                                    OrderDate = o.OrderDate,
+                                    OrderType = o.OrderType,
+                                    SellerId = o.SellerId,
+                                    BuyerId = o.BuyerId,
+                                    // **✅ Fix: Correctly fetching Seller Name**
+                                    SellerName = o.OrderType == "CompanyToShop" ? comp.CompanyName :
+                                                 "Unknown Seller",
+
+                                    // **✅ Fix: Correctly fetching Buyer Name**
+                                    BuyerName = o.OrderType == "CompanyToShop" ? bShop.ShopName :
+                                                "Unknown Buyer",
+
+                                    TotalAmount = o.TotalAmount,
+                                    Remarks = o.Remarks,
+                                    OrderStatus = o.OrderStatus,
+                                    CanEditStatus = o.SellerId == companyId,
+                                    TotalQty = o.TotalQty,
+                                    PaymentStatus = o.PaymentStatus
+                                })
+                     .OrderByDescending(o => o.OrderDate).AsNoTracking()
+                     .ToListAsync();
+
+            return orders;
+        }
+
 
         public async Task<List<ProductS2SBuyDto>> GetAllProducts(int companyId, int shopId)
         {
@@ -109,7 +151,17 @@ namespace WMS_Application.Repositories
             {
                 var products = from stock in _context.TblStocks
                                join product in _context.TblProducts on stock.ProductId equals product.ProductId
-                               join company in _context.TblCompanies on product.CompanyId equals company.CompanyId
+
+                               // Left Join with Registered Companies
+                               join company in _context.TblCompanies
+                               on product.CompanyId equals company.CompanyId into companyGroup
+                               from company in companyGroup.DefaultIfEmpty()
+
+                                   // Left Join with Unregistered Companies
+                               join unregCompany in _context.TblUnregCompanies
+                               on product.UnregCompanyId equals unregCompany.UnregCompanyId into unregCompanyGroup
+                               from unregCompany in unregCompanyGroup.DefaultIfEmpty()
+
                                where stock.ShopId == shopId
                                select new ProductS2SBuyDto
                                {
@@ -119,11 +171,12 @@ namespace WMS_Application.Repositories
                                    PricePerUnit = product.PricePerUnit,
                                    ProductQty = stock.Quantity,
                                    SellerShopId = shopId,
-                                   CompanyName = company.CompanyName,
+                                   CompanyName = company != null ? company.CompanyName : unregCompany.UnregCompanyName, // Fetch from registered or unregistered
                                    ProductImagePath = product.ProductImagePath
                                };
 
                 return products.ToList();
+
             }
         }
 
@@ -155,15 +208,10 @@ namespace WMS_Application.Repositories
                 query = query.Where(p => p.CompanyId == companyData.CompanyId);
             }
 
+            query = query.Where(p => p.CompanyId != 0);
+
+
             var result = query.ToList();
-
-            //foreach (var product in result)
-            //{
-            //    var companyInfo = _context.TblCompanies
-            //        .FirstOrDefault(c => c.CompanyId == product.CompanyId);
-
-            //    product.CompanyName = companyInfo?.CompanyName; // ✅ Assign company name
-            //}
 
             // Convert to DTO and assign values
             var productsDto = result.Select(product => new ProductS2SBuyDto
@@ -218,22 +266,36 @@ namespace WMS_Application.Repositories
             }
 
             // Fetch only necessary fields using DTO, ensuring multiple shops can list the same product separately
-            var result = query
-                .Select(s => new ProductS2SBuyDto
-                {
-                    ProductId = s.Product.ProductId,
-                    ProductName = s.Product.ProductName,
-                    Category = s.Product.Category,
-                    PricePerUnit = s.Product.PricePerUnit,
-                    ProductImagePath = s.Product.ProductImagePath,
-                    CompanyName = s.Shop.ShopName,  // Fetching shop name correctly per product-shop entry
-                    ProductQty = s.Quantity,         // No sum, so each shop's product is listed separately
-                    SellerShopId = s.Shop.ShopId,
-                    CompanyId = s.Product.CompanyId
-                })
-                .ToList();
+            var result = from stock in _context.TblStocks
+                         join product in _context.TblProducts
+                         on stock.ProductId equals product.ProductId
 
-            return result;
+                         // Left Join with Registered Companies
+                         join company in _context.TblCompanies
+                         on product.CompanyId equals company.CompanyId into companyGroup
+                         from company in companyGroup.DefaultIfEmpty()
+
+                             // Left Join with Unregistered Companies
+                         join unregCompany in _context.TblUnregCompanies
+                         on product.UnregCompanyId equals unregCompany.UnregCompanyId into unregCompanyGroup
+                         from unregCompany in unregCompanyGroup.DefaultIfEmpty()
+
+                         where stock.ShopId != loggedInShop // Exclude logged-in shop's products
+                         select new ProductS2SBuyDto
+                         {
+                             ProductId = product.ProductId,
+                             ProductName = product.ProductName,
+                             Category = product.Category,
+                             PricePerUnit = product.PricePerUnit,
+                             ProductImagePath = product.ProductImagePath,
+                             CompanyName = company != null ? company.CompanyName : unregCompany.UnregCompanyName, // Choose available name
+                             ProductQty = stock.Quantity,
+                             SellerShopId = stock.Shop.ShopId,
+                             CompanyId = product.CompanyId
+                         };
+
+            return result.ToList();
+
         }
 
 
@@ -308,12 +370,14 @@ namespace WMS_Application.Repositories
         }
 
         // Generalized stock update function
-        public async Task UpdateStockAsync(string orderType, List<ProductDto> products, int sellerId, int buyerId)
+        public async Task UpdateStockAsync(int orderId, List<ProductDto> products)
         {
+            var order = await _context.TblOrders
+                .FirstOrDefaultAsync(o => o.OrderId == orderId);
             //Check qty
             foreach (var product in products)
             {
-                if (orderType == "CompanyToShop")
+                if (order.OrderType == "CompanyToShop")
                 {
                     // Reduce stock from tblProducts (Company stock)
                     var companyProduct = await _context.TblProducts
@@ -324,22 +388,22 @@ namespace WMS_Application.Repositories
                         throw new Exception($"Insufficient stock for selected product");
                     }
                 }
-                else if (orderType == "ShopToCustomer")
+                else if (order.OrderType == "ShopToCustomer")
                 {
                     // Reduce stock from the seller's shop (tblStock)
                     var shopStock = await _context.TblStocks
-                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == sellerId);
+                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == order.SellerId);
 
                     if (shopStock != null && shopStock.Quantity < product.qty)
                     {
                         throw new Exception($"Insufficient stock for product ID {product.ProductID} in shop.");
                     }
                 }
-                else if (orderType == "ShopToShopBuy" || orderType == "ShopToShopSell")
+                else if (order.OrderType == "ShopToShopBuy" || order.OrderType == "ShopToShopSell")
                 {
                     // Reduce stock from the seller's shop (Shop 1)
                     var sellerStock = await _context.TblStocks
-                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == sellerId);
+                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == order.SellerId);
 
                     if (sellerStock != null && sellerStock.Quantity < product.qty)
                     {
@@ -351,7 +415,7 @@ namespace WMS_Application.Repositories
             //Update qty
             foreach (var product in products)
             {
-                if (orderType == "CompanyToShop")
+                if (order.OrderType == "CompanyToShop" && order.OrderStatus == "Success")
                 {
                     // Reduce stock from tblProducts (Company stock)
                     var companyProduct = await _context.TblProducts
@@ -361,7 +425,7 @@ namespace WMS_Application.Repositories
 
                     // Increase stock in the buyer's shop (tblStock)
                     var shopStock = await _context.TblStocks
-                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == buyerId && s.ShopPrice == product.PricePerUnit);
+                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == order.BuyerId && s.ShopPrice == product.PricePerUnit);
 
                     if (shopStock != null)
                     {
@@ -372,31 +436,29 @@ namespace WMS_Application.Repositories
                         _context.TblStocks.Add(new TblStock
                         {
                             ProductId = product.ProductID,
-                            ShopId = buyerId,
+                            ShopId = order.BuyerId,
                             Quantity = product.qty,
                             ShopPrice = product.PricePerUnit
                         });
                     }
                 }
-                else if (orderType == "ShopToCustomer")
+                else if (order.OrderType == "ShopToCustomer")
                 {
                     // Reduce stock from the seller's shop (tblStock)
                     var shopStock = await _context.TblStocks
-                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == sellerId);
-
+                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == order.SellerId);
                         shopStock.Quantity -= product.qty;
                 }
-                else if (orderType == "ShopToShopBuy" || orderType == "ShopToShopSell")
+                else if (order.OrderType == "ShopToShopSell" || (order.OrderType == "ShopToShopBuy" && order.OrderStatus == "Success"))
                 {
                     // Reduce stock from the seller's shop (Shop 1)
                     var sellerStock = await _context.TblStocks
-                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == sellerId);
-
+                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == order.SellerId);
                         sellerStock.Quantity -= product.qty;
 
                     // Increase stock in the buyer's shop (Shop 2)
                     var buyerStock = await _context.TblStocks
-                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == buyerId && s.ShopPrice == product.PricePerUnit);
+                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == order.BuyerId&& s.ShopPrice == product.PricePerUnit);
 
                     if (buyerStock != null)
                     {
@@ -407,7 +469,7 @@ namespace WMS_Application.Repositories
                         _context.TblStocks.Add(new TblStock
                         {
                             ProductId = product.ProductID,
-                            ShopId = buyerId,
+                            ShopId = order.BuyerId,
                             Quantity = product.qty,
                             ShopPrice = product.PricePerUnit
                         });
@@ -526,20 +588,20 @@ namespace WMS_Application.Repositories
                 await _context.TblTransactions.AddAsync(transaction);
                 await _context.SaveChangesAsync();
 
-                // ✅ Update stock AFTER transaction is successfully saved
-                await UpdateStockAsync(order.OrderType, products, (int)order.SellerId, (int)order.BuyerId);
 
                 // ✅ Now update order status & commit changes
                 order.PaymentStatus = "Paid";
 
-                if (order.OrderType != "ShopToShopBuy")
+                if (order.OrderType != "ShopToShopBuy" && order.OrderType != "CompanyToShop")
                 {
                     order.OrderStatus = "Success";
                 }
 
                 _context.TblOrders.Update(order);
-                await _context.SaveChangesAsync();
 
+                // ✅ Update stock AFTER transaction is successfully saved
+                await UpdateStockAsync(order.OrderId, products);
+                await _context.SaveChangesAsync();
 
                 // ✅ Generate receipt & send email AFTER everything is successfully saved
                 if (transaction.OrderId != 0)

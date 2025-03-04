@@ -24,17 +24,9 @@ namespace WMS_Application.Repositories
                             _context.TblAdminInfos.Any(a => a.AdminId == x.UserId)))
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
-
+                
             return users;
         }
-
-        //public async Task<List<TblUser>> GetAllAdminsData()
-        //{
-        //    var user = _context.TblUsers.Where(x => x.RoleId == 2).ToList();
-        //    return user;
-        //}
-
-
         public async Task<List<TblRole>> GetAllRoles()
         {
             return await _context.TblRoles.ToListAsync();

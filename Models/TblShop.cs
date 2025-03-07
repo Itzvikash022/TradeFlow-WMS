@@ -26,6 +26,8 @@ public partial class TblShop
 
     public TimeOnly? StartTime { get; set; }
 
+    public bool IsDeleted { get; set; }
+    public bool IsActive { get; set; }
     public TimeOnly? ClosingTime { get; set; }
 
     [NotMapped]
@@ -35,6 +37,8 @@ public partial class TblShop
 
     [NotMapped]
     public string ShopOwner { get; set; }
+    [NotMapped]
+    public int OrderCount { get; set; }
     public virtual ICollection<TblStock> TblStocks { get; set; } = new List<TblStock>();
     public virtual ICollection<TblCollab> TblCollabs { get; set; } = new List<TblCollab>();
 

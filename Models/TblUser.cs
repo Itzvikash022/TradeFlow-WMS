@@ -24,6 +24,10 @@ public partial class TblUser
 
     [NotMapped]
     public string? ConfirmPassword { get; set; }
+    [NotMapped]
+    public string? ShopName { get; set; }
+    [NotMapped]
+    public string? Head { get; set; }
 
     [NotMapped]
     public IFormFile? ProfileImage { get; set; }
@@ -38,13 +42,15 @@ public partial class TblUser
 
     public string? ProfileImgPath { get; set; }
 
-    public string? AdminRef { get; set; }
+    public int AdminRef { get; set; }
 
     public string? Otp { get; set; }
 
     public DateTime? OtpExpiry { get; set; }
 
     public bool IsVerified { get; set; }
+    public bool? IsActive { get; set; }
+    public bool? IsDeleted { get; set; }
 
     public string? VerifiedBy { get; set; }
 

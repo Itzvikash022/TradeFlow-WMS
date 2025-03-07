@@ -9,5 +9,6 @@ namespace WMS_Application.Repositories.Interfaces
         Task<object> AddProduct(TblProduct product);
         Task<bool> IsEmailExists(string Email);
         Task<object> AuthenticateUser(string email, string password);
+        List<TblCompany> GetCompanyReports();
     }
 }

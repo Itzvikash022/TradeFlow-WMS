@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualBasic;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 
@@ -49,7 +50,15 @@ namespace WMS_Application.Controllers
             try
             {
                 var admin = _context.TblUsers.Find(id);
-                _context.TblUsers.Remove(admin);
+                var shop = _context.TblShops.FirstOrDefault(x => x.AdminId == id);
+                
+                admin.IsDeleted = true;
+                admin.IsActive = false;
+                shop.IsDeleted = true;
+                shop.IsActive = false;
+
+                _context.TblShops.Update(shop);
+                _context.TblUsers.Update(admin);
                 _context.SaveChanges();
 
                 // If successful, redirect to Index
@@ -60,6 +69,58 @@ namespace WMS_Application.Controllers
                 // Handle any exceptions during the deletion
                 Console.WriteLine("Error deleting admin: " + ex.Message);
                 return Json(new { success = false, message = "Error deleting admin." });
+            }
+        }
+        [HttpPost]
+        [Route("Admins/RestrictionStatus")]
+        public IActionResult RestrictionStatus(int id)
+        {
+            int roleId = _context.TblUsers.Where(x => x.UserId == id).Select(y => y.RoleId).FirstOrDefault();
+            if (id == 0)  // Handle the case if the ID is invalid
+            {
+                return Json(new { success = false, message = "Invalid admin ID." });
+            }
+
+            // Try deleting the admin from the database or perform your logic here
+            try
+            {
+                var admin = _context.TblUsers.Find(id);
+                var shop = _context.TblShops.FirstOrDefault(x => x.AdminId == id);
+                string msg = "";
+                if(admin.IsActive == false)
+                {
+                    admin.IsActive = true;
+                    if(roleId <= 2)
+                    {
+                        shop.IsActive = true;
+                    }
+                    msg = "User UnRestricted successfully.";
+                }
+                else
+                {
+                    admin.IsActive = false;
+                    if (roleId <= 2)
+                    {
+                        shop.IsActive = false;
+                    }
+                    msg = "User Restricted successfully.";
+                }
+
+                if(roleId <= 2)
+                {
+                    _context.TblShops.Update(shop);
+                }
+                _context.TblUsers.Update(admin);
+                _context.SaveChanges();
+
+                // If successful, redirect to Index
+                return Json(new { success = true, message = msg });
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions during the deletion
+                Console.WriteLine("Error restricting user: " + ex.Message);
+                return Json(new { success = false, message = "Error restricting user." });
             }
         }
 
@@ -121,8 +182,8 @@ namespace WMS_Application.Controllers
                 int id = user.UserId;
 
                 int ResId = (int) HttpContext.Session.GetInt32("UserId");
-                string verifier = ResId.ToString();
-                user.VerifiedBy = verifier;
+                int verifier = ResId;
+                user.VerifiedBy = verifier.ToString();
                 string type = "Admin";
                 if(user.RoleId > 2)
                 {

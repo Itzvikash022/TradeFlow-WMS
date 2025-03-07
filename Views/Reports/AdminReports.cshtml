@@ -1,0 +1,126 @@
+﻿@model List<WMS_Application.DTO.AdminReportsDTO>;
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Admin Reports</h4>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-top">
+                    <div class="search-set">
+
+                        <div class="search-input">
+                            <a class="btn btn-searchset"><img src="~/assets/img/icons/search-white.svg" alt="img"></a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table  datanew">
+                        <thead>
+                            <tr>
+                                <th>Profile</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Registered On</th>
+                                <th>ShopDetails</th>
+                                <th>Documents</th>
+                                <th>Status</th>
+                                <th>Employees</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach(var admin in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <img src="@admin.ProfilePic" alt="img" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
+                                    </td>
+                                    <td>@admin.FullName</td>
+                                    <td>@admin.Email</td>
+                                    <td>@admin.RegisteredOn</td>
+                                    <td>
+                                        @if(@admin.ShopDetails){
+                                            <span class="badges bg-lightgreen">Submitted</span>
+                                        }
+                                        else{
+                                            <span class="badges bg-lightred">Yet to Submit</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(@admin.Documents){
+                                            <span class="badges bg-lightgreen">Uploaded</span>
+                                        }
+                                        else{
+                                            <span class="badges bg-lightred">Yet to Upload</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if(@admin.Status == "Approved"){
+                                            <span class="badges bg-lightgreen">Approved</span>
+                                        }
+                                        else if(@admin.Status == "Rejected"){
+                                            <span class="badges bg-lightred">Rejected</span>
+                                        }
+                                        else{
+                                            <span class="badges bg-warning">Pending</span>
+                                        }
+                                    </td>
+                                    <td class="text-center"><strong>@admin.Employees</strong></td>
+                                    <td>
+                                        <a href="@Url.Action("Details", "Admins", new { id =  admin.AdminId})">
+                                            <button class="btn">
+                                                <img src="~/assets/img/icons/eye.svg" alt="img">
+                                            </button>
+                                        </a>
+                                        @if (admin.IsActive)
+                                        {
+                                            <button class="btn fa fa-ban restriction-btn" data-id="@admin.AdminId"></button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn fa fa-check restriction-btn" data-id="@admin.AdminId"></button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $(".restriction-btn").click(function () {
+                var adminId = $(this).data("id");
+
+                $.ajax({
+                    url: '/Admins/RestrictionStatus',
+                    type: 'POST', // Use POST if modifying data, otherwise use GET
+                    data: { id: adminId },
+                    success: function (response) {
+                        alert(response.message);
+                        if(response.success){
+                            location.reload();
+                        }
+                    },
+                    error:function (xhr, status, error) {
+                        console.error("Error:", xhr.responseText);
+                        alert("Something went wrong: " + xhr.status);
+                    }
+                });
+            });
+        });
+    </script>
+
+}

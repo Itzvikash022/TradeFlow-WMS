@@ -1,0 +1,109 @@
+﻿@model List<WMS_Application.Models.TblCompany>;
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>shop Reports</h4>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-top">
+                    <div class="search-set">
+
+                        <div class="search-input">
+                            <a class="btn btn-searchset"><img src="~/assets/img/icons/search-white.svg" alt="img"></a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table  datanew">
+                        <thead>
+                            <tr>
+                                <th>Logo</th>
+                                <th>CompanyName</th>
+                                <th>Email</th>
+                                <th>Registered On</th>
+                                <th>Location</th>
+                                <th>Order Count</th>
+                                <th>Status</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var company in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <img src="@company.CompanyLogo" alt="img" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
+                                    </td>
+                                    <td>@company.CompanyName</td>
+                                    <td>@company.Email</td>
+                                    <td>@company.CreatedAt</td>
+                                    <td>@company.State , @company.City</td>
+                                    <td class="text-center">@company.OrderCount</td>
+                                    <td>
+                                        @if ((bool)@company.IsActive)
+                                        {
+                                            <span class="badges bg-lightgreen">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badges bg-lightred">Restricted</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a href="@Url.Action("CompanyDetails", "Company", new { id =  company.CompanyId})">
+                                            <button class="btn">
+                                                <img src="~/assets/img/icons/eye.svg" alt="img">
+                                            </button>
+                                        </a>
+                                        @if ((bool)company.IsActive)
+                                        {
+                                            <button class="btn fa fa-ban restriction-btn" data-id="@company.CompanyId"></button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn fa fa-check restriction-btn" data-id="@company.CompanyId"></button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $(".restriction-btn").click(function () {
+                var companyId = $(this).data("id");
+
+                $.ajax({
+                    url: '/Company/RestrictionStatus',
+                    type: 'POST', // Use POST if modifying data, otherwise use GET
+                    data: { companyId: companyId },
+                    success: function (response) {
+                        alert(response.message);
+                        if(response.success){
+                            location.reload();
+                        }
+                    },
+                    error:function (xhr, status, error) {
+                        console.error("Error:", xhr.responseText);
+                        alert("Something went wrong: " + xhr.status);
+                    }
+                });
+            });
+        });
+    </script>
+
+}

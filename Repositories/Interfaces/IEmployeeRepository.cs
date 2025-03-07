@@ -4,6 +4,7 @@ namespace WMS_Application.Repositories.Interfaces
 {
     public interface IEmployeeRepository
     {
-        Task<List<TblUser>> GetAllEmployees(string id);
+        Task<List<TblUser>> GetAllEmployees(int id);
+        List<TblUser> GetEmployeeReports(int userId);
     }
 }

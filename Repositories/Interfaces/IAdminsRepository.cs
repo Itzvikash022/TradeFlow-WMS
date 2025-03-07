@@ -1,4 +1,5 @@
-﻿using WMS_Application.Models;
+﻿using WMS_Application.DTO;
+using WMS_Application.Models;
 
 namespace WMS_Application.Repositories.Interfaces
 {
@@ -9,5 +10,6 @@ namespace WMS_Application.Repositories.Interfaces
         TblUser checkExistence(string Username, string email, int UserId);
         Task<List<TblRole>> GetAllRoles();
         Task<object> SaveUsers(TblUser user);
+        public List<AdminReportsDTO> GetAdminReports();
     }
 }

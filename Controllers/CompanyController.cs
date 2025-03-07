@@ -39,6 +39,7 @@ namespace WMS_Application.Controllers
             }
         }
 
+
         public IActionResult UpdateCompany(int? id)
         {
             TblCompany companyData = new TblCompany();
@@ -54,6 +55,7 @@ namespace WMS_Application.Controllers
             
             return View(companyData);
         }
+
 
 
         public async Task<IActionResult> Products()
@@ -111,14 +113,16 @@ namespace WMS_Application.Controllers
         {
             if (id == 0)  // Handle the case if the ID is invalid
             {
-                return Json(new { success = false, message = "Invalid admin ID." });
+                return Json(new { success = false, message = "Invalid company ID." });
             }
 
             // Try deleting the admin from the database or perform your logic here
             try
             {
                 var company = _context.TblCompanies.Find(id);
-                _context.TblCompanies.Remove(company);
+                company.IsDeleted = true;
+                company.IsActive = false;
+                _context.TblCompanies.Update(company);
                 _context.SaveChanges();
 
                 // If successful, redirect to Index
@@ -129,6 +133,44 @@ namespace WMS_Application.Controllers
                 // Handle any exceptions during the deletion
                 Console.WriteLine("Error deleting company: " + ex.Message);
                 return Json(new { success = false, message = "Error deleting company." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RestrictionStatus(int companyId)
+        {
+
+            if (companyId == 0)  // Handle the case if the ID is invalid
+            {
+                return Json(new { success = false, message = "Invalid company ID." });
+            }
+
+            // Try deleting the admin from the database or perform your logic here
+            try
+            {
+                string msg = "";
+                var company = _context.TblCompanies.Find(companyId);
+                if ((bool)company.IsActive)
+                {
+                    company.IsActive = false;
+                    msg = "Company Restricted successfully.";
+                }
+                else
+                {
+                    company.IsActive = true;
+                    msg = "Company UnRestricted successfully.";
+                }
+                _context.TblCompanies.Update(company);
+                _context.SaveChanges();
+
+                // If successful, redirect to Index
+                return Json(new { success = true, message = msg });
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions during the deletion
+                Console.WriteLine("Error Restricting company: " + ex.Message);
+                return Json(new { success = false, message = "Error Restricting company." });
             }
         }
     }

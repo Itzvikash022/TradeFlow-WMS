@@ -34,6 +34,7 @@ namespace WMS_Application.Repositories.Auth
             {
                 return new { success = false, message = "User not found" };
             }
+           
 
             var info = await _context.TblAdminInfos
            .FirstOrDefaultAsync(u => u.AdminId == user.UserId);
@@ -56,6 +57,14 @@ namespace WMS_Application.Repositories.Auth
                     }
                 }
                 _memoryCache.Remove(attemptKey);
+                if (user.IsDeleted == true)
+                {
+                    return new { success = false, message = "You account has been deleted" };
+                }
+                if (user.IsActive == false)
+                {
+                    return new { success = false, message = "Your account has been restricted" };
+                }
                 return new { success = true, message = "You are successfully logged in"};
             }
            

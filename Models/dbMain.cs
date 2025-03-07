@@ -282,6 +282,8 @@ public partial class dbMain : DbContext
             entity.Property(e => e.State)
                 .HasMaxLength(20)
                 .IsUnicode(false);
+            entity.Property(e => e.IsDeleted).HasColumnName("IsDeleted");
+            entity.Property(e => e.IsActive).HasColumnName("IsActive");
         });
 
         modelBuilder.Entity<TblShopCategory>(entity =>

@@ -16,7 +16,7 @@ namespace WMS_Application.Controllers
         [Route("Employees")]
         public async Task<IActionResult> Index()
         {
-            string id = ((int)HttpContext.Session.GetInt32("UserId")).ToString();
+            int id = ((int)HttpContext.Session.GetInt32("UserId"));
             return View(await _employee.GetAllEmployees(id));
         }
 
@@ -25,14 +25,16 @@ namespace WMS_Application.Controllers
         {
             if (id == 0)  // Handle the case if the ID is invalid
             {
-                return Json(new { success = false, message = "Invalid admin ID." });
+                return Json(new { success = false, message = "Invalid Employee ID." });
             }
 
             // Try deleting the admin from the database or perform your logic here
             try
             {
                 var emp = _context.TblUsers.Find(id);
-                _context.TblUsers.Remove(emp);
+                emp.IsDeleted = true;
+                emp.IsActive = false;
+                _context.TblUsers.Update(emp);
                 _context.SaveChanges();
 
                 // If successful, redirect to Index

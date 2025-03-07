@@ -1,0 +1,95 @@
+﻿@model List<WMS_Application.Models.TblUser>;
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>shop Reports</h4>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-top">
+                    <div class="search-set">
+
+                        <div class="search-input">
+                            <a class="btn btn-searchset"><img src="~/assets/img/icons/search-white.svg" alt="img"></a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table  datanew">
+                        <thead>
+                            <tr>
+                                <th>Profile</th>
+                                <th>FullName</th>
+                                <th>Email</th>
+                                <th>Joining Date</th>
+                                <th>Head</th>
+                                <th>Designation</th>
+                                <th>ShopName</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var employee in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <img src="@employee.ProfileImgPath" alt="img" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
+                                    </td>
+                                    <td>@employee.FirstName @employee.LastName</td>
+                                    <td>@employee.Email</td>
+                                    <td>@employee.CreatedAt</td>
+                                    <td>@employee.Head</td>
+                                    <td>@employee.Designation</td>
+                                    <td>@employee.ShopName</td>
+                                    <td>
+                                        @if ((bool)employee.IsActive)
+                                        {
+                                            <button class="btn fa fa-ban restriction-btn" data-id="@employee.UserId"></button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn fa fa-check restriction-btn" data-id="@employee.UserId"></button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $(".restriction-btn").click(function () {
+                var employeeId = $(this).data("id");
+
+                $.ajax({
+                    url: '/Admins/RestrictionStatus',
+                    type: 'POST', // Use POST if modifying data, otherwise use GET
+                    data: { id: employeeId },
+                    success: function (response) {
+                        alert(response.message);
+                        if(response.success){
+                            location.reload();
+                        }
+                    },
+                    error:function (xhr, status, error) {
+                        console.error("Error:", xhr.responseText);
+                        alert("Something went wrong: " + xhr.status);
+                    }
+                });
+            });
+        });
+    </script>
+
+}

@@ -1,0 +1,78 @@
+﻿@model List<WMS_Application.Models.TblShop>;
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>shop Reports</h4>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-top">
+                    <div class="search-set">
+
+                        <div class="search-input">
+                            <a class="btn btn-searchset"><img src="~/assets/img/icons/search-white.svg" alt="img"></a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table  datanew">
+                        <thead>
+                            <tr>
+                                <th>Shop</th>
+                                <th>ShopName</th>
+                                <th>Owner Name</th>
+                                <th>Registered On</th>
+                                <th>Location</th>
+                                <th>Order Count</th>
+                                <th>Status</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var shop in Model)
+                            {
+                                    <tr>
+                                        <td>
+                                            <img src="@shop.ShopImagePath" alt="img" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
+                                        </td>
+                                        <td>@shop.ShopName</td>
+                                        <td>@shop.ShopOwner</td>
+                                        <td>@shop.CreatedAt</td>
+                                        <td>@shop.State , @shop.City</td>
+                                        <td>@shop.OrderCount</td>
+                                        <td>
+                                        @if (@shop.IsActive)
+                                        {
+                                                    <span class="badges bg-lightgreen">Active</span>
+                                        }
+                                        else
+                                        {
+                                                    <span class="badges bg-lightred">Restricted</span>
+                                        }
+                                        </td>
+                                        <td>
+                                            <a href="@Url.Action("Details", "Admins", new { id =  shop.AdminId})">
+                                                <button class="btn">
+                                                    <img src="~/assets/img/icons/eye.svg" alt="img">
+                                                </button>
+                                            </a>
+                                        </td>
+                                    </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+@section Scripts {
+
+}

@@ -59,7 +59,7 @@
                                 @if (Context.Session.GetInt32("UserRoleId") != 5)
                                 {
                                     <th>Qty In Shop</th>
-                                    <th>Buy Now</th>
+                                    <th>Shop Price</th>
                                 }
                                 else
                                 {
@@ -89,7 +89,7 @@
                                         @if (Context.Session.GetInt32("UserRoleId") != 5)
                                         {
                                         <td>
-                                            <a href="#"><span class="badges bg-lightgreen">Buy Now</span></a>
+                                            @product.ShopPrice
                                         </td>
                                         }
                                     <td>

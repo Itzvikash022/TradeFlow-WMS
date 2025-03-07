@@ -16,6 +16,7 @@ namespace WMS_Application.Repositories
         {
             var query = from shop in _context.TblShops
                         join user in _context.TblUsers on  shop.AdminId equals user.UserId
+                        where shop.IsDeleted == false && shop.IsActive == true
                         select new TblShop
                         {
                             ShopId = shop.ShopId,
@@ -34,5 +35,15 @@ namespace WMS_Application.Repositories
             return await query.ToListAsync();
         }
 
+     public List<TblShop> GetShopReports(int userId)
+        {
+            List<TblShop> shopData = _context.TblShops.Where(x => x.IsDeleted == false && x.AdminId != userId).ToList();
+            foreach (var shop in shopData)
+            {
+                shop.OrderCount = _context.TblOrders.Where(x => x.SellerId == shop.ShopId || x.BuyerId == shop.ShopId).Count();
+                shop.ShopOwner = _context.TblUsers.Where(x => x.UserId == shop.AdminId).Select(y => y.FirstName + " " + y.LastName).FirstOrDefault();
+            }
+            return shopData;
+        }
     }
 }

@@ -17,128 +17,88 @@
             <div class="card-body">
                 <div class="table-top">
                     <div class="search-set">
-                        <div class="search-path">
-                            <a class="btn btn-filter" id="filter_search">
-                                <img src="assets/img/icons/filter.svg" alt="img">
-                                <span><img src="assets/img/icons/closes.svg" alt="img"></span>
-                            </a>
-                        </div>
                         <div class="search-input">
                             <a class="btn btn-searchset">
                                 <img src="assets/img/icons/search-white.svg" alt="img">
                             </a>
                         </div>
                     </div>
-                    <div class="wordset">
-                        <ul>
-                            <li>
-                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="pdf"><img src="assets/img/icons/pdf.svg" alt="img"></a>
-                            </li>
-                            <li>
-                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="excel"><img src="assets/img/icons/excel.svg" alt="img"></a>
-                            </li>
-                            <li>
-                                <a data-bs-toggle="tooltip" data-bs-placement="top" title="print"><img src="assets/img/icons/printer.svg" alt="img"></a>
-                            </li>
+
+                    <!-- Column Selection Dropdown -->
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="columnDropdown" data-bs-toggle="dropdown">
+                            Select Columns
+                        </button>
+                        <ul class="dropdown-menu p-3">
+                            <li><input type="checkbox" class="column-checkbox" value="Profile" checked> Profile</li>
+                            <li><input type="checkbox" class="column-checkbox" value="FirstName" checked> First Name</li>
+                            <li><input type="checkbox" class="column-checkbox" value="LastName" checked> Last Name</li>
+                            <li><input type="checkbox" class="column-checkbox" value="Username" checked> UserName</li>
+                            <li><input type="checkbox" class="column-checkbox" value="Email" checked> Email</li>
+                            <li><input type="checkbox" class="column-checkbox" value="PhoneNumber" checked> Phone Number</li>
+                            <li><input type="checkbox" class="column-checkbox" value="CreatedAt" checked> Joining Date</li>
+                            <li><input type="checkbox" class="column-checkbox" value="DOB" checked> DateOfBirth</li>
+                            <li><input type="checkbox" class="column-checkbox" value="Designation" checked> Designation</li>
+                            <li><input type="checkbox" class="column-checkbox" value="IsVerified" checked> IsVerified</li>
+                            <li><input type="checkbox" class="column-checkbox" value="Action" checked> Action</li>
                         </ul>
                     </div>
+                            <li class="mt-2">
+                                <button class="btn btn-success" id="applyPreferences">Apply</button>
+                                <button class="btn btn-warning" id="resetPreferences">Reset to Default</button>
+                            </li>
+
                 </div>
 
-                <div class="card" id="filter_inputs">
-                    <div class="card-body pb-0">
-                        <div class="row">
-                            <div class="col-lg-2 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <div class="input-groupicon">
-                                        <input type="text" class="datetimepicker cal-icon" placeholder="Choose Date">
-                                        <div class="addonset">
-                                            <img src="assets/img/icons/calendars.svg" alt="img">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-2 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <input type="text" placeholder="Enter Reference">
-                                </div>
-                            </div>
-                            <div class="col-lg-2 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <select class="select">
-                                        <option>Choose Category</option>
-                                        <option>Computers</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-2 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <select class="select">
-                                        <option>Choose Status</option>
-                                        <option>Complete</option>
-                                        <option>Inprogress</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-lg-1 col-sm-6 col-12 ms-auto">
-                                <div class="form-group">
-                                    <a class="btn btn-filters ms-auto"><img src="assets/img/icons/search-whites.svg" alt="img"></a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <input type="hidden" id="userId" value="@Context.Session.GetInt32("UserId")">
 
                 <div class="table-responsive">
                     <table class="table  datanew">
                         <thead>
                             <tr>
-                                <th>
-                                    <label class="checkboxs">
-                                        <input type="checkbox" id="select-all">
-                                        <span class="checkmarks"></span>
-                                    </label>
-                                </th>
-                                <th>Category name</th>
-                                <th>Reference</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                                <th>Amount</th>
-                                <th>Description</th>
-                                <th>Action</th>
+                                <th data-column="Profile">Profile</th>
+                                <th data-column="FirstName">First Name</th>
+                                <th data-column="LastName">Last Name</th>
+                                <th data-column="Username">UserName</th>
+                                <th data-column="Email">Email</th>
+                                <th data-column="PhoneNumber">Phone Number</th>
+                                <th data-column="CreatedAt">Joining Date</th>
+                                <th data-column="DOB">Date of Birth</th>
+                                <th data-column="Designation">Designation</th>
+                                <th data-column="IsVerified">IsVerified</th>
+                                <th data-column="IsVerified"     id="Action">Action</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach (var employee in Model)
                             {
                                 <tr>
-                                    <td>
+                                    <td data-column="Profile">
                                         <img src="@employee.ProfileImgPath" alt="img" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
                                     </td>
-                                    <td>@employee.FirstName</td>
-                                    <td>@employee.LastName</td>
-                                    <td>@employee.Email</td>
-                                    <td>@employee.PhoneNumber</td>
-                                    <td>@employee.CreatedAt</td>
-                                    <td>@employee.Designation</td>
-                                    <td>
-
-                                        @* <a href="@Url.Action("Details", "Employee", new { id =  employee.UserId})"> *@
-                                        @*     <button class="me-3 btn"> *@
-                                        @*         <img src="~/assets/img/icons/eye.svg" alt="img"> *@
-                                        @*     </button> *@
-                                        @* </a> *@
+                                    <td data-column="FirstName">@employee.FirstName</td>
+                                    <td data-column="LastName">@employee.LastName</td>
+                                    <td data-column="Username">@employee.Username</td>
+                                    <td data-column="Email">@employee.Email</td>
+                                    <td data-column="PhoneNumber">@employee.PhoneNumber</td>
+                                    <td data-column="CreatedAt">@employee.CreatedAt</td>
+                                    <td data-column="DOB">@employee.DateOfBirth</td>
+                                    <td data-column="Designation">@employee.Designation</td>
+                                    <td data-column="IsVerified">@employee.IsVerified</td>
+                                    <td data-column="IsVerified" class="Action">
                                         <a href="@Url.Action("SaveAdmin", "Admins", new { id = employee.UserId, from = "employee" })">
                                             <button class="me-3 btn">
                                                 <img src="~/assets/img/icons/edit.svg" alt="img">
                                             </button>
                                         </a>
-                                            <button class="me-3 btn delete-btn" data-id="@employee.UserId">
-                                                <img src="~/assets/img/icons/delete.svg" alt="img">
-                                            </button>
+                                        <button class="me-3 btn delete-btn" data-id="@employee.UserId">
+                                            <img src="~/assets/img/icons/delete.svg" alt="img">
+                                        </button>
                                     </td>
                                 </tr>
                             }
                         </tbody>
+
                     </table>
                     <!-- Modal Structure -->
                     <div id="deleteModal" class="modal" style="display:none;">
@@ -152,7 +112,7 @@
 
                     <!-- Hidden form for delete action -->
                     <form id="deleteForm" action="/Employee/DeleteEmployee" method="post" style="display:none;">
-                        <input type="hidden" name="id" id="adminIdToDelete">
+                        <input type="hidden" name="id" id="userToDelete">
                     </form>
 
                 </div>
@@ -168,4 +128,82 @@
              initializeDeleteButtons('@Url.Action("DeleteEmployee", "Employee")');
         });
     </script>
+    <script>
+        $(document).ready(function () {
+            let userId = $("#userId").val(); // Get userRoleId from hidden input
+            let localStorageKey = `employee_column_prefs_${userId}`;
+
+            // Load preferences from Local Storage
+            function loadPreferences() {
+                let preferences = localStorage.getItem(localStorageKey);
+                if (preferences) {
+                    preferences = JSON.parse(preferences);
+                } else {
+                    // Default columns to show
+                    preferences = ["Profile", "FirstName", "LastName", "Email", "PhoneNumber", "JoiningDate", "Designation", "Action"];
+                    localStorage.setItem(localStorageKey, JSON.stringify(preferences));
+                }
+
+                // Apply visibility
+                $(".column-checkbox").each(function () {
+                    let column = $(this).val();
+                    let isChecked = preferences.includes(column);
+                    $(this).prop("checked", isChecked);
+                    toggleColumn(column, isChecked);
+                });
+            }
+
+            // Function to toggle columns
+            function toggleColumn(column, show) {
+                let columnSelector = `[data-column='${column}']`;
+                if (show) {
+                    $(columnSelector).show();
+                } else {
+                    $(columnSelector).hide();
+                }
+            }
+
+            // Apply user preferences on click
+            $("#applyPreferences").off("click").on("click", function () {
+                let selectedColumns = [];
+                $(".column-checkbox:checked").each(function () {
+                    selectedColumns.push($(this).val());
+                });
+
+                localStorage.setItem(localStorageKey, JSON.stringify(selectedColumns));
+
+                // Refresh column visibility without needing a full page reload
+                $(".column-checkbox").each(function () {
+                    let column = $(this).val();
+                    toggleColumn(column, selectedColumns.includes(column));
+                });
+            });
+
+            // Reset to default
+            $("#resetPreferences").off("click").on("click", function () {
+                localStorage.removeItem(localStorageKey);
+                loadPreferences();
+            });
+
+            // Dropdown toggle (Fixes dropdown issue)
+            $("#columnDropdown").off("click").on("click", function (e) {
+                e.stopPropagation(); // Prevent closing when clicking inside
+                $(".dropdown-menu").toggle();
+            });
+
+            // Close dropdown when clicking outside
+            $(document).click(function (e) {
+                if (!$(e.target).closest(".dropdown").length) {
+                    $(".dropdown-menu").hide();
+                }
+            });
+
+            // Load preferences on page load
+            loadPreferences();
+        });
+    </script>
+
+
+
 }
+

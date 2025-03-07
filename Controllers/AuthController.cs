@@ -212,8 +212,8 @@ namespace WMS_Application.Controllers
                 }
                 else
                 {
-                    string refId = data.AdminRef;
-                    shopData = _context.TblShops.FirstOrDefault(x => x.AdminId.ToString() == refId);
+                    int refId = data.AdminRef;
+                    shopData = _context.TblShops.FirstOrDefault(x => x.AdminId == refId);
                 }
                 if (shopData != null)
                 {

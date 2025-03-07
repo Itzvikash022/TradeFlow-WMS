@@ -19,7 +19,7 @@ namespace WMS_Application.Repositories
         }
         public List<TblCompany> GetAllCompanies()
         {
-            var comp = _context.TblCompanies.ToList();
+            var comp = _context.TblCompanies.Where(x=>x.IsDeleted == false && x.IsActive == true).ToList();
             return comp;
         }
         public async Task<bool> IsEmailExists(string Email)
@@ -35,6 +35,16 @@ namespace WMS_Application.Repositories
             {
                 return new { success = false, message = "Company with this email not found" };
             }
+            
+            if (company.IsDeleted == true)
+            {
+                return new { success = false, message = "Company has been deleted" };
+            }
+            
+            if (company.IsActive == false)
+            {
+                return new { success = false, message = "Company has been Restricted" };
+            }
 
             //Comparing hashed passwords
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(password, company.PasswordHash);
@@ -46,6 +56,17 @@ namespace WMS_Application.Repositories
             {
                 return new { success = false, message = "Invalid Email or Password" };
             }
+        }
+
+        public List<TblCompany> GetCompanyReports()
+        {
+            var companyData = _context.TblCompanies.Where(x => x.IsDeleted == false).ToList();
+            foreach(var company in companyData)
+            {
+                company.PasswordHash = null;
+                company.OrderCount = _context.TblOrders.Where( x => x.SellerId == company.CompanyId && x.OrderStatus == "Success").Count();
+            }
+            return companyData;
         }
 
         public async Task<object> SaveCompany(TblCompany company)

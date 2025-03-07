@@ -22,7 +22,8 @@ namespace WMS_Application.Controllers
         {
             int Id = 0, shopId = 0;
             TblShop ShopData = new TblShop();
-            if(HttpContext.Session.GetInt32("CompanyId") != null && HttpContext.Session.GetInt32("UserRoleId") == 5)
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            if (HttpContext.Session.GetInt32("CompanyId") != null && roleId == 5)
             {
                 Id = (int) HttpContext.Session.GetInt32("CompanyId");
             }
@@ -30,6 +31,10 @@ namespace WMS_Application.Controllers
             {
                 Id = companyId ?? 0;
                 int adminId = (int)HttpContext.Session.GetInt32("UserId");
+                if(roleId > 2 && roleId != 5)
+                {
+                    adminId = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
+                }
                 ShopData = await _context.TblShops.FirstOrDefaultAsync(x => x.AdminId == adminId);
                 shopId = ShopData.ShopId;
             }

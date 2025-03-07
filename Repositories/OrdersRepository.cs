@@ -12,6 +12,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using iText.IO.Font;
 using MailKit.Search;
 using System.Transactions;
+using System.Linq;
 namespace WMS_Application.Repositories
 {
     public class OrdersRepository : IOrdersRepository
@@ -209,8 +210,12 @@ namespace WMS_Application.Repositories
             }
 
             query = query.Where(p => p.CompanyId != 0);
-
-
+            // Now filter out products whose company's IsDeleted = true
+            var companyIdsToInclude = _context.TblCompanies
+                .Where(c => c.IsDeleted == false && c.IsActive == true) // Get IDs of deleted companies
+                .Select(c => c.CompanyId)
+                .ToList();
+            query = query.Where(p => companyIdsToInclude.Contains((int)p.CompanyId));
             var result = query.ToList();
 
             // Convert to DTO and assign values
@@ -236,39 +241,59 @@ namespace WMS_Application.Repositories
 
         public List<ProductS2SBuyDto> GetProductsS2SBuy(string? productName, string? category, int? shop, int userId)
         {
+            TblUser userData = _context.TblUsers.FirstOrDefault(x=>x.UserId == userId);
+            int adminId = userId;
+            if(userData.RoleId > 2 && userData.RoleId != 5)
+            {
+                adminId = userData.AdminRef;
+            }
             var loggedInShop = _context.TblShops
-                .Where(x => x.AdminId == userId)
+                .Where(x => x.AdminId == adminId)
                 .Select(x => x.ShopId)
                 .FirstOrDefault();
 
-            var query = _context.TblStocks.AsQueryable();
+            //va    r query = _context.TblStocks.AsQueryable();
 
-            // Exclude logged-in shop's products
-            if (userId > 0)
-            {
-                query = query.Where(s => s.ShopId != loggedInShop);
-            }
+            //// Exclude logged-in shop's products
+            //if (userId > 0)
+            //{
+            //    query = query.Where(s => s.ShopId != loggedInShop);
+            //}
 
-            if (shop != null)
-            {
-                query = query.Where(s => s.ShopId != shop);
-            }
+            //if (shop != null)
+            //{
+            //    query = query.Where(s => s.ShopId != shop);
+            //}
 
-            // Apply additional filters
-            if (!string.IsNullOrEmpty(productName))
-            {
-                query = query.Where(s => s.Product.ProductName.Contains(productName));
-            }
+            //// Apply additional filters
+            //if (!string.IsNullOrEmpty(productName))
+            //{
+            //    query = query.Where(s => s.Product.ProductName.Contains(productName));
+            //}
 
-            if (!string.IsNullOrEmpty(category))
-            {
-                query = query.Where(s => s.Product.Category == category);
-            }
+            //if (!string.IsNullOrEmpty(category))
+            //{
+            //    query = query.Where(s => s.Product.Category == category);
+            //}
+
+            //// Fetch shop IDs that are either deleted or inactive
+            //var shopIdsToInclide = _context.TblShops
+            //    .Where(c => c.IsDeleted == false && c.IsActive == true)
+            //    .Select(c => c.ShopId)
+            //    .ToList();
+
+            //// Now apply this exclusion in your stock query
+            //query = query.Where(p => shopIdsToInclide.Contains((int)p.ShopId));
+
+
 
             // Fetch only necessary fields using DTO, ensuring multiple shops can list the same product separately
             var result = from stock in _context.TblStocks
                          join product in _context.TblProducts
                          on stock.ProductId equals product.ProductId
+
+                         join shopEntity in _context.TblShops  // Renamed to avoid conflict
+                         on stock.ShopId equals shopEntity.ShopId
 
                          // Left Join with Registered Companies
                          join company in _context.TblCompanies
@@ -280,7 +305,14 @@ namespace WMS_Application.Repositories
                          on product.UnregCompanyId equals unregCompany.UnregCompanyId into unregCompanyGroup
                          from unregCompany in unregCompanyGroup.DefaultIfEmpty()
 
-                         where stock.ShopId != loggedInShop // Exclude logged-in shop's products
+                             // Exclude inactive or deleted shops
+                         where shopEntity.IsDeleted == false && shopEntity.IsActive == true
+                         && stock.ShopId != loggedInShop // Exclude logged-in shop's products
+
+                         // Apply additional filters
+                         && (string.IsNullOrEmpty(productName) || product.ProductName.Contains(productName))
+                         && (string.IsNullOrEmpty(category) || product.Category == category)
+
                          select new ProductS2SBuyDto
                          {
                              ProductId = product.ProductId,
@@ -288,13 +320,47 @@ namespace WMS_Application.Repositories
                              Category = product.Category,
                              PricePerUnit = product.PricePerUnit,
                              ProductImagePath = product.ProductImagePath,
-                             CompanyName = company != null ? company.CompanyName : unregCompany.UnregCompanyName, // Choose available name
+
+                             // Keeping Unregistered Company Name Logic
+                             CompanyName = company != null ? company.CompanyName : unregCompany.UnregCompanyName,
+
                              ProductQty = stock.Quantity,
-                             SellerShopId = stock.Shop.ShopId,
+                             SellerShopId = shopEntity.ShopId,  // Using renamed alias
                              CompanyId = product.CompanyId
                          };
 
             return result.ToList();
+
+
+            //var result = from stock in _context.TblStocks
+            //             join product in _context.TblProducts
+            //             on stock.ProductId equals product.ProductId
+
+            //             // Left Join with Registered Companies
+            //             join company in _context.TblCompanies
+            //             on product.CompanyId equals company.CompanyId into companyGroup
+            //             from company in companyGroup.DefaultIfEmpty()
+
+            //                 // Left Join with Unregistered Companies
+            //             join unregCompany in _context.TblUnregCompanies
+            //             on product.UnregCompanyId equals unregCompany.UnregCompanyId into unregCompanyGroup
+            //             from unregCompany in unregCompanyGroup.DefaultIfEmpty()
+
+            //             where stock.ShopId != loggedInShop // Exclude logged-in shop's products
+            //             select new ProductS2SBuyDto
+            //             {
+            //                 ProductId = product.ProductId,
+            //                 ProductName = product.ProductName,
+            //                 Category = product.Category,
+            //                 PricePerUnit = product.PricePerUnit,
+            //                 ProductImagePath = product.ProductImagePath,
+            //                 CompanyName = company != null ? company.CompanyName : unregCompany.UnregCompanyName, // Choose available name
+            //                 ProductQty = stock.Quantity,
+            //                 SellerShopId = stock.Shop.ShopId,
+            //                 CompanyId = product.CompanyId
+            //             };
+
+            //return result.ToList();
 
         }
 
@@ -303,7 +369,7 @@ namespace WMS_Application.Repositories
         {
 
             var shops = _context.TblShops
-                .Where(s => s.AdminId != currentAdminId) // Exclude current shop
+                .Where(s => s.AdminId != currentAdminId && s.IsDeleted == false && s.IsActive == true) // Exclude current shop
                 .ToList();
 
             return shops;

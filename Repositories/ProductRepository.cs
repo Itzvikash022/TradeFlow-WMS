@@ -89,6 +89,7 @@ namespace WMS_Application.Repositories
                                    LastUpdateDate = product.LastUpdateDate,
                                    Manufacturer = product.Manufacturer,
                                    ProductQty = stock.Quantity,
+                                   ShopPrice = (int)stock.ShopPrice,
                                    CompanyName = company != null ? company.CompanyName : unregCompany.UnregCompanyName, // Take company name from whichever is available
                                    ProductImagePath = product.ProductImagePath
                                };

@@ -30,11 +30,14 @@ namespace WMS_Application.Controllers
         {
             List<TblOrder> orders = new List<TblOrder>();
             int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            
             if(roleId != 5)
             {
-
                 int adminId = (int)HttpContext.Session.GetInt32("UserId");
-
+                if (roleId > 2 && roleId != 5)
+                {
+                    int AdminRef = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
+                }
                 TblShop ShopData = new TblShop();
                 if (roleId <= 2)
                 {
@@ -42,8 +45,8 @@ namespace WMS_Application.Controllers
                 }
                 else
                 {
-                    string refId = _context.TblUsers.FirstOrDefault(x => x.UserId == adminId).AdminRef;
-                    ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId.ToString() == refId);
+                    int refId = _context.TblUsers.FirstOrDefault(x => x.UserId == adminId).AdminRef;
+                    ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == refId);
                 }
                 if (ShopData != null)
                 {
@@ -90,6 +93,11 @@ namespace WMS_Application.Controllers
         public IActionResult CreateOrder()
         {
             int adminId = (int)HttpContext.Session.GetInt32("UserId");
+            int roleId = (int) HttpContext.Session.GetInt32("UserRoleId");
+            if(roleId > 2 && roleId != 5)
+            {
+                adminId = (int)_context.TblUsers.Where(x => x.UserId == adminId).Select(adminId => adminId.AdminRef).FirstOrDefault();
+            }
             var ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
             HttpContext.Session.SetInt32("UserShopId", ShopData.ShopId);
             int currentAdminId = (int)HttpContext.Session.GetInt32("UserId");
@@ -198,7 +206,7 @@ namespace WMS_Application.Controllers
             int adminId = (int)HttpContext.Session.GetInt32("UserId");
             var ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
             var result = _orders.GetAllProducts(0, ShopData.ShopId);
-            if (result == null)
+            if (result == null) 
             {
                 return Ok(new { text = "No products available." });
             }
@@ -257,11 +265,16 @@ namespace WMS_Application.Controllers
             return Json(shopData);
         }
 
-        //Fetching all mu shhop Products
+        //Fetching all my shop Products
         [HttpGet]
         public async Task<IActionResult> GetMyShopProducts()
         {
             int adminId = (int)HttpContext.Session.GetInt32("UserId");
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            if(roleId > 2 && roleId != 5)
+            {
+                adminId = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
+            }
             var ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
             var result = _orders.GetAllProducts(0, ShopData.ShopId);
             if (result == null)
@@ -281,8 +294,12 @@ namespace WMS_Application.Controllers
             {
                 return BadRequest("Invalid order data.");
             }
-
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
             int adminId = (int)HttpContext.Session.GetInt32("UserId");
+            if(roleId >2 && roleId != 5)
+            {
+                adminId = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
+            }
             var ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
             try
             {

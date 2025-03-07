@@ -27,6 +27,7 @@ public partial class TblCompany
     public string? Address { get; set; }
 
     public bool? IsActive { get; set; }
+    public bool? IsDeleted { get; set; }
     public string? Gst { get; set; }
     [NotMapped]
     public IFormFile? LogoFile { get; set; }
@@ -35,5 +36,7 @@ public partial class TblCompany
 
     [NotMapped]
     public string Path { get; set; }
+    [NotMapped]
+    public int OrderCount { get; set; }
     public virtual ICollection<TblCollab> TblCollabs { get; set; } = new List<TblCollab>();
 }

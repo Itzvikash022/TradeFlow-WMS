@@ -3,6 +3,8 @@ using WMS_Application.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using static WMS_Application.Repositories.AdminsRepository;
+using WMS_Application.DTO;
 namespace WMS_Application.Repositories
 {
     public class AdminsRepository : IAdminsRepository
@@ -21,7 +23,7 @@ namespace WMS_Application.Repositories
             var users = await _context.TblUsers
                 .Where(x => x.RoleId == 2 &&
                            (x.VerificationStatus != "Pending" ||
-                            _context.TblAdminInfos.Any(a => a.AdminId == x.UserId)))
+                            _context.TblAdminInfos.Any(a => a.AdminId == x.UserId)) && (x.IsDeleted == false && x.IsActive == true))
                 .OrderByDescending(x => x.CreatedAt)
                 .ToListAsync();
                 
@@ -31,6 +33,27 @@ namespace WMS_Application.Repositories
         {
             return await _context.TblRoles.ToListAsync();
         }
+
+            public List<AdminReportsDTO> GetAdminReports()
+            {
+                var adminData = _context.TblUsers
+                    .Where(x => x.RoleId == 2 && x.IsDeleted == false)
+                    .Select(data => new AdminReportsDTO
+                    {
+                        AdminId = data.UserId,
+                        FullName = (data.FirstName == null && data.LastName == null) ? data.Username : $"{data.FirstName} {data.LastName}",
+                        Email = data.Email,
+                        RegisteredOn = (DateTime)data.CreatedAt,
+                        ShopDetails = _context.TblShops.Any(x => x.AdminId == data.UserId),
+                        Documents = _context.TblAdminInfos.Any(x => x.AdminId == data.UserId),
+                        Status = data.VerificationStatus,
+                        Employees = _context.TblUsers.Count(x => x.AdminRef == data.UserId),
+                        ProfilePic = data.ProfileImgPath,
+                        IsActive = (bool)data.IsActive
+                    })
+                    .ToList();
+                return adminData;
+            }
 
         public async Task<object> UpdateStatus(int userId, bool status, string verifier, string remark)
         {

@@ -22,9 +22,18 @@ function initializeDeleteButtons(deleteApiUrl) {
                 data: { id: userIdToDelete },
                 success: function (response) {
                     if (response.success) {
-                        Swal.fire("Deleted!", response.message, "success");
+                        //Swal.fire("Deleted!", response.message, "success");
+                        Swal.fire({
+                            title: "Deleted!",
+                            text: response.message,
+                            icon: "success",
+                            confirmButtonText: "OK"
+                        }).then(() => {
+                            location.reload(); // Reload the page after clicking OK
+                        });
                         $("#deleteModal").fadeOut();  // Hide the modal after deletion
                         userIdToDelete = null;  // Reset admin ID
+
                         //window.location.reload(); // Reload the page after successful update
 
                     } else {

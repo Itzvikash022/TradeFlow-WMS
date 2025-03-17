@@ -13,7 +13,7 @@ namespace WMS_Application.Repositories
 
         public async Task<List<TblUser>> GetAllEmployees(int id)
         {
-            var employees = from employee in _context.TblUsers
+            var employees = (from employee in _context.TblUsers
                             join role in _context.TblRoles on employee.RoleId equals role.RoleId
                             where employee.RoleId != 1 && employee.RoleId != 2 && employee.AdminRef == id && employee.IsDeleted == false && employee.IsActive == true
                             select new TblUser
@@ -29,13 +29,13 @@ namespace WMS_Application.Repositories
                                 CreatedAt = employee.CreatedAt,
                                 ProfileImgPath = employee.ProfileImgPath,
                                 Designation = role.RoleName
-                            };
+                            }).OrderByDescending(x => x.CreatedAt);
             return employees.ToList();
         }
 
         public List<TblUser> GetEmployeeReports(int userId)
         {
-            var employeeData = _context.TblUsers.Where(x => x.IsDeleted == false && x.RoleId > 2 && x.RoleId != 5 && x.AdminRef == userId).ToList();
+            var employeeData = _context.TblUsers.Where(x => x.IsDeleted == false && x.RoleId > 2 && x.RoleId != 5 && x.AdminRef == userId).OrderByDescending(x => x.CreatedAt).ToList();
 
             foreach(var employee in employeeData)
             {

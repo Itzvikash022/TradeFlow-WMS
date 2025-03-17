@@ -1,5 +1,36 @@
 ﻿@model WMS_Application.Models.TblShop
+<link rel="stylesheet" href="~/css/ImagePreview.css" />
 
+<style>
+    .form-login {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+        .form-login label {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .form-login input[type="time"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            background-color: #fff;
+            color: #333;
+            transition: border-color 0.3s ease-in-out;
+        }
+
+            .form-login input[type="time"]:focus {
+                border-color: #007bff;
+                outline: none;
+                box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+            }
+
+</style>
 <div class="page-wrapper">
 
     <div class="account-content">
@@ -22,17 +53,6 @@
                             </div>
                         </div>
                         <div class="col-lg-4 col-sm-9 col-12">
-                            <div class="form-group">
-                                <label>Shop Category</label>
-                                <select class="select">
-                                    @foreach (var cat in (List<TblShopCategory>)ViewBag.ShopCategory)
-                                    {
-                                        <option value="@cat.ShopCatId">@cat.ShopCategory</option>
-                                    }
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-sm-9 col-12">
                             <div class="form-login">
                                 <label>Opening Time</label>
                                 <input type="time" asp-for="StartTime">
@@ -44,6 +64,7 @@
                                 <input type="time" asp-for="ClosingTime">
                             </div>
                         </div>
+
                         <div class="col-lg-4 col-sm-9 col-12">
                             <div class="form-group">
                                 <label>State</label>
@@ -67,7 +88,7 @@
                                     <label>Admin List</label>
                                     <select class="js-example-basic-single select2" asp-for="AdminId">
                                         <option value="">Select Admin</option>
-                                        @foreach(var admin in ViewBag.AdminList)
+                                        @foreach (var admin in ViewBag.AdminList)
                                         {
                                             <option value="@admin.UserId">@admin.Username</option>
                                         }
@@ -75,7 +96,7 @@
                                 </div>
                             </div>
                         }
-                        else if(ViewBag.IsAction == "SPUpdate")
+                        else if (ViewBag.IsAction == "SPUpdate")
                         {
                             <div class="col-lg-4 col-sm-9 col-12">
                                 <div class="form-group">
@@ -115,12 +136,16 @@
                                 <p id="imagePreviewText">No image selected</p>
                             </div>
                         </div>
+
                         <div class="row">
                             <div class="col-lg-12">
                                 <button type="submit" id="btnShopDetails" class="btn btn-submit me-2">
                                     <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
                                     Save
                                 </button>
+                                <a href="/Shops" class="btn btn-cancel">
+                                    Cancel
+                                </a>
                             </div>
                         </div>
                     </div>

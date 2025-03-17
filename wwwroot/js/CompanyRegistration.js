@@ -127,7 +127,6 @@ $(document).ready(function () {
             },
             PhoneNumber: {
                 required: true,
-                digits: true,
                 minlength: 6,
                 maxlength: 15
             },
@@ -158,7 +157,6 @@ $(document).ready(function () {
             },
             PhoneNumber: {
                 required: "Phone Number is required",
-                digits: "Invalid Phone Number",
                 minlength: "Must be greater than 6 digit",
                 maxlength: "Must be smaller than 15 digit"
             },

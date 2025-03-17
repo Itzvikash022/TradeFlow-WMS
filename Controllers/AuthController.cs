@@ -284,7 +284,6 @@ namespace WMS_Application.Controllers
         }
         public async Task<IActionResult> ShopDetails()
         {
-            ViewBag.ShopCategory = await _context.TblShopCategories.ToListAsync();
             var model = new TblShop();
             int id = (int) HttpContext.Session.GetInt32("UserId");
             if(id != 0)
@@ -371,6 +370,12 @@ namespace WMS_Application.Controllers
                     if (await _users.OtpVerification(user.Otp))
                     {
                         await _users.updateStatus(email);
+                        //int roleId = _context.TblUsers.Where(x => x.Email == email).Select(y => y.RoleId).FirstOrDefault();
+                        int roleId = (int) HttpContext.Session.GetInt32("UserRoleId");
+                        if(roleId > 2)
+                        {
+                            return Json(new { success = true, message = "OTP verified successfully", emp = true });
+                        }
                         //_emailSender.SendEmailAsync()
                         return Json(new { success = true, message = "OTP verified successfully" });
                     }

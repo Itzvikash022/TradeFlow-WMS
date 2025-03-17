@@ -25,13 +25,13 @@ namespace WMS_Application.Repositories
                                   TabName = t.TabName,
                                   ParentId = t.ParentId,
                                   TabUrl = t.TabUrl,
-                                  IconPath = t.IconPath
-                                  //IsActive = t.IsActive
+                                  IconPath = t.IconPath,
+                                  IsActive = t.IsActive
                               }).ToListAsync();
 
             // Group the tabs into a hierarchical structure (parent-child)
             var tabHierarchy = tabs
-                .Where(tab => tab.ParentId == null)
+                .Where(tab => tab.ParentId == null && tab.IsActive == true)
                 .Select(tab => new SidebarModel
                 {
                     TabId = tab.TabId,
@@ -40,7 +40,7 @@ namespace WMS_Application.Repositories
                     TabUrl = tab.TabUrl,
                     IconPath = tab.IconPath,
                     //IsActive = tab.IsActive,
-                    SubTabs = tabs.Where(sub => sub.ParentId == tab.TabId).ToList()
+                    SubTabs = tabs.Where(sub => sub.ParentId == tab.TabId && sub.IsActive == true).ToList()
                 }).ToList();
 
             return tabHierarchy;

@@ -60,7 +60,7 @@ namespace WMS_Application.Repositories
 
         public List<TblCompany> GetCompanyReports()
         {
-            var companyData = _context.TblCompanies.Where(x => x.IsDeleted == false).ToList();
+            var companyData = _context.TblCompanies.Where(x => x.IsDeleted == false).OrderByDescending(x=> x.CreatedAt).ToList();
             foreach(var company in companyData)
             {
                 company.PasswordHash = null;
@@ -172,6 +172,7 @@ namespace WMS_Application.Repositories
                 UpdatedProduct.UnregCompanyId = product.UnregCompanyId;
                 UpdatedProduct.ProductName = product.ProductName;
                 UpdatedProduct.Category = product.Category;
+                UpdatedProduct.ProductQty = product.ProductQty;
                 UpdatedProduct.PricePerUnit = product.PricePerUnit;
                 UpdatedProduct.CompanyId = product.CompanyId;
                 UpdatedProduct.Manufacturer = product.Manufacturer;

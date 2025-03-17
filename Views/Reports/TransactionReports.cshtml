@@ -1,0 +1,72 @@
+﻿@model List<WMS_Application.DTO.TransactionReportsDTO>;
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Transaction Reports</h4>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-top">
+                    <div class="search-set">
+
+                        <div class="search-input">
+                            <a class="btn btn-searchset"><img src="~/assets/img/icons/search-white.svg" alt="img"></a>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table  datanew">
+                        <thead>
+                            <tr>
+                                <th>TransactionDate</th>
+                                <th>Type</th>
+                                <th>Payment Mode</th>
+                                <th>Amount</th>
+                                <th>Order Date</th>
+                                <th>Order Status</th>
+                                <th>Receipt</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var transaction in Model)
+                            {
+                                <tr>
+                                    <td>@transaction.TransactionDate</td>
+                                    <td>@transaction.OrderType</td>
+                                    <td>@transaction.TransactionType</td>
+                                    <td>@transaction.Amount</td>
+                                    <td>@transaction.OrderDate</td>
+                                    <td>
+                                        <span class="badges @(transaction.OrderStatus == "Pending" ? "bg-warning" : transaction.OrderStatus == "Success" ? "bg-lightgreen" : "bg-danger")">
+                                            @transaction.OrderStatus
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="@Url.Action("DownloadReceipt", "Orders", new { orderId = transaction.OrderId})" class="me-2 ion-printer">
+                                            <i class="fas fa-print"></i>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="@Url.Action("OrderDetails", "Orders", new { id =  transaction.OrderId})">
+                                            <button class="btn">
+                                                <img src="~/assets/img/icons/eye.svg" alt="img">
+                                            </button>
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

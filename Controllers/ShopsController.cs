@@ -33,7 +33,6 @@ namespace WMS_Application.Controllers
         public async Task<IActionResult> SaveShop(int? id, bool? addNew)
         {
             TblShop shopData = new TblShop();
-            ViewBag.ShopCategory = await _context.TblShopCategories.ToListAsync();
 
             if (addNew != null && addNew == true)
             {

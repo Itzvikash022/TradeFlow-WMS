@@ -14,7 +14,7 @@ namespace WMS_Application.Repositories
 
         public async Task<List<TblShop>> GetAllShops()
         {
-            var query = from shop in _context.TblShops
+            var query = (from shop in _context.TblShops
                         join user in _context.TblUsers on  shop.AdminId equals user.UserId
                         where shop.IsDeleted == false && shop.IsActive == true
                         select new TblShop
@@ -31,13 +31,13 @@ namespace WMS_Application.Repositories
                             ShopImagePath = shop.ShopImagePath,
                             StartTime = shop.StartTime,
                             ClosingTime = shop.ClosingTime,
-                        };
+                        }).OrderByDescending(x => x.CreatedAt);
             return await query.ToListAsync();
         }
 
      public List<TblShop> GetShopReports(int userId)
         {
-            List<TblShop> shopData = _context.TblShops.Where(x => x.IsDeleted == false && x.AdminId != userId).ToList();
+            List<TblShop> shopData = _context.TblShops.Where(x => x.IsDeleted == false && x.AdminId != userId).OrderByDescending(x=> x.CreatedAt).ToList();
             foreach (var shop in shopData)
             {
                 shop.OrderCount = _context.TblOrders.Where(x => x.SellerId == shop.ShopId || x.BuyerId == shop.ShopId).Count();

@@ -1,0 +1,122 @@
+﻿@model List<TblRole>
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>User Roles</h4>
+                <h6>Manage your User Roles</h6>
+            </div>
+        </div>
+        <div class="row">
+            <!-- Form Section -->
+            <div class="col-lg-6 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-header">
+                            <h5 class="card-title text-center">Manage Roles</h5>
+                            <hr>
+                        </div>
+                        <div class="row">
+                            <form id="rolesForm">
+                                <input type="hidden" id="RoleId" name="RoleId">
+                                <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label">Category Name:</label>
+                                    <div class="col-lg-6">
+                                        <input type="text" id="RoleName" name="RoleName" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label">Active:</label>
+                                    <input type="checkbox" id="IsActive" name="IsActive" class="check">
+                                    <label for="IsActive" class="checktoggle"></label>
+                                </div>
+                                <div class="text-start">
+                                    <button type="submit" id="btnSaveRoles" class="btn btn-primary">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="col-lg-6 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-nowrap mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>User Role</th>
+                                        <th>Active</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var category in Model)
+                                    {
+                                        <tr>
+                                            <td>@category.RoleId</td>
+                                            <td>@category.RoleName</td>
+                                            <td>@((bool)category.IsActive ? "Yes" : "No")</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-warning" onclick="editCategory('@category.RoleId', '@category.RoleName', '@category.IsActive')">Edit</button>
+                                                <a href="@Url.Action("DeleteRoles", "Masters", new { id = category.RoleId })" class="btn btn-sm btn-danger">Delete</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function editCategory(id, name, isActive) {
+            document.getElementById("RoleId").value = id;
+            document.getElementById("RoleName").value = name;
+            document.getElementById("IsActive").checked = isActive === "True";
+        }
+    </script>
+    <script>
+                       $(document).ready(function () {
+            $("#btnSaveRoles").click(function (e) {
+                e.preventDefault(); // Prevent form submission
+
+                var roleId = $("#RoleId").val();
+                var roleName = $("#RoleName").val();
+                var isActive = $("#IsActive").is(":checked");
+
+                var data = {
+                    RoleId: roleId ? parseInt(roleId) : 0, // Ensure it's an integer
+                    RoleName: roleName,
+                    IsActive: isActive
+                };
+
+                $.ajax({
+                    url: '/Masters/SaveRoles',
+                    type: 'POST',
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        alert("Roles saved successfully!");
+                        location.reload();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error:", xhr.responseText);
+                        alert("Something went wrong: " + xhr.status);
+                    }
+                });
+            });
+        });
+
+
+    </script>
+}

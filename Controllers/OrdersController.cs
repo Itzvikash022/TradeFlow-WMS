@@ -7,6 +7,7 @@ using WMS_Application.Repositories.Interfaces;
 using MimeKit.Tnef;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using Humanizer;
 
 namespace WMS_Application.Controllers
 {
@@ -28,6 +29,7 @@ namespace WMS_Application.Controllers
         [Route("Orders")]
         public async Task<IActionResult> Index()
         {
+            
             List<TblOrder> orders = new List<TblOrder>();
             int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
             
@@ -92,6 +94,8 @@ namespace WMS_Application.Controllers
         //Order Create View
         public IActionResult CreateOrder()
         {
+            List<TblProductCategory> prodCat = _context.TblProductCategories.Where(x => x.IsActive == true).ToList();
+            ViewBag.ProductCategory = prodCat;
             int adminId = (int)HttpContext.Session.GetInt32("UserId");
             int roleId = (int) HttpContext.Session.GetInt32("UserRoleId");
             if(roleId > 2 && roleId != 5)
@@ -103,6 +107,8 @@ namespace WMS_Application.Controllers
             int currentAdminId = (int)HttpContext.Session.GetInt32("UserId");
             var shops = _orders.GetShopDetails(currentAdminId);
             ViewBag.ShopData = shops;
+            var company = _context.TblCompanies.Where(x=>x.IsActive == true && x.IsDeleted == false).ToList();
+            ViewBag.CompanyData = company;
             return View();
         }
 
@@ -151,19 +157,15 @@ namespace WMS_Application.Controllers
             //TblOrder OrderDetails = new TblOrder();
             //var AllOrders = await _orders.GetAllOrders(shopId);
             var OrderDetails = _orders.GetOrderDetails(orderId);
-
-            //foreach(var data in AllOrders)
-            //{
-            //    if(data.OrderId == orderId)
-            //    {
-            //        OrderDetails = data;
-            //    }
-            //}
+            if(OrderDetails.PaymentStatus == "Paid")
+            {
+                return RedirectToAction("Index");
+            }
             return View(OrderDetails);
         }
 
         //Fetching All Products based on their Companies
-        public IActionResult GetFilteredProducts(string? productName, string? category, string? company)
+        public IActionResult GetFilteredProducts(string? productName, int? category, int? company)
         {
             var result = _orders.GetProductsC2S(productName, category, company);
             if(result == null)
@@ -180,7 +182,7 @@ namespace WMS_Application.Controllers
         }
 
         //Fetching All Products of other shops
-        public IActionResult GetFilteredProductsShop(string? productName, string? category, int? shop)
+        public IActionResult GetFilteredProductsShop(string? productName, int? category, int? shop)
         {
             int userId = (int) HttpContext.Session.GetInt32("UserId");
             var result = _orders.GetProductsS2SBuy(productName, category, shop, userId);
@@ -330,6 +332,11 @@ namespace WMS_Application.Controllers
                         "Pending",
                         "Pending"
                     );
+
+                    string email = _context.TblUsers.Where(x => x.UserId == (_context.TblShops.Where(y => y.ShopId == orderDto.SellerShopId).Select(z => z.AdminId).FirstOrDefault())).Select(a => a.Email).FirstOrDefault();
+                    string buyerName = _context.TblShops.Where(x => x.ShopId == orderDto.ShopId).Select(y => y.ShopName).FirstOrDefault();
+                    string body = $"New order request received from {buyerName}, checkout your order page for more details";
+                    _emailSender.SendEmailAsync(email, "New Order Request Received", body);
                 }
                 else if (orderDto.SellerShopId > 0 && orderDto.SellerShopId == ShopData.ShopId) // Shop-to-Shop Selling (S2Ss)
                 {
@@ -357,6 +364,12 @@ namespace WMS_Application.Controllers
                         "Pending",
                         "Pending"
                     );
+
+                    string email = _context.TblCompanies.Where(x => x.CompanyId == orderDto.CompanyId).Select(y => y.Email).FirstOrDefault();
+                    string buyerName = _context.TblShops.Where(x => x.ShopId == orderDto.ShopId).Select(y => y.ShopName).FirstOrDefault();
+                    string body = $"New order request received from {buyerName}, checkout your order page for more details";
+                    _emailSender.SendEmailAsync(email, "New Order Request Received", body);
+
                 }
 
                 return Ok(new { message = "Order placed successfully!", orderId });

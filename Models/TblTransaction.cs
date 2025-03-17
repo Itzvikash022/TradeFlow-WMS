@@ -19,6 +19,9 @@ public partial class TblTransaction
     public string BuyerName { get; set; }
     [NotMapped]
     public string SellerName { get; set; }
+    
+    [NotMapped]
+    public string OrderType { get; set; }
     public decimal? Amount { get; set; }
 
     public DateTime? TransactionDate { get; set; }

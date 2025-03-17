@@ -28,13 +28,12 @@
                             <tr>
                                 <th>Shop Logo</th>
                                 <th>Shop Name</th>
-                                <th>Started On</th>
                                 <th>State</th>
                                 <th>City</th>
+                                <th>Started On</th>
                                 <th>Pincode</th>
                                 <th>Address</th>
-                                <th>Start Time</th>
-                                <th>End Time</th>
+                                <th>Timings</th>
                                 <th>Admin Name</th>
                                 <th>Action</th>
                             </tr>
@@ -47,13 +46,12 @@
                                         <img src="@shop.ShopImagePath" alt="img" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
                                     </td>
                                     <td>@shop.ShopName</td>
-                                    <td>@shop.CreatedAt</td>
                                     <td>@shop.State</td>
                                     <td>@shop.City</td>
+                                    <td>@shop.CreatedAt</td>
                                     <td>@shop.Pincode</td>
                                     <td>@shop.Address</td>
-                                    <td>@shop.StartTime</td>
-                                    <td>@shop.ClosingTime</td>
+                                    <td>@shop.StartTime to @shop.ClosingTime</td>
                                     <td>@shop.ShopOwner</td>
                                     <td>
                                         <a class="me-3" href="@Url.Action("Details", "Admins", new { id =  shop.AdminId})">

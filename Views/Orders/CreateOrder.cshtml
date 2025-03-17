@@ -1,5 +1,18 @@
 ﻿<link href="~/css/CreateOrder.css" rel="stylesheet" />
+<style>
+    .table-responsive {
+        position: relative;
+    }
 
+        .table-responsive thead th {
+            position: sticky;
+            top: 0;
+            background: #343a40; /* Dark background for visibility */
+            color: white;
+            z-index: 2;
+        }
+
+</style>
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -41,8 +54,10 @@
                             <label>Shop</label>
                             <select class="select" id="shopDropdown">
                                 <option value="">Choose Shop</option>
-                                    <option value="1022">PreetBank</option>
-                                    <option value="1021">Maurya Electronics</option>
+                                    @foreach (var shop in (List<TblShop>)ViewBag.ShopData)
+                                    {
+                                        <option value="@shop.ShopId">@shop.ShopName</option>
+                                    }
                             </select>
                         </div>
                     </div>
@@ -51,7 +66,10 @@
                             <label>Category</label>
                                 <select class="select" id="ctDropdown">
                                     <option value="">Choose Category</option>
-                                    <option value="Computers">Computers</option>
+                                    @foreach (var category in (List<TblProductCategory>)ViewBag.ProductCategory)
+                                    {
+                                        <option value="@category.ProdCatId">@category.ProductCategory</option>
+                                    })
                                 </select>
                         </div>
                     </div>
@@ -114,8 +132,10 @@
                             <label>Company</label>
                                 <select class="select" id="companyDropdown">
                                 <option value="">Choose Company</option>
-                                    <option value="Visitorz.io">Visitorz.io</option>
-                                    <option value="Vikash Corporation">Vikash Corporation</option>
+                                    @foreach (var shop in (List<TblCompany>)ViewBag.CompanyData)
+                                    {
+                                        <option value="@shop.CompanyId">@shop.CompanyName</option>
+                                    }
                             </select>
                         </div>
                     </div>
@@ -124,7 +144,10 @@
                             <label>Category</label>
                                 <select class="select" id="categoryDropdown">
                                 <option value="">Choose Category</option>
-                                    <option value="Computers">Computers</option>
+                                    @foreach (var category in (List<TblProductCategory>)ViewBag.ProductCategory)
+                                    {
+                                        <option value="@category.ProdCatId">@category.ProductCategory</option>
+                                    })
                             </select>
                         </div>
                     </div>
@@ -181,9 +204,9 @@
                 <div class="card">
                     <div class="card-body">
 
-                        <h5>Product List</h5>
-                        <div class="table-responsive">
-                            <table class="table datanew" id="productTable">
+                        <h4 class="mb-4">Product List</h4>
+                        <div class="table-responsive" style="max-height: 500px; overflow-y: auto;">
+                            <table class="table " id="productTable">
                                 <thead>
                                     <tr>
                                         <th>Product Name</th>

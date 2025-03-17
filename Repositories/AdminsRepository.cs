@@ -11,7 +11,7 @@ namespace WMS_Application.Repositories
     {
         private readonly dbMain _context;
         private readonly IEmailSenderRepository _emailSender;
-
+        
         public AdminsRepository(dbMain context, IEmailSenderRepository emailSender)
         {
             _context = context;
@@ -31,7 +31,7 @@ namespace WMS_Application.Repositories
         }
         public async Task<List<TblRole>> GetAllRoles()
         {
-            return await _context.TblRoles.ToListAsync();
+            return await _context.TblRoles.Where(x=> x.RoleId > 2 && x.RoleId != 5 && x.IsActive == true).ToListAsync();
         }
 
             public List<AdminReportsDTO> GetAdminReports()
@@ -41,7 +41,7 @@ namespace WMS_Application.Repositories
                     .Select(data => new AdminReportsDTO
                     {
                         AdminId = data.UserId,
-                        FullName = (data.FirstName == null && data.LastName == null) ? data.Username : $"{data.FirstName} {data.LastName}",
+                        FullName = (data.FirstName  == null && data.LastName == null) ? data.Username : $"{data.FirstName} {data.LastName}",
                         Email = data.Email,
                         RegisteredOn = (DateTime)data.CreatedAt,
                         ShopDetails = _context.TblShops.Any(x => x.AdminId == data.UserId),
@@ -50,7 +50,7 @@ namespace WMS_Application.Repositories
                         Employees = _context.TblUsers.Count(x => x.AdminRef == data.UserId),
                         ProfilePic = data.ProfileImgPath,
                         IsActive = (bool)data.IsActive
-                    })
+                    }).OrderByDescending(x => x.RegisteredOn)
                     .ToList();
                 return adminData;
             }

@@ -26,14 +26,14 @@
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table datanew">
+                    <table class="table datanew" id="tblAdmins">
                         <thead>
                             <tr>
                                 <th>Profile </th>
                                 <th>Full Name</th>
                                 <th>Email</th>
-                                <th>Contact</th>
                                 <th>Registration Date</th>
+                                <th>Contact</th>
                                 <th>Current Status</th>
                                 <th>Action</th>
                             </tr>
@@ -47,8 +47,8 @@
                                     </td>
                                     <td>@admin.FirstName @admin.LastName</td>
                                     <td>@admin.Email</td>
-                                    <td>@admin.PhoneNumber</td>
                                     <td>@admin.CreatedAt</td>
+                                    <td>@admin.PhoneNumber</td>
                                     @if (admin.VerificationStatus == "Pending")
                                     {
                                         <td><span class="badges bg-warning">@admin.VerificationStatus</span></td>

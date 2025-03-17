@@ -40,10 +40,14 @@
             $("#RoleId").val(2); // Set the role to Admin (Admin role = 2)
             $("#designationDropdown").find("select").prop("disabled", true); // Disable the designation dropdown
             $("#designationDropdown").hide();
+            $("#UserHeadingEmployee").hide();
+            $("#CancelEmployee").hide();
         } else {
             // If it's Employee, show the designation dropdown and enable it
             $("#designationDropdown").find("select").prop("disabled", false);
             $("#designationDropdown").show();   
+            $("#UserHeadingAdmin").hide();   
+            $("#CancelAdmin").hide();   
         }
 
         // Handle designation change (only for Employee role)
@@ -87,7 +91,6 @@
             },
             PhoneNumber: {
                 required: true,
-                digits: true,
                 minlength: 6,
                 maxlength: 15
             },
@@ -108,7 +111,6 @@
             },
             PhoneNumber: {
                 required: "Please enter your phone number.",
-                digits: "Please enter only numbers.",
                 minlength: "Phone number must be at least 6 digits.",
                 maxlength: "Phone number cannot exceed 15 digits."
             },

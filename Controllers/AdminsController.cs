@@ -54,12 +54,20 @@ namespace WMS_Application.Controllers
                 
                 admin.IsDeleted = true;
                 admin.IsActive = false;
-                shop.IsDeleted = true;
-                shop.IsActive = false;
+                if(shop != null)
+                {
+                    shop.IsDeleted = true;
+                    shop.IsActive = false;
+                    _context.TblShops.Update(shop);
+                }
 
-                _context.TblShops.Update(shop);
                 _context.TblUsers.Update(admin);
                 _context.SaveChanges();
+
+                //Sending email after deletion
+                string subject = "Account Deleted!! heehehehehehe";
+                string body = "I'm sorry to inform you but your account has been terminated, please contact the support team if you have query regarding it";
+                _emailSender.SendEmailAsync(admin.Email, subject, body);
 
                 // If successful, redirect to Index
                 return Json(new { success = true, message = "Admin deleted successfully." });

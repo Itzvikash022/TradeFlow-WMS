@@ -7,6 +7,7 @@
         public string TabUrl { get; set; }
         public string? IconPath { get; set; }
 
+        public bool IsActive { get; set; }
         public int? ParentId { get; set; }
         //public bool IsActive { get; set; }
         public List<SidebarModel> SubTabs { get; set; } // Sub-tabs if any

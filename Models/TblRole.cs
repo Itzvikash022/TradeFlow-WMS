@@ -9,5 +9,6 @@ public partial class TblRole
 
     public string? RoleName { get; set; }
 
-    public DateTime? CreateAt { get; set; }
+    public bool IsActive { get; set; }
+    public bool IsDeleted { get; set; }
 }

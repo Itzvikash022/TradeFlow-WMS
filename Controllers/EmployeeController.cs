@@ -8,10 +8,12 @@ namespace WMS_Application.Controllers
     {
         private readonly IEmployeeRepository _employee;
         private readonly dbMain _context;
-        public EmployeeController(ISidebarRepository sidebar,dbMain context, IEmployeeRepository employee) : base(sidebar)
+        private readonly IEmailSenderRepository _emailSender;
+        public EmployeeController(ISidebarRepository sidebar,dbMain context, IEmployeeRepository employee, IEmailSenderRepository emailSender) : base(sidebar)
         {
             _employee = employee;
             _context = context;
+            _emailSender = emailSender;
         }
         [Route("Employees")]
         public async Task<IActionResult> Index()
@@ -37,8 +39,15 @@ namespace WMS_Application.Controllers
                 _context.TblUsers.Update(emp);
                 _context.SaveChanges();
 
+
+                //Sending email after deletion
+                string subject = "Account Deleted!! heehehehehehe";
+                string body= "I'm sorry to inform you but your account has been terminated, please contact the support team if you have query regarding it";
+                _emailSender.SendEmailAsync(emp.Email, subject, body);
+
                 // If successful, redirect to Index
                 return Json(new { success = true, message = "Employee deleted successfully." });
+
             }
             catch (Exception ex)
             {

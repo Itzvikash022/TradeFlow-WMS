@@ -10,7 +10,9 @@ public partial class TblProduct
 
     public string ProductName { get; set; } = null!;
 
-    public string? Category { get; set; }
+    public int Category { get; set; }
+    [NotMapped]
+    public string? ProdCategory { get; set; }
 
     public int? CompanyId { get; set; }
 

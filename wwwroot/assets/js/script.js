@@ -1,12 +1,28 @@
 $(document).ready(function(){var $wrapper=$('.main-wrapper');var $slimScrolls=$('.slimscroll');var $pageWrapper=$('.page-wrapper');feather.replace();$(window).resize(function(){if($('.page-wrapper').length>0){var height=$(window).height();$(".page-wrapper").css("min-height",height);}});$('body').append('<div class="sidebar-overlay"></div>');$(document).on('click','#mobile_btn',function(){$wrapper.toggleClass('slide-nav');$('.sidebar-overlay').toggleClass('opened');$('html').addClass('menu-opened');$('#task_window').removeClass('opened');return false;});$(".sidebar-overlay").on("click",function(){$('html').removeClass('menu-opened');$(this).removeClass('opened');$wrapper.removeClass('slide-nav');$('.sidebar-overlay').removeClass('opened');$('#task_window').removeClass('opened');});$(document).on("click",".hideset",function(){$(this).parent().parent().parent().hide();});$(document).on("click",".delete-set",function(){$(this).parent().parent().hide();});if($('.product-slide').length>0){$('.product-slide').owlCarousel({items:1,margin:30,dots:false,nav:true,loop:false,responsiveClass:true,responsive:{0:{items:1},800:{items:1},1170:{items:1}}});}
 if($('.owl-product').length>0){var owl=$('.owl-product');owl.owlCarousel({margin:10,dots:false,nav:true,loop:false,touchDrag:false,mouseDrag:false,responsive:{0:{items:2},768:{items:4},1170:{items:8}}});}
+
+    // Register date format with DataTables
     if ($('.datanew').length > 0) {
+        // Register custom datetime sorting for DataTables
+        $.fn.dataTable.ext.type.order['custom-datetime-asc'] = function (a, b) {
+            return new Date(a.split(' ')[0].split(':').reverse().join('-') + ' ' + a.split(' ')[1]) -
+                new Date(b.split(' ')[0].split(':').reverse().join('-') + ' ' + b.split(' ')[1]);
+        };
+
+        $.fn.dataTable.ext.type.order['custom-datetime-desc'] = function (a, b) {
+            return new Date(b.split(' ')[0].split(':').reverse().join('-') + ' ' + b.split(' ')[1]) -
+                new Date(a.split(' ')[0].split(':').reverse().join('-') + ' ' + a.split(' ')[1]);
+        };
+
         $('.datanew').DataTable({
             "bFilter": true,
             "sDom": 'fBtlpi',
             'pagingType': 'numbers',
             "ordering": true,
-            "order": [[2, "desc"]], // Sorts by the 3rd column (index 2) in descending order
+            "order": [[4, "desc"]], // Sorts by the 5th column (index 4) in descending order
+            "columnDefs": [
+                { "type": "custom-datetime", "targets": 4 } // Apply custom sorting to datetime column
+            ],
             "language": {
                 search: ' ',
                 sLengthMenu: '_MENU_',
@@ -19,6 +35,7 @@ if($('.owl-product').length>0){var owl=$('.owl-product');owl.owlCarousel({margin
             },
         });
     }
+
 
 function readURL(input){if(input.files&&input.files[0]){var reader=new FileReader();reader.onload=function(e){$('#blah').attr('src',e.target.result);}
 reader.readAsDataURL(input.files[0]);}}

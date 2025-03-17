@@ -1,5 +1,5 @@
 ﻿@model WMS_Application.Models.TblProduct;
-
+<link rel="stylesheet" href="~/css/ImagePreview.css"/>
 <div class="page-wrapper">
     <div class="content">
         <div class="page-header">
@@ -8,29 +8,35 @@
                 <h6>Create new product</h6>
             </div>
         </div>
-
+        @{
+            bool read = true;
+            @if (Model == null || Model.ProductId == 0)
+            {
+                read = false;
+            }
+        }
         <div class="card">
             <form enctype="multipart/form-data" id="SaveShopProduct">
                 <div class="card-body">
                     <input type="text" asp-for="ProductId" hidden readonly>
                     <input type="text" asp-for="UnregCompanyId" hidden readonly>
-
+                    
                     <div class="row">
                         <div class="col-lg-4 col-sm-6 col-12">
                             <div class="form-group">
                                 <label>Product Name</label>
-                                <input type="text" asp-for="ProductName">
+                                <input type="text" asp-for="ProductName" readonly = "@read">
                             </div>
                         </div>
                         <div class="col-lg-4 col-sm-6 col-12">
                             <div class="form-group">
                                 <label>Category</label>
-                                <select class="select" asp-for="Category">
-                                    <option>Choose Category</option>
-                                    <option>Electronics</option>
-                                    <option>Food</option>
-                                    <option>Clothing</option>
-                                    <option>Auto Mobiles</option>
+                                <select class="select" asp-for="Category" disabled="@read">
+                                    <option value="">Choose Category</option>
+                                    @foreach (var category in (List<TblProductCategory>)ViewBag.ProductCategory)
+                                    {
+                                        <option value="@category.ProdCatId">@category.ProductCategory</option>
+                                    })
                                 </select>
                             </div>
                         </div>
@@ -43,7 +49,7 @@
                         <div class="col-lg-4 col-sm-6 col-12">
                             <div class="form-group">
                                 <label>Price Per Unit</label>
-                                <input type="text" asp-for="PricePerUnit">
+                                <input type="text" asp-for="PricePerUnit" readonly="@read">
                             </div>
                         </div>
                         <div class="col-lg-4 col-sm-6 col-12">
@@ -55,20 +61,20 @@
                         <div class="col-lg-4 col-sm-6 col-12">
                             <div class="form-group">
                                 <label>Company Name</label>
-                                <input type="text" asp-for="CompanyName">
+                                <input type="text" asp-for="CompanyName" readonly="@read">
                             </div>
                         </div>
-                        <div class="col-lg-6 col-sm-6 col-12">
+                        <div class="col-lg-8 col-sm-6 col-12">
                             <div class="form-group">
                                 <label>Manufacturer</label>
-                                <input type="text" asp-for="Manufacturer">
+                                <input type="text" asp-for="Manufacturer" readonly="@read">
                             </div>
                         </div>
-                        <div class="col-lg-8">
+                        <div hidden="@read" class="col-lg-8">
                             <div class="form-group">
                                 <label> Product Image</label>
                                 <div class="image-upload">
-                                    <input type="file" asp-for="ProductImage">
+                                    <input type="file" asp-for="ProductImage" >
                                     <div class="image-uploads">
                                         <img src="~/assets/img/icons/upload.svg" alt="img">
                                         <h4>Drag and drop a file to upload</h4>
@@ -76,7 +82,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-4">
+                        <div class="col-lg-4" hidden="@read">
                             <div class="image-preview-container">
                                 <img src="#" alt="Image Preview" id="imagePreview" style="display: none;" />
                                 <p id="imagePreviewText">No image selected</p>
@@ -87,10 +93,9 @@
                                 <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
                                 Submit
                             </button>
-                            <button href="productlist.html" class="btn btn-cancel">
-                                <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                            <a href="/Products" class="btn btn-cancel">
                                 Cancel
-                            </button>
+                            </a>
                         </div>
                     </div>
 

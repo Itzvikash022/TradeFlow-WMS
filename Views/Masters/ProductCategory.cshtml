@@ -1,0 +1,122 @@
+﻿@model List<TblProductCategory>
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Product Category</h4>
+                <h6>Manage your Product Categories</h6>
+            </div>
+        </div>
+        <div class="row">
+            <!-- Form Section -->
+            <div class="col-lg-6 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="card-header">
+                            <h5 class="card-title text-center">Manage Category</h5>
+                            <hr>
+                        </div>
+                        <div class="row">
+                            <form id="productCategoryForm">
+                                <input type="hidden" id="ProductCategoryID" name="ProductCategoryID">
+                                <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label">Category Name:</label>
+                                    <div class="col-lg-6">
+                                        <input type="text" id="ProductCategoryName" name="ProductCategoryName" class="form-control">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-lg-3 col-form-label">Active:</label>
+                                    <input type="checkbox" id="IsActive" name="IsActive" class="check">
+                                    <label for="IsActive" class="checktoggle"></label>
+                                </div>
+                                <div class="text-start">
+                                    <button type="submit" id="btnProductCategory" class="btn btn-primary">Submit</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="col-lg-6 col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-nowrap mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Category Name</th>
+                                        <th>Active</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var category in Model)
+                                    {
+                                        <tr>
+                                            <td>@category.ProdCatId</td>
+                                            <td>@category.ProductCategory</td>
+                                            <td>@((bool) category.IsActive ? "Yes" : "No")</td>
+                                            <td>
+                                                <button class="btn btn-sm btn-warning" onclick="editCategory('@category.ProdCatId', '@category.ProductCategory', '@category.IsActive')">Edit</button>
+                                                <a href="@Url.Action("DeleteProductCategory", "Masters", new { id = category.ProdCatId })" class="btn btn-sm btn-danger">Delete</a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function editCategory(id, name, isActive) {
+        document.getElementById("ProductCategoryID").value = id;
+        document.getElementById("ProductCategoryName").value = name;
+        document.getElementById("IsActive").checked = isActive === "True";
+    }
+</script>
+    <script>
+                       $(document).ready(function () {
+            $("#btnProductCategory").click(function (e) {
+                e.preventDefault(); // Prevent form submission
+
+                var prodCatId = $("#ProductCategoryID").val();
+                var prodCatName = $("#ProductCategoryName").val();
+                var isActive = $("#IsActive").is(":checked");
+
+                var data = {
+                    ProdCatId: prodCatId ? parseInt(prodCatId) : 0, // Ensure it's an integer
+                    ProductCategory: prodCatName,
+                    IsActive: isActive
+                };
+
+                $.ajax({
+                    url: '/Masters/SaveProductCategories',
+                    type: 'POST',
+                    contentType: "application/json",
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        alert("Category saved successfully!");
+                        location.reload();
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error:", xhr.responseText);
+                        alert("Something went wrong: " + xhr.status);
+                    }
+                });
+            });
+        });
+
+
+    </script>
+}

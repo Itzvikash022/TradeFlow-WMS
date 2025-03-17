@@ -3,11 +3,12 @@
 @{
     Layout = "/Views/Shared/_Layout.cshtml";
 }
+<link rel="stylesheet" href="~/css/ImagePreview.css" />
 
 
-<div id="global-loader">
-    <div class="whirly-loader"> </div>
-</div>
+@* <div id="global-loader"> *@
+@*     <div class="whirly-loader"> </div> *@
+@* </div> *@
 
 <div class="main-wrapper">
 
@@ -15,7 +16,8 @@
         <div class="content">
             <div class="page-header">
                 <div class="page-title">
-                    <h4>Admin Management</h4>
+                    <h4 id="UserHeadingAdmin">Admin Management</h4>
+                    <h4 id="UserHeadingEmployee">Employee Management</h4>
                     <h6>Add/Update User</h6>
                 </div>
             </div>
@@ -89,30 +91,30 @@
                                         <option value="">--Select Designation--</option>
                                         @foreach (var role in (List<TblRole>)ViewBag.Roles) 
                                         { 
-                                            if(role.RoleId > 2){ 
-                                                <option value="@role.RoleId">@role.RoleName</option> 
-                                            } 
+                                             <option value="@role.RoleId">@role.RoleName</option> 
                                         } 
                                     </select> 
                                 </div>
                             </div>
 
-                            <div class="col-lg-8">
-                                <div class="form-group">
-                                    <label> User Image</label>
-                                    <div class="image-upload">
-                                        <input type="file" asp-for="ProfileImage">
-                                        <div class="image-uploads">
-                                            <img src="~/assets/img/icons/upload.svg" alt="img">
-                                            <h4>Drag and drop a file to upload</h4>
+                            <div class="row">
+                                <div class="col-lg-8">
+                                    <div class="form-group">
+                                        <label> User Image</label>
+                                        <div class="image-upload">
+                                            <input type="file" asp-for="ProfileImage">
+                                            <div class="image-uploads">
+                                                <img src="~/assets/img/icons/upload.svg" alt="img">
+                                                <h4>Drag and drop a file to upload</h4>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="col-lg-4">
-                                <div class="image-preview-container">
-                                    <img src="#" alt="Image Preview" id="imagePreview" style="display: none;" />
-                                    <p id="imagePreviewText">No image selected</p>
+                                <div class="col-lg-4">
+                                    <div class="image-preview-container">
+                                        <img src="#" alt="Image Preview" id="imagePreview" style="display: none;" />
+                                        <p id="imagePreviewText">No image selected</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -121,7 +123,8 @@
                                     <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
                                     Submit
                                 </button>
-                                <a href="~/Admins" class="btn btn-cancel">Cancel</a>
+                                <a href="~/Admins" id="CancelAdmin" class="btn btn-cancel">Cancel</a>
+                                <a href="~/Employees" id="CancelEmployee" class="btn btn-cancel">Cancel</a>
                             </div>
 
                         </div>

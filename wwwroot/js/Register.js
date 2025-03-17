@@ -119,7 +119,12 @@
                 success: function (result) {
                     alert(result.message);
                     if (result.success) {
-                        window.location.href = '/Auth/MoreDetails';
+                        if (result.emp) {
+                            window.location.href = '/Dashboard';
+                        }
+                        else {
+                            window.location.href = '/Auth/MoreDetails';
+                        }
                     }
                 },
                 complete: function () {

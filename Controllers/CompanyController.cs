@@ -10,10 +10,12 @@ namespace WMS_Application.Controllers
     {
         private readonly dbMain _context;
         private readonly ICompanyRepository _company;
-        public CompanyController(ISidebarRepository sidebar, dbMain context, ICompanyRepository company) : base(sidebar)
+        private readonly IEmailSenderRepository _emailSender;
+        public CompanyController(ISidebarRepository sidebar, dbMain context, ICompanyRepository company, IEmailSenderRepository emailSender) : base(sidebar)
         {
             _context = context;
             _company = company;
+            _emailSender = emailSender;
         }
         [Route("Company")]
         public async Task<IActionResult> Index()
@@ -85,6 +87,8 @@ namespace WMS_Application.Controllers
         [HttpGet]
         public async Task<IActionResult> AddProducts(int? id)
         {
+            List<TblProductCategory> prodCat = _context.TblProductCategories.Where(x => x.IsActive == true).ToList();
+            ViewBag.ProductCategory = prodCat;
             TblProduct model = new TblProduct();
             if(id > 0)
             {
@@ -124,6 +128,11 @@ namespace WMS_Application.Controllers
                 company.IsActive = false;
                 _context.TblCompanies.Update(company);
                 _context.SaveChanges();
+
+                //Sending email after deletion
+                string subject = "Account Deleted!! heehehehehehe";
+                string body = "I'm sorry to inform you but your account has been terminated, please contact the support team if you have query regarding it";
+                _emailSender.SendEmailAsync(company.Email, subject, body);
 
                 // If successful, redirect to Index
                 return Json(new { success = true, message = "Company deleted successfully." });

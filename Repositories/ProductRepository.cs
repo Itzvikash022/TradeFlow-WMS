@@ -18,16 +18,18 @@ namespace WMS_Application.Repositories
             if (companyId > 0 && shopId > 0)
             {
                 // Fetch products for a specific company
-                var products = from product in _context.TblProducts
+                var products = (from product in _context.TblProducts
                                join company in _context.TblCompanies on product.CompanyId equals company.CompanyId
                                join stock in _context.TblStocks on product.ProductId equals stock.ProductId into stockJoin
                                from stock in stockJoin.DefaultIfEmpty() // Left join to include all products
-                               where stock.ShopId == shopId && company.CompanyId == companyId
+                               where stock.ShopId == shopId && company.CompanyId == companyId && stock.Quantity > 0
                                select new TblProduct
                                {
                                    ProductId = product.ProductId,
                                    ProductName = product.ProductName,
-                                   Category = product.Category,
+                                   ProdCategory = _context.TblProductCategories.Where(c => c.ProdCatId == product.Category)
+                    .Select(c => c.ProductCategory)
+                    .FirstOrDefault(),
                                    PricePerUnit = product.PricePerUnit,
                                    CreateAt = product.CreateAt,
                                    LastUpdateDate = product.LastUpdateDate,
@@ -35,22 +37,24 @@ namespace WMS_Application.Repositories
                                    CompanyName = company.CompanyName,
                                    ProductImagePath = product.ProductImagePath,
                                    ProductQty = stock != null ? stock.Quantity : 0 // Show 0 if no stock found
-                               };
+                               }).OrderByDescending(p => p.LastUpdateDate);
 
                 return products.ToList();
 
             }
             else if (companyId > 0 && shopId == 0)
             {
-                // Fetch products for a specific company
-                var products = from product in _context.TblProducts
+                // Fetch products for my company
+                var products = (from product in _context.TblProducts
                                join company in _context.TblCompanies on product.CompanyId equals company.CompanyId
-                               where product.CompanyId == companyId
+                               where product.CompanyId == companyId && product.ProductQty > 0
                                select new TblProduct
                                {
                                    ProductId = product.ProductId,
                                    ProductName = product.ProductName,
-                                   Category = product.Category,
+                                   ProdCategory = _context.TblProductCategories.Where(c => c.ProdCatId == product.Category)
+                    .Select(c => c.ProductCategory)
+                    .FirstOrDefault(),
                                    PricePerUnit = product.PricePerUnit,
                                    CreateAt = product.CreateAt,
                                    LastUpdateDate = product.LastUpdateDate,
@@ -58,13 +62,13 @@ namespace WMS_Application.Repositories
                                    CompanyName = company.CompanyName,
                                    ProductImagePath = product.ProductImagePath,
                                    ProductQty = product.ProductQty,
-                               };
+                               }).OrderByDescending(p => p.LastUpdateDate);
 
                 return products.ToList();
             }
             else
             {
-                var products = from stock in _context.TblStocks
+                var products = (from stock in _context.TblStocks
                                join product in _context.TblProducts
                                on stock.ProductId equals product.ProductId
 
@@ -78,21 +82,21 @@ namespace WMS_Application.Repositories
                                on product.UnregCompanyId equals unregCompany.UnregCompanyId into unregCompanyGroup
                                from unregCompany in unregCompanyGroup.DefaultIfEmpty()
 
-                               where stock.ShopId == shopId
+                               where stock.ShopId == shopId && stock.Quantity > 0   
                                select new TblProduct
                                {
                                    ProductId = product.ProductId,
                                    ProductName = product.ProductName,
-                                   Category = product.Category,
+                                   ProdCategory = _context.TblProductCategories.Where(c => c.ProdCatId == product.Category).Select(c => c.ProductCategory).FirstOrDefault(),
                                    PricePerUnit = product.PricePerUnit,
                                    CreateAt = product.CreateAt,
-                                   LastUpdateDate = product.LastUpdateDate,
+                                   LastUpdateDate = stock.LastUpdated,
                                    Manufacturer = product.Manufacturer,
                                    ProductQty = stock.Quantity,
                                    ShopPrice = (int)stock.ShopPrice,
                                    CompanyName = company != null ? company.CompanyName : unregCompany.UnregCompanyName, // Take company name from whichever is available
                                    ProductImagePath = product.ProductImagePath
-                               };
+                               }).OrderByDescending(p => p.LastUpdateDate);
 
                 return products.ToList();
 
@@ -204,7 +208,8 @@ namespace WMS_Application.Repositories
                 .FirstOrDefaultAsync(s => s.ProductId == ProductId && s.ShopId == ShopId);
             if (existingStock != null)
             {
-                existingStock.Quantity += Quantity;
+                existingStock.Quantity = Quantity;
+                existingStock.ShopPrice = shopPrice; 
                 _context.TblStocks.Update(existingStock);
             }
             else

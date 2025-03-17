@@ -37,6 +37,7 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrdersRepository, OrdersRepository>();
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
+builder.Services.AddScoped<IMasterRepository, MasterRepository>();
 builder.Services.AddMemoryCache();
 var app = builder.Build();
 app.UseSession();

@@ -56,7 +56,6 @@
             },
             PhoneNumber: {
                 required: true,
-                digits: true,
                 minlength: 6,
                 maxlength: 15
             },
@@ -75,7 +74,6 @@
             },
             PhoneNumber: {
                 required: "Please enter your phone number.",
-                digits: "Please enter only numbers.",
                 minlength: "Phone number must be at least 6 digits.",
                 maxlength: "Phone number cannot exceed 15 digits."
             },
@@ -141,7 +139,6 @@
             },
             PhoneNumber: {
                 required: true,
-                digits: true,
                 minlength: 6,
                 maxlength: 15
             },
@@ -172,7 +169,6 @@
             },
             PhoneNumber: {
                 required: "Phone Number is required",
-                digits: "Invalid Phone Number",
                 minlength: "Must be greater than 6 digit",
                 maxlength: "Must be smaller than 15 digit"
             },

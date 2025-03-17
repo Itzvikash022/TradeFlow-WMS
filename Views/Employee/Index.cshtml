@@ -24,29 +24,29 @@
                         </div>
                     </div>
 
-                    <!-- Column Selection Dropdown -->
-                    <div class="dropdown">
-                        <button class="btn btn-primary dropdown-toggle" type="button" id="columnDropdown" data-bs-toggle="dropdown">
-                            Select Columns
-                        </button>
-                        <ul class="dropdown-menu p-3">
-                            <li><input type="checkbox" class="column-checkbox" value="Profile" checked> Profile</li>
-                            <li><input type="checkbox" class="column-checkbox" value="FirstName" checked> First Name</li>
-                            <li><input type="checkbox" class="column-checkbox" value="LastName" checked> Last Name</li>
-                            <li><input type="checkbox" class="column-checkbox" value="Username" checked> UserName</li>
-                            <li><input type="checkbox" class="column-checkbox" value="Email" checked> Email</li>
-                            <li><input type="checkbox" class="column-checkbox" value="PhoneNumber" checked> Phone Number</li>
-                            <li><input type="checkbox" class="column-checkbox" value="CreatedAt" checked> Joining Date</li>
-                            <li><input type="checkbox" class="column-checkbox" value="DOB" checked> DateOfBirth</li>
-                            <li><input type="checkbox" class="column-checkbox" value="Designation" checked> Designation</li>
-                            <li><input type="checkbox" class="column-checkbox" value="IsVerified" checked> IsVerified</li>
-                            <li><input type="checkbox" class="column-checkbox" value="Action" checked> Action</li>
-                        </ul>
-                    </div>
-                            <li class="mt-2">
-                                <button class="btn btn-success" id="applyPreferences">Apply</button>
-                                <button class="btn btn-warning" id="resetPreferences">Reset to Default</button>
-                            </li>
+                    @* <!-- Column Selection Dropdown --> *@
+                    @* <div class="dropdown"> *@
+                    @*     <button class="btn btn-primary dropdown-toggle" type="button" id="columnDropdown" data-bs-toggle="dropdown"> *@
+                    @*         Select Columns *@
+                    @*     </button> *@
+                    @*     <ul class="dropdown-menu p-3"> *@
+                    @*         <li><input type="checkbox" class="column-checkbox" value="Profile" checked> Profile</li> *@
+                    @*         <li><input type="checkbox" class="column-checkbox" value="FirstName" checked> First Name</li> *@
+                    @*         <li><input type="checkbox" class="column-checkbox" value="LastName" checked> Last Name</li> *@
+                    @*         <li><input type="checkbox" class="column-checkbox" value="Username" checked> UserName</li> *@
+                    @*         <li><input type="checkbox" class="column-checkbox" value="Email" checked> Email</li> *@
+                    @*         <li><input type="checkbox" class="column-checkbox" value="PhoneNumber" checked> Phone Number</li> *@
+                    @*         <li><input type="checkbox" class="column-checkbox" value="CreatedAt" checked> Joining Date</li> *@
+                    @*         <li><input type="checkbox" class="column-checkbox" value="DOB" checked> DateOfBirth</li> *@
+                    @*         <li><input type="checkbox" class="column-checkbox" value="Designation" checked> Designation</li> *@
+                    @*         <li><input type="checkbox" class="column-checkbox" value="IsVerified" checked> IsVerified</li> *@
+                    @*         <li><input type="checkbox" class="column-checkbox" value="Action" checked> Action</li> *@
+                    @*     </ul> *@
+                    @* </div> *@
+                    @*         <li class="mt-2"> *@
+                    @*             <button class="btn btn-success" id="applyPreferences">Apply</button> *@
+                    @*             <button class="btn btn-warning" id="resetPreferences">Reset to Default</button> *@
+                    @*         </li> *@
 
                 </div>
 
@@ -57,16 +57,15 @@
                         <thead>
                             <tr>
                                 <th data-column="Profile">Profile</th>
-                                <th data-column="FirstName">First Name</th>
-                                <th data-column="LastName">Last Name</th>
+                                <th data-column="Full Name">First Name</th>
                                 <th data-column="Username">UserName</th>
                                 <th data-column="Email">Email</th>
-                                <th data-column="PhoneNumber">Phone Number</th>
                                 <th data-column="CreatedAt">Joining Date</th>
+                                <th data-column="PhoneNumber">Phone Number</th>
                                 <th data-column="DOB">Date of Birth</th>
                                 <th data-column="Designation">Designation</th>
                                 <th data-column="IsVerified">IsVerified</th>
-                                <th data-column="IsVerified"     id="Action">Action</th>
+                                <th data-column="IsVerified" id="Action">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -76,8 +75,7 @@
                                     <td data-column="Profile">
                                         <img src="@employee.ProfileImgPath" alt="img" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
                                     </td>
-                                    <td data-column="FirstName">@employee.FirstName</td>
-                                    <td data-column="LastName">@employee.LastName</td>
+                                    <td data-column="FirstName">@employee.FirstName @employee.LastName</td>
                                     <td data-column="Username">@employee.Username</td>
                                     <td data-column="Email">@employee.Email</td>
                                     <td data-column="PhoneNumber">@employee.PhoneNumber</td>
@@ -128,82 +126,5 @@
              initializeDeleteButtons('@Url.Action("DeleteEmployee", "Employee")');
         });
     </script>
-    <script>
-        $(document).ready(function () {
-            let userId = $("#userId").val(); // Get userRoleId from hidden input
-            let localStorageKey = `employee_column_prefs_${userId}`;
-
-            // Load preferences from Local Storage
-            function loadPreferences() {
-                let preferences = localStorage.getItem(localStorageKey);
-                if (preferences) {
-                    preferences = JSON.parse(preferences);
-                } else {
-                    // Default columns to show
-                    preferences = ["Profile", "FirstName", "LastName", "Email", "PhoneNumber", "JoiningDate", "Designation", "Action"];
-                    localStorage.setItem(localStorageKey, JSON.stringify(preferences));
-                }
-
-                // Apply visibility
-                $(".column-checkbox").each(function () {
-                    let column = $(this).val();
-                    let isChecked = preferences.includes(column);
-                    $(this).prop("checked", isChecked);
-                    toggleColumn(column, isChecked);
-                });
-            }
-
-            // Function to toggle columns
-            function toggleColumn(column, show) {
-                let columnSelector = `[data-column='${column}']`;
-                if (show) {
-                    $(columnSelector).show();
-                } else {
-                    $(columnSelector).hide();
-                }
-            }
-
-            // Apply user preferences on click
-            $("#applyPreferences").off("click").on("click", function () {
-                let selectedColumns = [];
-                $(".column-checkbox:checked").each(function () {
-                    selectedColumns.push($(this).val());
-                });
-
-                localStorage.setItem(localStorageKey, JSON.stringify(selectedColumns));
-
-                // Refresh column visibility without needing a full page reload
-                $(".column-checkbox").each(function () {
-                    let column = $(this).val();
-                    toggleColumn(column, selectedColumns.includes(column));
-                });
-            });
-
-            // Reset to default
-            $("#resetPreferences").off("click").on("click", function () {
-                localStorage.removeItem(localStorageKey);
-                loadPreferences();
-            });
-
-            // Dropdown toggle (Fixes dropdown issue)
-            $("#columnDropdown").off("click").on("click", function (e) {
-                e.stopPropagation(); // Prevent closing when clicking inside
-                $(".dropdown-menu").toggle();
-            });
-
-            // Close dropdown when clicking outside
-            $(document).click(function (e) {
-                if (!$(e.target).closest(".dropdown").length) {
-                    $(".dropdown-menu").hide();
-                }
-            });
-
-            // Load preferences on page load
-            loadPreferences();
-        });
-    </script>
-
-
-
 }
 

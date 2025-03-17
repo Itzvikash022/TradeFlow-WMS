@@ -91,9 +91,8 @@
                                             <tr>
                                                 <th>Buyer</th>
                                                 <th>Seller</th>
-                                                <th>Date</th>
                                                 <th>Status</th>
-                                                <th>Type</th>
+                                                <th>Date</th>
                                                 <th>Amount</th>
                                                 <th>Qty</th>
                                                 <th>Payment</th>
@@ -106,13 +105,12 @@
                                                 <tr>
                                                     <td>@order.BuyerName</td>
                                                     <td>@order.SellerName</td>
-                                                    <td>@order.OrderDate</td>
                                                     <td>
                                                         <span class="badges @(order.OrderStatus == "Pending" ? "bg-warning" : order.OrderStatus == "Success" ? "bg-lightgreen" : "bg-danger")">
                                                             @order.OrderStatus
                                                         </span>
                                                     </td>
-                                                    <td>@order.OrderType</td>
+                                                    <td>@order.OrderDate</td>
                                                     <td>@order.TotalAmount</td>
                                                     <td>@order.TotalQty</td>
                                                     <td>

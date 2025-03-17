@@ -31,17 +31,6 @@
                                                 <input type="text" asp-for="ShopName" placeholder="Enter Shop Name">
                                             </div>
                                         </div>
-                                        <div class="col-lg-4 col-sm-9 col-12">
-                                            <div class="form-group">
-                                                <label>Shop Category</label>
-                                                <select class="select">
-                                                    @foreach (var cat in (List<TblShopCategory>)ViewBag.ShopCategory)
-                                                    {
-                                                        <option value="@cat.ShopCatId">@cat.ShopCategory</option>
-                                                    }
-                                                    </select>
-                                                </div>
-                                            </div>
                                             <div class="col-lg-4 col-sm-9 col-12">
                                                 <div class="form-login">
                                                     <label>Opening Time</label>

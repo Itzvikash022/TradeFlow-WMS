@@ -10,6 +10,7 @@ public partial class TblProduct
 
     public string ProductName { get; set; } = null!;
 
+    public bool IsDeleted { get; set; }
     public int Category { get; set; }
     [NotMapped]
     public string? ProdCategory { get; set; }
@@ -38,4 +39,7 @@ public partial class TblProduct
     public int ProductQty { get; set; }
     [NotMapped]
     public int ShopPrice { get; set; }
+
+    [NotMapped]
+    public int SalesCount { get; set; }
 }

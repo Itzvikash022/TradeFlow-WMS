@@ -14,7 +14,8 @@ namespace WMS_Application.Controllers
         private readonly ICompanyRepository _company;
         private readonly IEmployeeRepository _employee;
         private readonly IOrdersRepository _orders;
-        public ReportsController(ISidebarRepository sidebar, dbMain context, IAdminsRepository admin, IShopRepository shop, ICompanyRepository company, IEmployeeRepository employee, IOrdersRepository orders) : base(sidebar)
+        private readonly IProductRepository _product;
+        public ReportsController(ISidebarRepository sidebar, dbMain context, IAdminsRepository admin, IShopRepository shop, ICompanyRepository company, IEmployeeRepository employee, IOrdersRepository orders, IProductRepository product) : base(sidebar)
         {
             _context = context;
             _admin = admin;
@@ -22,6 +23,7 @@ namespace WMS_Application.Controllers
             _company = company;
             _employee = employee;
             _orders = orders;
+            _product = product;
         }
         public IActionResult AdminReports()
         {
@@ -46,6 +48,20 @@ namespace WMS_Application.Controllers
         {
             int userId = (int)HttpContext.Session.GetInt32("ShopId");
             return View(_orders.GetTransactionReports(userId));
+        }
+        public IActionResult ProductReports()
+        {
+            int userId = 0;
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            if (roleId == 5)
+            {
+                userId = (int)HttpContext.Session.GetInt32("CompanyId");
+            }
+            else
+            {
+                userId = (int)HttpContext.Session.GetInt32("ShopId");
+            }
+            return View(_product.GetProductsReports(userId, roleId));
         }
         public IActionResult ActivityLog()
         {

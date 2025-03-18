@@ -1,0 +1,84 @@
+﻿@model List<WMS_Application.DTO.ProductReportsDTO>;
+
+    <style>
+    .bg-lightred {
+        background-color: #ffcccc !important; /* Light red background */
+    }
+    </style>
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Product Reports</h4>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-top">
+                    <div class="search-set">
+
+                        <div class="search-input">
+                            <a class="btn btn-searchset"><img src="~/assets/img/icons/search-white.svg" alt="img" /></a>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="table-responsive">
+                    <table class="table  datanew">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Name</th>
+                                <th>Company Name</th>
+                                <th>Bought On</th>
+                                <th>Manufacturer</th>
+                                <th>Quantity</th>
+                                <th>BoughtPrice</th>
+                                @if (Context.Session.GetInt32("UserRoleId") != 5)
+                                {
+                                    <th>ShopPrice</th>
+                                }
+                                <th>SalesCount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var product in Model)
+                            {
+                                <tr class="@(product.ProductQty == 0 ? "bg-lightred" : "")">
+                                    <td>
+                                        <img src="@product.ProductImagePath" alt="img" class="img-fluid rounded-circle" style="width: 50px; height: 50px;">
+                                    </td>
+                                    <td>@product.ProductName</td>
+
+                                    @if (product.CompanyName != null)
+                                    {
+                                        <td>@product.CompanyName</td>
+                                    }
+                                    else
+                                    {
+                                        <td>@product.UnregCompanyName</td>
+                                    }
+                                    <td>@product.BoughtOn</td>
+                                    <td>@product.Manufacturer</td>
+                                    <td>@product.ProductQty</td>
+
+                                    <td>@product.PricePerUnit </td>
+                                    @if (Context.Session.GetInt32("UserRoleId") != 5)
+                                    {
+                                        <td>@product.ShopPrice</td>
+                                    }
+                                    <td>@product.SalesCount</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+@section Scripts {
+
+}

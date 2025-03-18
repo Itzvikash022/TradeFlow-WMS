@@ -1,5 +1,6 @@
 ﻿@using Microsoft.Extensions.Primitives
 @model IEnumerable<WMS_Application.Models.TblProduct>;
+<link rel="stylesheet" href="~/css/DeleteModal.css" />
 
 <div class="page-wrapper">
     <div class="content">
@@ -109,15 +110,29 @@
                                                 </button>
                                             </a>
                                         }
-
-                                        <a class="me-3 confirm-text" href="~/product/Delete">
+                                        
+                                        <button class="me-3 btn delete-btn" data-id="@product.ProductId">
                                             <img src="~/assets/img/icons/delete.svg" alt="img">
-                                        </a>
+                                        </button>
                                     </td>
                                 </tr>
                             }
                         </tbody>
                     </table>
+                    <!-- Modal Structure -->
+                    <div id="deleteModal" class="modal" style="display:none;">
+                        <div class="modal-content">
+                            <h2>Are you sure?</h2>
+                            <p>You won't be able to revert this!</p>
+                            <button id="confirmDeleteBtn" class="btn btn-danger">Yes, delete it!</button>
+                            <button id="cancelDeleteBtn" class="btn btn-secondary">No</button>
+                        </div>
+                    </div>
+
+                    <!-- Hidden form for delete action -->
+                    <form id="deleteForm" action="/Products/DeleteProduct" method="post" style="display:none;">
+                        <input type="hidden" name="id" id="userIdToDelete">
+                    </form>
                 </div>
             </div>
         </div>
@@ -125,5 +140,10 @@
     </div>
 </div>
 @section Scripts {
-
+    <script src="~/js/Delete.js"></script>
+    <script>
+        $(document).ready(function () {
+             initializeDeleteButtons('@Url.Action("DeleteProduct", "Product")');
+        });
+    </script>
 }

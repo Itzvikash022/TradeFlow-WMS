@@ -241,6 +241,7 @@ public partial class dbMain : DbContext
             entity.Property(e => e.ProductName)
                 .HasMaxLength(30)
                 .IsUnicode(false);
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<TblProductCategory>(entity =>

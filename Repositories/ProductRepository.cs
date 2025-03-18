@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using WMS_Application.DTO;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 
@@ -22,7 +23,7 @@ namespace WMS_Application.Repositories
                                join company in _context.TblCompanies on product.CompanyId equals company.CompanyId
                                join stock in _context.TblStocks on product.ProductId equals stock.ProductId into stockJoin
                                from stock in stockJoin.DefaultIfEmpty() // Left join to include all products
-                               where stock.ShopId == shopId && company.CompanyId == companyId && stock.Quantity > 0
+                               where stock.ShopId == shopId && company.CompanyId == companyId && stock.Quantity > 0 && product.IsDeleted == false
                                select new TblProduct
                                {
                                    ProductId = product.ProductId,
@@ -47,7 +48,7 @@ namespace WMS_Application.Repositories
                 // Fetch products for my company
                 var products = (from product in _context.TblProducts
                                join company in _context.TblCompanies on product.CompanyId equals company.CompanyId
-                               where product.CompanyId == companyId && product.ProductQty > 0
+                               where product.CompanyId == companyId && product.ProductQty > 0 && product.IsDeleted == false
                                select new TblProduct
                                {
                                    ProductId = product.ProductId,
@@ -225,6 +226,68 @@ namespace WMS_Application.Repositories
             }
             await _context.SaveChangesAsync();
         }
+
+        public List<ProductReportsDTO> GetProductsReports(int userId, int roleId)
+        {
+            var products = new List<ProductReportsDTO>();
+
+            if (roleId == 5) // If Company User
+            {
+                products = _context.TblProducts
+                    .Where(p => p.CompanyId == userId)
+                    .Select(p => new ProductReportsDTO
+                    {
+                        ProductId = p.ProductId,
+                        ProductName = p.ProductName,
+                        BoughtOn = p.CreateAt,
+                        PricePerUnit = (int)p.PricePerUnit,
+                        Manufacturer = p.Manufacturer,
+                        CompanyName = _context.TblCompanies
+                            .Where(c => c.CompanyId == p.CompanyId)
+                            .Select(c => c.CompanyName)
+                            .FirstOrDefault(),
+                        ProductImagePath = p.ProductImagePath,
+                        ProductQty = p.ProductQty, // No stock data for company-level users
+                        SalesCount = _context.TblOrderDetails
+                            .Where(od => od.ProductId == p.ProductId)
+                            .Sum(od => (int?)od.Quantity) ?? 0
+                    }).OrderByDescending(x => x.BoughtOn)
+                    .ToList();
+            }
+            else // If Admin, Fetch Stock Data
+            {
+                products = (from stock in _context.TblStocks
+                            join product in _context.TblProducts on stock.ProductId equals product.ProductId
+                            where stock.ShopId == userId
+                            select new ProductReportsDTO
+                            {
+                                ProductId = product.ProductId,
+                                ProductName = product.ProductName,
+                                CompanyName = _context.TblCompanies
+                                    .Where(c => c.CompanyId == product.CompanyId)
+                                    .Select(c => c.CompanyName)
+                                    .FirstOrDefault(),
+                                PricePerUnit = (int)product.PricePerUnit,
+                                ProductImagePath = product.ProductImagePath,
+                                UnregCompanyName = _context.TblUnregCompanies
+                                    .Where(uc => uc.UnregCompanyId == product.UnregCompanyId)
+                                    .Select(uc => uc.UnregCompanyName)
+                                    .FirstOrDefault(),
+                                Manufacturer = product.Manufacturer,
+                                ProductQty = stock.Quantity, // Get stock quantity for Admin
+                                BoughtOn = stock.LastUpdated,
+                                ShopPrice = (int)stock.ShopPrice,
+                                SalesCount = _context.TblOrderDetails
+                                    .Where(od => od.ProductId == product.ProductId)
+                                    .Sum(od => (int?)od.Quantity) ?? 0
+                            }).OrderByDescending(x => x.BoughtOn).ToList();
+
+            }
+
+            return products;
+        }
+
+
 
     }
 }

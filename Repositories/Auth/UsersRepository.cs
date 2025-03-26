@@ -148,6 +148,11 @@ namespace WMS_Application.Repositories.Auth
             _context.TblUsers.Update(UpdatedUser);
             await _context.SaveChangesAsync();
 
+            if(user.Head == "MyProfile")
+            {
+                return new { success = true, message = "Profile Updated Successfully", path=user.Head };
+            }
+
             return new { success = true, message = "More details have beed saved successfully" };
         }
         public async Task<object> SaveShopDetails(TblShop shop, int id)

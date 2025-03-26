@@ -89,8 +89,10 @@
             const formattedPhoneNumber = phoneInput.getNumber(intlTelInputUtils.numberFormat.E164);
             formData.set("PhoneNumber", formattedPhoneNumber); 
             const btnRegister = $("#btnMoreDetails");
+            const btnCancel = $("#btnCancel");
             const btnLoader = $("#btnLoader");
             btnRegister.prop("disabled", true);
+            btnCancel.prop("hidden", true);
             btnLoader.removeClass("d-none");
             setTimeout(function () {
 
@@ -104,12 +106,18 @@
                     success: function (result) {
                         alert(result.message);
                         if (result.success) {
-                            window.location.href = '/Auth/ShopDetails';
+                            if (result.path != null) {
+                                window.location.href = '/' + result.path;
+                            }
+                            else {
+                                window.location.href = '/Auth/ShopDetails';
+                            }
                         }
                     },
                     complete: function () {
                         // Re-enable button and hide loader
                         btnRegister.prop("disabled", false);
+                        btnCancel.prop("hidden", false);
                         btnLoader.addClass("d-none");
                     },
                     error: function () {

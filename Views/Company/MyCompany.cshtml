@@ -65,9 +65,12 @@
                                         <h6>@Model.CreatedAt</h6>
                                     </li>
                                 </ul>
-                                <a href="/Company/UpdateCompany" id="btnRedirectToUpdate" class="btn btn-submit mt-4 align-center">
-                                    Update?
-                                </a>
+                                @if(ViewBag.PermissionType != "canView")
+                                {
+                                    <a href="/Company/UpdateCompany" id="btnRedirectToUpdate" class="btn btn-submit mt-4 align-center">
+                                        Update?
+                                    </a>
+                                }
                             </div>
                         </div>
                     }

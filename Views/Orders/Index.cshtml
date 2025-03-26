@@ -7,17 +7,21 @@
                 <h4>Orders LIST </h4>
                 <h6>Manage your orders</h6>
             </div>
-            <div class="page-btn">
-                <a href="~/Orders/CreateOrder" class="btn btn-added"><img src="~/assets/img/icons/plus.svg" class="me-2" alt="img">Add New Orders</a>
-                <a class="btn"
-                   data-bs-toggle="modal"
-                   data-bs-target="#recents">
-                    <img src="~/assets/img/icons/transcation.svg"
-                         alt="img"
-                         class="me-1" />
-                    View Requests
-                </a>
-            </div>
+
+            @if (ViewBag.PermissionType != "canView")
+            {
+                <div class="page-btn">
+                    <a href="~/Orders/CreateOrder" class="btn btn-added"><img src="~/assets/img/icons/plus.svg" class="me-2" alt="img">Add New Orders</a>
+                    <a class="btn"
+                       data-bs-toggle="modal"
+                       data-bs-target="#recents">
+                        <img src="~/assets/img/icons/transcation.svg"
+                             alt="img"
+                             class="me-1" />
+                        View Requests
+                    </a>
+                </div>
+            }
         </div>
 
         <div class="card">

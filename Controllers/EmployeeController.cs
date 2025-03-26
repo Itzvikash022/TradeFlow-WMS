@@ -9,17 +9,38 @@ namespace WMS_Application.Controllers
         private readonly IEmployeeRepository _employee;
         private readonly dbMain _context;
         private readonly IEmailSenderRepository _emailSender;
-        public EmployeeController(ISidebarRepository sidebar,dbMain context, IEmployeeRepository employee, IEmailSenderRepository emailSender) : base(sidebar)
+        private readonly IPermisionHelperRepository _permission;
+        public EmployeeController(ISidebarRepository sidebar,dbMain context, IEmployeeRepository employee, IEmailSenderRepository emailSender, IPermisionHelperRepository permission) : base(sidebar)
         {
             _employee = employee;
             _context = context;
             _emailSender = emailSender;
+            _permission = permission;
         }
+
+        // Public method to get user permission
+        public string GetUserPermission(string action)
+        {
+            int roleId = HttpContext.Session.GetInt32("UserRoleId").Value;
+            string permissionType = _permission.HasAccess(action, roleId);
+            ViewBag.PermissionType = permissionType;
+            return _permission.HasAccess(action, roleId);
+        }
+
         [Route("Employees")]
         public async Task<IActionResult> Index()
         {
-            int id = ((int)HttpContext.Session.GetInt32("UserId"));
-            return View(await _employee.GetAllEmployees(id));
+            string permissionType = GetUserPermission("Employees");
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
+            {
+                int id = ((int)HttpContext.Session.GetInt32("UserId"));
+                return View(await _employee.GetAllEmployees(id));
+            }
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
+            
         }
 
         [HttpPost]

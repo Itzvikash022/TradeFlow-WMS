@@ -4,7 +4,7 @@
     <div class="content">
         <div class="page-header">
             <div class="page-title">
-                <h4>shop Reports</h4>
+                <h4>Employee Reports</h4>
             </div>
         </div>
 
@@ -48,13 +48,20 @@
                                     <td>@employee.Designation</td>
                                     <td>@employee.ShopName</td>
                                     <td>
-                                        @if ((bool)employee.IsActive)
+                                        @if(ViewBag.PermissionType != "canView")
                                         {
-                                            <button class="btn fa fa-ban restriction-btn" data-id="@employee.UserId"></button>
+                                            @if ((bool)employee.IsActive)
+                                            {
+                                                <button class="btn fa fa-ban restriction-btn" data-id="@employee.UserId"></button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn fa fa-check restriction-btn" data-id="@employee.UserId"></button>
+                                            }
                                         }
                                         else
                                         {
-                                            <button class="btn fa fa-check restriction-btn" data-id="@employee.UserId"></button>
+                                            <p>-----</p>
                                         }
                                     </td>
                                 </tr>

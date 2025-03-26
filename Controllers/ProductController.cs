@@ -10,63 +10,97 @@ namespace WMS_Application.Controllers
         private readonly IProductRepository _product;
         private readonly dbMain _context;
         private readonly IUsersRepository _users;
-        public ProductController(ISidebarRepository sidebar, IProductRepository product, dbMain context, IUsersRepository users) : base(sidebar)
+        private readonly IPermisionHelperRepository _permission;
+
+        public ProductController(ISidebarRepository sidebar, IProductRepository product, dbMain context, IUsersRepository users, IPermisionHelperRepository permission) : base(sidebar)
         {
             _product = product;
             _context = context;
             _users = users;
+            _permission = permission;
         }
+
+        // Public method to get user permission
+        public string GetUserPermission(string action)
+        {
+            int roleId = HttpContext.Session.GetInt32("UserRoleId").Value;
+            string permissionType = _permission.HasAccess(action, roleId);
+            ViewBag.PermissionType = permissionType;
+
+            //checking for Create orders btn
+            string OrderPermissionType = _permission.HasAccess("Orders", roleId);
+            ViewBag.OrderPermissionType = OrderPermissionType;
+            return permissionType;
+        }
+
         [HttpGet]
         [Route("Products")]
         public async Task<IActionResult> Index(int? companyId)
         {
-            int Id = 0, shopId = 0;
-            TblShop ShopData = new TblShop();
-            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
-            if (HttpContext.Session.GetInt32("CompanyId") != null && roleId == 5)
+            string permissionType = GetUserPermission("Products");
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                Id = (int)HttpContext.Session.GetInt32("CompanyId");
+                int Id = 0, shopId = 0;
+                TblShop ShopData = new TblShop();
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                if (HttpContext.Session.GetInt32("CompanyId") != null && roleId == 5)
+                {
+                    Id = (int)HttpContext.Session.GetInt32("CompanyId");
+                }
+                else
+                {
+                    Id = companyId ?? 0;
+                    int adminId = (int)HttpContext.Session.GetInt32("UserId");
+                    if (roleId > 2 && roleId != 5)
+                    {
+                        adminId = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
+                    }
+                    ShopData = await _context.TblShops.FirstOrDefaultAsync(x => x.AdminId == adminId);
+                    shopId = ShopData.ShopId;
+                }
+
+                return View(await _product.GetAllProducts(Id, shopId));
             }
             else
             {
-                Id = companyId ?? 0;
-                int adminId = (int)HttpContext.Session.GetInt32("UserId");
-                if (roleId > 2 && roleId != 5)
-                {
-                    adminId = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
-                }
-                ShopData = await _context.TblShops.FirstOrDefaultAsync(x => x.AdminId == adminId);
-                shopId = ShopData.ShopId;
+                return RedirectToAction("UnauthorisedAccess", "Error");
             }
-
-            return View(await _product.GetAllProducts(Id, shopId));
         }
 
         [HttpGet]
         public IActionResult SaveShopProduct(int? id)
         {
-            List<TblProductCategory> prodCat = _context.TblProductCategories.Where(x => x.IsActive == true).ToList();
-            ViewBag.ProductCategory = prodCat;
-            TblProduct products = new TblProduct();
-            if (id != null && id > 0)
+            string permissionType = GetUserPermission("Products");
+            if (permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                products = _context.TblProducts.FirstOrDefault(x => x.ProductId == id);
-                int UserId = (int)HttpContext.Session.GetInt32("UserId");
-                int ShopId = (int)HttpContext.Session.GetInt32("ShopId");
-                var stockDetails = _context.TblStocks.FirstOrDefault(x => x.ProductId == id && x.ShopId == ShopId);
-                products.ProductQty = stockDetails.Quantity;
-                products.ShopPrice = (int)stockDetails.ShopPrice;
+                List<TblProductCategory> prodCat = _context.TblProductCategories.Where(x => x.IsActive == true).ToList();
+                ViewBag.ProductCategory = prodCat;
+                TblProduct products = new TblProduct();
+                if (id != null && id > 0)
+                {
+                    products = _context.TblProducts.FirstOrDefault(x => x.ProductId == id);
+                    int UserId = (int)HttpContext.Session.GetInt32("UserId");
+                    int ShopId = (int)HttpContext.Session.GetInt32("ShopId");
+                    var stockDetails = _context.TblStocks.FirstOrDefault(x => x.ProductId == id && x.ShopId == ShopId);
+                    products.ProductQty = stockDetails.Quantity;
+                    products.ShopPrice = (int)stockDetails.ShopPrice;
 
-                if (products.CompanyId > 0)
-                {
-                    products.CompanyName = _context.TblCompanies.Where(x => x.CompanyId == products.CompanyId).Select(y => y.CompanyName).FirstOrDefault();
+                    if (products.CompanyId > 0)
+                    {
+                        products.CompanyName = _context.TblCompanies.Where(x => x.CompanyId == products.CompanyId).Select(y => y.CompanyName).FirstOrDefault();
+                    }
+                    else
+                    {
+                        products.CompanyName = _context.TblUnregCompanies.Where(x => x.UnregCompanyId == products.UnregCompanyId).Select(y => y.UnregCompanyName).FirstOrDefault();
+                    }
                 }
-                else
-                {
-                    products.CompanyName = _context.TblUnregCompanies.Where(x => x.UnregCompanyId == products.UnregCompanyId).Select(y => y.UnregCompanyName).FirstOrDefault();
-                }
+                return View(products);
             }
-            return View(products);
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
+            
         }
 
         [HttpPost]
@@ -134,6 +168,41 @@ namespace WMS_Application.Controllers
                 Console.WriteLine("Error deleting Product: " + ex.Message);
                 return Json(new { success = false, message = "Error deleting Product." });
             }
+        }
+
+        public async Task<IActionResult> Products()
+        {
+            string permissionType = GetUserPermission("Products");
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
+            {
+                return View();
+            }
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AddProducts(int? id)
+        {
+            string permissionType = GetUserPermission("Products");
+            if (permissionType == "canEdit" || permissionType == "fullAccess")
+            {
+                List<TblProductCategory> prodCat = _context.TblProductCategories.Where(x => x.IsActive == true).ToList();
+                ViewBag.ProductCategory = prodCat;
+                TblProduct model = new TblProduct();
+                if (id > 0)
+                {
+                    model = await _context.TblProducts.Where(x => x.ProductId == id).FirstOrDefaultAsync();
+                }
+                return View(model);
+            }
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
+
         }
     }
 }

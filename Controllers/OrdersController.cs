@@ -18,98 +18,136 @@ namespace WMS_Application.Controllers
         private IProductRepository _product;
         private ICustomerRepository _customer;
         private IEmailSenderRepository _emailSender;
-        public OrdersController(ISidebarRepository sidebar, IOrdersRepository orders, dbMain context, IProductRepository product, ICustomerRepository customer, IEmailSenderRepository emailSender) : base(sidebar)
+        private readonly IPermisionHelperRepository _permission;
+
+        public OrdersController(ISidebarRepository sidebar, IOrdersRepository orders, dbMain context, IProductRepository product, ICustomerRepository customer, IEmailSenderRepository emailSender, IPermisionHelperRepository permission) : base(sidebar)
         {
             _orders = orders;
             _context = context;
             _product = product;
             _customer = customer;
             _emailSender = emailSender;
+            _permission = permission;
         }
+
+        // Public method to get user permission
+        public string GetUserPermission(string action)
+        {
+            int roleId = HttpContext.Session.GetInt32("UserRoleId").Value;
+            string PermissionType = _permission.HasAccess(action, roleId);
+            ViewBag.Permissiontype = PermissionType;
+            return PermissionType;
+        }
+
         [Route("Orders")]
         public async Task<IActionResult> Index()
         {
-            
-            List<TblOrder> orders = new List<TblOrder>();
-            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
-            
-            if(roleId != 5)
+            string permissionType = GetUserPermission("Orders");
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                int adminId = (int)HttpContext.Session.GetInt32("UserId");
-                if (roleId > 2 && roleId != 5)
-                {
-                    int AdminRef = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
-                }
-                TblShop ShopData = new TblShop();
-                if (roleId <= 2)
-                {
-                    ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
-                }
-                else
-                {
-                    int refId = _context.TblUsers.FirstOrDefault(x => x.UserId == adminId).AdminRef;
-                    ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == refId);
-                }
-                if (ShopData != null)
-                {
-                    HttpContext.Session.SetInt32("ShopId", ShopData.ShopId);
-                }
-                orders = await _orders.GetAllOrders(ShopData.ShopId);
+                List<TblOrder> orders = new List<TblOrder>();
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
 
-                foreach(var order in orders)
+                if (roleId != 5)
                 {
-                    if(order.SellerId == ShopData.ShopId)
+                    int adminId = (int)HttpContext.Session.GetInt32("UserId");
+                    if (roleId > 2 && roleId != 5)
                     {
-                        order.OrderType = "Sale";
+                        int AdminRef = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
+                    }
+                    TblShop ShopData = new TblShop();
+                    if (roleId <= 2)
+                    {
+                        ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
                     }
                     else
                     {
-                        order.OrderType = "Purchase";
+                        int refId = _context.TblUsers.FirstOrDefault(x => x.UserId == adminId).AdminRef;
+                        ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == refId);
+                    }
+                    if (ShopData != null)
+                    {
+                        HttpContext.Session.SetInt32("ShopId", ShopData.ShopId);
+                    }
+                    orders = await _orders.GetAllOrders(ShopData.ShopId);
+
+                    foreach (var order in orders)
+                    {
+                        if (order.SellerId == ShopData.ShopId)
+                        {
+                            order.OrderType = "Sale";
+                        }
+                        else
+                        {
+                            order.OrderType = "Purchase";
+                        }
                     }
                 }
+                else
+                {
+                    int companyId = (int)HttpContext.Session.GetInt32("CompanyId");
+                    orders = await _orders.GetAllCompanyOrders(companyId);
+                    foreach (var order in orders)
+                    {
+                        if (order.SellerId == companyId)
+                        {
+                            order.OrderType = "Sale";
+                        }
+                    }
+                }
+                return View(orders);
             }
             else
             {
-                int companyId = (int) HttpContext.Session.GetInt32("CompanyId");
-                orders = await _orders.GetAllCompanyOrders(companyId);
-                foreach (var order in orders)
-                {
-                    if (order.SellerId == companyId)
-                    {
-                        order.OrderType = "Sale";
-                    }
-                }
+                return RedirectToAction("UnauthorisedAccess", "Error");
             }
-            return View(orders);
+
+
         }
 
         [HttpGet]
         //Order Details View
         public IActionResult OrderDetails(int id)
         {
-            return View(_orders.GetOrderDetails(id));
+            string permissionType = GetUserPermission("Orders");
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
+            {
+                return View(_orders.GetOrderDetails(id));
+            }
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
         }
 
 
         //Order Create View
         public IActionResult CreateOrder()
         {
-            List<TblProductCategory> prodCat = _context.TblProductCategories.Where(x => x.IsActive == true).ToList();
-            ViewBag.ProductCategory = prodCat;
-            int adminId = (int)HttpContext.Session.GetInt32("UserId");
-            int roleId = (int) HttpContext.Session.GetInt32("UserRoleId");
-            if(roleId > 2 && roleId != 5)
+            string permissionType = GetUserPermission("Orders");
+            if (permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                adminId = (int)_context.TblUsers.Where(x => x.UserId == adminId).Select(adminId => adminId.AdminRef).FirstOrDefault();
+                List<TblProductCategory> prodCat = _context.TblProductCategories.Where(x => x.IsActive == true).ToList();
+                ViewBag.ProductCategory = prodCat;
+                int adminId = (int)HttpContext.Session.GetInt32("UserId");
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                if (roleId > 2 && roleId != 5)
+                {
+                    adminId = (int)_context.TblUsers.Where(x => x.UserId == adminId).Select(adminId => adminId.AdminRef).FirstOrDefault();
+                }
+                var ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
+                HttpContext.Session.SetInt32("UserShopId", ShopData.ShopId);
+                int currentAdminId = (int)HttpContext.Session.GetInt32("UserId");
+                var shops = _orders.GetShopDetails(currentAdminId);
+                ViewBag.ShopData = shops;
+                var company = _context.TblCompanies.Where(x => x.IsActive == true && x.IsDeleted == false).ToList();
+                ViewBag.CompanyData = company;
+                return View();
             }
-            var ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
-            HttpContext.Session.SetInt32("UserShopId", ShopData.ShopId);
-            int currentAdminId = (int)HttpContext.Session.GetInt32("UserId");
-            var shops = _orders.GetShopDetails(currentAdminId);
-            ViewBag.ShopData = shops;
-            var company = _context.TblCompanies.Where(x=>x.IsActive == true && x.IsDeleted == false).ToList();
-            ViewBag.CompanyData = company;
-            return View();
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
         }
 
         public async Task<IActionResult> SendReminder(string buyerEmail)
@@ -152,23 +190,31 @@ namespace WMS_Application.Controllers
         [HttpGet]
         public async Task<IActionResult> OrderCheckout(int orderId)
         {
-            int shopId = (int)HttpContext.Session.GetInt32("ShopId");
-
-            //TblOrder OrderDetails = new TblOrder();
-            //var AllOrders = await _orders.GetAllOrders(shopId);
-            var OrderDetails = _orders.GetOrderDetails(orderId);
-            if(OrderDetails.PaymentStatus == "Paid")
+            string permissionType = GetUserPermission("Orders");
+            if (permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                return RedirectToAction("Index");
+                int shopId = (int)HttpContext.Session.GetInt32("ShopId");
+
+                //TblOrder OrderDetails = new TblOrder();
+                //var AllOrders = await _orders.GetAllOrders(shopId);
+                var OrderDetails = _orders.GetOrderDetails(orderId);
+                if (OrderDetails.PaymentStatus == "Paid")
+                {
+                    return RedirectToAction("Index");
+                }
+                return View(OrderDetails);
             }
-            return View(OrderDetails);
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
         }
 
         //Fetching All Products based on their Companies
         public IActionResult GetFilteredProducts(string? productName, int? category, int? company)
         {
             var result = _orders.GetProductsC2S(productName, category, company);
-            if(result == null)
+            if (result == null)
             {
                 return Ok(new { text = "No products available." });
             }
@@ -184,7 +230,7 @@ namespace WMS_Application.Controllers
         //Fetching All Products of other shops
         public IActionResult GetFilteredProductsShop(string? productName, int? category, int? shop)
         {
-            int userId = (int) HttpContext.Session.GetInt32("UserId");
+            int userId = (int)HttpContext.Session.GetInt32("UserId");
             var result = _orders.GetProductsS2SBuy(productName, category, shop, userId);
             if (result == null)
             {
@@ -208,7 +254,7 @@ namespace WMS_Application.Controllers
             int adminId = (int)HttpContext.Session.GetInt32("UserId");
             var ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
             var result = _orders.GetAllProducts(0, ShopData.ShopId);
-            if (result == null) 
+            if (result == null)
             {
                 return Ok(new { text = "No products available." });
             }
@@ -248,13 +294,16 @@ namespace WMS_Application.Controllers
             //Fetching product
             int shopId = (int)HttpContext.Session.GetInt32("UserShopId");
             var result = _orders.GetAllProducts(0, shopId);
-            if(result == null)
+            if (result == null)
             {
                 return Ok(new { text = "No products available." });
             }
 
-            return Ok(new{
-                msg, result, customerId = CustomerId
+            return Ok(new
+            {
+                msg,
+                result,
+                customerId = CustomerId
             });
         }
 
@@ -273,7 +322,7 @@ namespace WMS_Application.Controllers
         {
             int adminId = (int)HttpContext.Session.GetInt32("UserId");
             int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
-            if(roleId > 2 && roleId != 5)
+            if (roleId > 2 && roleId != 5)
             {
                 adminId = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
             }
@@ -298,7 +347,7 @@ namespace WMS_Application.Controllers
             }
             int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
             int adminId = (int)HttpContext.Session.GetInt32("UserId");
-            if(roleId >2 && roleId != 5)
+            if (roleId > 2 && roleId != 5)
             {
                 adminId = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
             }
@@ -306,7 +355,7 @@ namespace WMS_Application.Controllers
             try
             {
                 int orderId = 0;
-                if(orderDto.CustomerId > 0)
+                if (orderDto.CustomerId > 0)
                 {
                     // Call service function with proper parameters
                     orderId = await _orders.CreateOrderAsync(
@@ -347,7 +396,7 @@ namespace WMS_Application.Controllers
                         orderDto.TotalQty,
                         orderDto.TotalAmount,
                         orderDto.Products,
-                        "Pending", 
+                        "Pending",
                         "Pending"
                     );
                 }
@@ -385,7 +434,7 @@ namespace WMS_Application.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateOrderStatus([FromBody] UpdateOrderStatusRequestDto request)
         {
-           if (string.IsNullOrEmpty(request.NewStatus))
+            if (string.IsNullOrEmpty(request.NewStatus))
             {
                 return Json(new { success = false, message = "Invalid status." });
             }
@@ -441,7 +490,7 @@ namespace WMS_Application.Controllers
         //Add Transactions
         [HttpPost]
         public async Task<IActionResult> AddTransaction([FromBody] TblTransaction transaction)
-            {
+        {
             try
             {
                 await _orders.AddTransactionInfo(transaction);

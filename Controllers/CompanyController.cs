@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
+using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace WMS_Application.Controllers
@@ -11,91 +12,94 @@ namespace WMS_Application.Controllers
         private readonly dbMain _context;
         private readonly ICompanyRepository _company;
         private readonly IEmailSenderRepository _emailSender;
-        public CompanyController(ISidebarRepository sidebar, dbMain context, ICompanyRepository company, IEmailSenderRepository emailSender) : base(sidebar)
+        private readonly IPermisionHelperRepository _permission;
+        public CompanyController(ISidebarRepository sidebar, dbMain context, ICompanyRepository company, IEmailSenderRepository emailSender, IPermisionHelperRepository permission) : base(sidebar)
         {
             _context = context;
             _company = company;
             _emailSender = emailSender;
+            _permission = permission;
         }
+
+        // Public method to get user permission
+        public string GetUserPermission(string action)
+        {
+            int roleId = HttpContext.Session.GetInt32("UserRoleId").Value;
+            string permissionType = _permission.HasAccess(action, roleId);
+            ViewBag.PermissionType = permissionType;
+            return permissionType;
+        }
+
+
         [Route("Company")]
         public async Task<IActionResult> Index()
         {
-            int id = (int)HttpContext.Session.GetInt32("UserId");
-            return View(_company.GetAllCompanies());
+            string permissionType = GetUserPermission("Company");
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
+            {
+                int id = (int)HttpContext.Session.GetInt32("UserId");
+                return View(_company.GetAllCompanies());
+            }
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
         }
 
         [Route("/MyCompany")]
         public IActionResult MyCompany()
         {
-            int companyId = 0;
-            TblCompany companyData = new TblCompany();
-            if (HttpContext.Session.GetInt32("UserRoleId") == 5)
+            string permissionType = GetUserPermission("My Company");
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                companyId = (int) HttpContext.Session.GetInt32("CompanyId");
-                companyData = _context.TblCompanies.FirstOrDefault(x => x.CompanyId == companyId); 
-                return View(companyData);
+                int companyId = 0;
+                TblCompany companyData = new TblCompany();
+                if (HttpContext.Session.GetInt32("UserRoleId") == 5)
+                {
+                    companyId = (int)HttpContext.Session.GetInt32("CompanyId");
+                    companyData = _context.TblCompanies.FirstOrDefault(x => x.CompanyId == companyId);
+                    return View(companyData);
+                }
+                else
+                {
+                    return View(null);
+                }
             }
             else
             {
-                return View(null);
+                return RedirectToAction("UnauthorisedAccess", "Error");
             }
+
+           
         }
 
 
         public IActionResult UpdateCompany(int? id)
         {
-            TblCompany companyData = new TblCompany();
-            if (HttpContext.Session.GetInt32("UserRoleId") == 5)
+            string permissionType = GetUserPermission("Company");
+            if (permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                int companyId = (int) HttpContext.Session.GetInt32("CompanyId");
-                companyData = _context.TblCompanies.FirstOrDefault(x => x.CompanyId == companyId);
+                TblCompany companyData = new TblCompany();
+                if (HttpContext.Session.GetInt32("UserRoleId") == 5)
+                {
+                    int companyId = (int)HttpContext.Session.GetInt32("CompanyId");
+                    companyData = _context.TblCompanies.FirstOrDefault(x => x.CompanyId == companyId);
+                }
+                else if (id > 0)
+                {
+                    companyData = _context.TblCompanies.FirstOrDefault(x => x.CompanyId == id);
+                }
+
+                return View(companyData);
             }
-            else if(id > 0)
+            else
             {
-                companyData = _context.TblCompanies.FirstOrDefault(x => x.CompanyId == id);
+                return RedirectToAction("UnauthorisedAccess", "Error");
             }
-            
-            return View(companyData);
         }
 
 
 
-        public async Task<IActionResult> Products()
-        {
-            return View();
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> SaveCompany(int? id)
-        {
-            TblCompany model = new TblCompany();
-            if (id > 0)
-            {
-                model = await _context.TblCompanies.Where(x => x.CompanyId == id).FirstOrDefaultAsync();    
-            }
-            return View(model);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> SaveCompany(TblCompany model)
-        {
-            int id = (int)HttpContext.Session.GetInt32("UserId");
-            //model.AddedBy = id;
-            return Ok(await _company.SaveCompany(model));
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> AddProducts(int? id)
-        {
-            List<TblProductCategory> prodCat = _context.TblProductCategories.Where(x => x.IsActive == true).ToList();
-            ViewBag.ProductCategory = prodCat;
-            TblProduct model = new TblProduct();
-            if(id > 0)
-            {
-                model = await _context.TblProducts.Where(x => x.ProductId == id).FirstOrDefaultAsync();
-            }
-            return View(model);
-        }
 
         [HttpPost]
         public async Task<IActionResult> AddProducts(TblProduct product)
@@ -108,8 +112,17 @@ namespace WMS_Application.Controllers
         [HttpGet]
         public async Task<IActionResult> CompanyDetails(int id)
         {
-            TblCompany company = await _context.TblCompanies.Where(x => x.CompanyId == id).FirstOrDefaultAsync();
-            return View(company);
+            string permissionType = GetUserPermission("Company");
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
+            {
+                TblCompany company = await _context.TblCompanies.Where(x => x.CompanyId == id).FirstOrDefaultAsync();
+                return View(company);
+            }
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
+            
         }
 
         [HttpPost]

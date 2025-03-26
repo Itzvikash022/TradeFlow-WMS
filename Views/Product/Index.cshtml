@@ -13,19 +13,27 @@
                 <div class="row">
                     @if (Context.Session.GetInt32("UserRoleId") == 5)
                     {
-                        <a href="/Company/AddProducts" class="btn btn-added align-center">
-                            <img src="~/assets/img/icons/plus.svg" alt="img">Add New Product
-                        </a>
+                        @if(ViewBag.PermissionType != "canView")
+                        {
+                            <a href="/Product/AddProducts" class="btn btn-added align-center">
+                                <img src="~/assets/img/icons/plus.svg" alt="img">Add New Product
+                            </a>
+                        }
                     }
                     else
                     {
-                        <a href="/Product/SaveShopProduct" class="btn btn-added align-center">
-                            <img src="~/assets/img/icons/plus.svg" alt="img">Add New Stock
-                        </a>
-
-                        <a href="/Orders/CreateOrder" class="btn btn-added mt-4 align-center">
-                            <img src="~/assets/img/icons/plus.svg" alt="img">Create New Order
-                        </a>
+                        @if(ViewBag.PermissionType != "canView")
+                        {
+                            <a href="/Product/SaveShopProduct" class="btn btn-added align-center">
+                                <img src="~/assets/img/icons/plus.svg" alt="img">Add New Stock
+                            </a>
+                        }
+                        @if (ViewBag.OrderPermissionType != "canView")
+                        {
+                            <a href="/Orders/CreateOrder" class="btn btn-added mt-4 align-center">
+                                <img src="~/assets/img/icons/plus.svg" alt="img">Create New Order
+                            </a>
+                        }
                     }
                 </div>
             </div>
@@ -94,26 +102,33 @@
                                         </td>
                                     }
                                     <td>
-                                        @if (Context.Session.GetInt32("UserRoleId") == 5)
+                                        @if(ViewBag.PermissionType != "canView")
                                         {
-                                            <a href="@Url.Action("AddProducts", "Company", new { id = product.ProductId})">
-                                                <button class="me-3 btn">
-                                                    <img src="~/assets/img/icons/edit.svg" alt="img">
-                                                </button>
-                                            </a>
+                                            @if (Context.Session.GetInt32("UserRoleId") == 5)
+                                            {
+                                                <a href="@Url.Action("AddProducts", "Company", new { id = product.ProductId})">
+                                                    <button class="me-3 btn">
+                                                        <img src="~/assets/img/icons/edit.svg" alt="img">
+                                                    </button>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a href="@Url.Action("SaveShopProduct", "Product", new { id = product.ProductId})">
+                                                    <button class="me-3 btn">
+                                                        <img src="~/assets/img/icons/edit.svg" alt="img">
+                                                    </button>
+                                                </a>
+                                            }
+                                            <button class="me-3 btn delete-btn" data-id="@product.ProductId">
+                                                <img src="~/assets/img/icons/delete.svg" alt="img">
+                                            </button>
                                         }
                                         else
                                         {
-                                            <a href="@Url.Action("SaveShopProduct", "Product", new { id = product.ProductId})">
-                                                <button class="me-3 btn">
-                                                    <img src="~/assets/img/icons/edit.svg" alt="img">
-                                                </button>
-                                            </a>
+                                            <p>------</p>
                                         }
-                                        
-                                        <button class="me-3 btn delete-btn" data-id="@product.ProductId">
-                                            <img src="~/assets/img/icons/delete.svg" alt="img">
-                                        </button>
+
                                     </td>
                                 </tr>
                             }

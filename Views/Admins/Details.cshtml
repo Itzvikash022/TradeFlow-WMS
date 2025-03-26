@@ -3,7 +3,8 @@
     var admin = ViewBag.AdminInfo as TblAdminInfo;
     var shop = ViewBag.ShopInfo as TblShop;
 
-    if(shop == null){
+    if (shop == null)
+    {
         shop = new TblShop();
     }
     if (admin == null)
@@ -159,25 +160,32 @@
                                         </li>
                                     </ul>
                                     <input hidden readonly id="UserId" value="@user.UserId" />
+
+                                    @if (ViewBag.PermissionType != "canView")
+                                    {
                                         <div class="align-center mt-2 justify-content-around">
 
-                                                @if(user.VerificationStatus == "Pending")
-                                                {
-                                                    <div class="mx-3">
-                                                <button type="submit" class="badges bg-lightgreen" id="btnAccept"><span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>Accept</button>
+                                            @if (user.VerificationStatus == "Pending")
+                                            {
+                                                <div class="mx-3">
+                                                    <button type="submit" class="badges bg-lightgreen" id="btnAccept"><span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>Accept</button>
 
-                                                <button type="submit" class="badges bg-danger" id="btnReject"><span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>Reject</button>
-                                                    </div>
+                                                    <button type="submit" class="badges bg-danger" id="btnReject"><span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>Reject</button>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                if (user.VerificationStatus == "Rejected")
+                                                {
+                                                    <h6 class="badges bg-danger">@user.VerificationStatus</h6> <button type="submit" class="badges bg-lightgreen" id="btnAccept"><span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>Accepted Application?</button>
                                                 }
-                                                else{
-                                                    if(user.VerificationStatus == "Rejected"){
-                                                <h6 class="badges bg-danger">@user.VerificationStatus</h6> <button type="submit" class="badges bg-lightgreen" id="btnAccept"><span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>Accepted Application?</button>
-                                                    }
-                                                    else{
-                                                <h6 class="badges bg-lightgreen">@user.VerificationStatus</h6> <button type="submit" class="badges bg-danger" id="btnReject"><span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>Remove Approval?</button> 
-                                                    }
+                                                else
+                                                {
+                                                    <h6 class="badges bg-lightgreen">@user.VerificationStatus</h6> <button type="submit" class="badges bg-danger" id="btnReject"><span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>Remove Approval?</button>
                                                 }
+                                            }
                                         </div>
+                                    }
                                 </div>
                             </div>
                         </div>

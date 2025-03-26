@@ -7,10 +7,13 @@
                 <h4>Employee LIST </h4>
                 <h6>Manage your Employees</h6>
             </div>
-            <div class="page-btn">
-                @* <a href="/Employee/SaveEmployee" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New Employee</a> *@
-                <a href="@Url.Action("SaveAdmin", "Admins", new { from = "employee" })" class="btn btn-added"><img src="assets/img/icons/plus.svg" alt="img" class="me-1">Add New Employee</a>
-            </div>
+            @if(ViewBag.PermissionType != "canView")
+            {
+                <div class="page-btn">
+                    @* <a href="/Employee/SaveEmployee" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New Employee</a> *@
+                    <a href="@Url.Action("SaveAdmin", "Admins", new { from = "employee" })" class="btn btn-added"><img src="assets/img/icons/plus.svg" alt="img" class="me-1">Add New Employee</a>
+                </div>
+            }
         </div>
 
         <div class="card">
@@ -84,14 +87,21 @@
                                     <td data-column="Designation">@employee.Designation</td>
                                     <td data-column="IsVerified">@employee.IsVerified</td>
                                     <td data-column="IsVerified" class="Action">
-                                        <a href="@Url.Action("SaveAdmin", "Admins", new { id = employee.UserId, from = "employee" })">
-                                            <button class="me-3 btn">
-                                                <img src="~/assets/img/icons/edit.svg" alt="img">
+                                        @if (ViewBag.PermissionType != "canView")
+                                        {
+                                            <a href="@Url.Action("SaveAdmin", "Admins", new { id = employee.UserId, from = "employee" })">
+                                                <button class="me-3 btn">
+                                                    <img src="~/assets/img/icons/edit.svg" alt="img">
+                                                </button>
+                                            </a>
+                                            <button class="me-3 btn delete-btn" data-id="@employee.UserId">
+                                                <img src="~/assets/img/icons/delete.svg" alt="img">
                                             </button>
-                                        </a>
-                                        <button class="me-3 btn delete-btn" data-id="@employee.UserId">
-                                            <img src="~/assets/img/icons/delete.svg" alt="img">
-                                        </button>
+                                        }
+                                        else
+                                        {
+                                            <p>----</p>
+                                        }
                                     </td>
                                 </tr>
                             }

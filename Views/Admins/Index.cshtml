@@ -1,5 +1,4 @@
-﻿
-<link rel="stylesheet" href="~/css/DeleteModal.css" />
+﻿<link rel="stylesheet" href="~/css/DeleteModal.css" />
 
 <div class="page-wrapper">
     <div class="content">
@@ -8,13 +7,15 @@
                 <h4>Admins List</h4>
                 <h6>Manage your Owners/Admins</h6>
             </div>
-            <div class="page-btn">
-                @* <a href="/Admins/SaveAdmin" class="btn btn-added"><img src="assets/img/icons/plus.svg" alt="img" class="me-1">Add New Admin</a> *@
-                <a href="@Url.Action("SaveAdmin", "Admins", new { from = "admin" })" class="btn btn-added"><img src="assets/img/icons/plus.svg" alt="img" class="me-1">Add New Admin</a>
+            @if(ViewBag.PermissionType != "canView")
+            {
+                <div class="page-btn">
+                    @* <a href="/Admins/SaveAdmin" class="btn btn-added"><img src="assets/img/icons/plus.svg" alt="img" class="me-1">Add New Admin</a> *@
+                    <a href="@Url.Action("SaveAdmin", "Admins", new { from = "admin" })" class="btn btn-added"><img src="assets/img/icons/plus.svg" alt="img" class="me-1">Add New Admin</a>
 
-            </div>
+                </div>
+            }
         </div>
-
         <div class="card">
             <div class="card-body">
                 <div class="table-top">
@@ -67,6 +68,8 @@
                                                 <img src="~/assets/img/icons/eye.svg" alt="img">
                                             </button>
                                         </a>
+                                        @if (ViewBag.PermissionType != "canView")
+                                        {
                                         <a href="@Url.Action("SaveAdmin", "Admins", new { id = admin.UserId, from = "admin" })">
                                             <button class="me-3 btn" >
                                                 <img src="~/assets/img/icons/edit.svg" alt="img">
@@ -75,6 +78,7 @@
                                             <button class="me-3 btn delete-btn" data-id="@admin.UserId">
                                                 <img src="~/assets/img/icons/delete.svg" alt="img">
                                             </button>
+                                            }
                                     </td>
                                 </tr>
 

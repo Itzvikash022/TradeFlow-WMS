@@ -12,30 +12,59 @@ namespace WMS_Application.Controllers
         private readonly IUsersRepository _users;
         private readonly IAdminsRepository _admins;
         private readonly IEmailSenderRepository _emailSender;
-        public AdminsController(dbMain context, ISidebarRepository sidebar, IAdminsRepository admins, IUsersRepository users, IEmailSenderRepository emailSender) : base(sidebar)
+        private readonly IPermisionHelperRepository _permission;
+        public AdminsController(dbMain context, ISidebarRepository sidebar, IAdminsRepository admins, IUsersRepository users, IEmailSenderRepository emailSender, IPermisionHelperRepository permission) : base(sidebar)
         {
             _context = context;
             _admins = admins;
             _users = users;
             _emailSender = emailSender;
+            _permission = permission;
         }
+
+        // Public method to get user permission
+        public string GetUserPermission(string action)
+        {
+            int roleId = HttpContext.Session.GetInt32("UserRoleId").Value;
+            string permissionType = _permission.HasAccess(action, roleId);
+            ViewBag.PermissionType = permissionType;
+            return _permission.HasAccess(action, roleId);
+        }
+
+
         [Route("Admins")]
         public async Task<IActionResult> Index()
         {
-            return View(await _admins.GetAllAdminsData());
+            string permissionType = GetUserPermission("Admins");
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
+            {
+                return View(await _admins.GetAllAdminsData());
+            }
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
         }
 
         [HttpGet]
         public IActionResult Details(int id)
         {
-            TblUser admin= _context.TblUsers.FirstOrDefault(x => x.UserId == id);
-            TblAdminInfo adminInfo = _context.TblAdminInfos.FirstOrDefault(x => x.AdminId == id);
-            TblShop shopInfo = _context.TblShops.FirstOrDefault(x => x.AdminId == id);
+            string permissionType = GetUserPermission("Admins");
+            if (permissionType == "canView" || permissionType == "canInsert" || permissionType == "canEdit" || permissionType == "fullAccess")
+            {
+                TblUser admin= _context.TblUsers.FirstOrDefault(x => x.UserId == id);
+                TblAdminInfo adminInfo = _context.TblAdminInfos.FirstOrDefault(x => x.AdminId == id);
+                TblShop shopInfo = _context.TblShops.FirstOrDefault(x => x.AdminId == id);
 
-            ViewBag.UserDetails = admin;
-            ViewBag.AdminInfo = adminInfo;
-            ViewBag.ShopInfo = shopInfo;
-            return View();
+                ViewBag.UserDetails = admin;
+                ViewBag.AdminInfo = adminInfo;
+                ViewBag.ShopInfo = shopInfo;
+                return View();
+            }
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
         }
 
         [HttpPost]
@@ -144,15 +173,25 @@ namespace WMS_Application.Controllers
 
         //[Route("Admins/Save")]
         [HttpGet]
-        public async Task<IActionResult> SaveAdmin(int? id)
+        public async Task<IActionResult> SaveAdmin(int? id, string? from)
         {
-            TblUser model = new TblUser();
-            ViewBag.Roles = await _admins.GetAllRoles();
-            if (id > 0)
+            // Determine role type dynamically
+            string roleToCheck = from == "admin" ? "Admins" : "Employees";
+            string permissionType = GetUserPermission(roleToCheck);
+            if (permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                model = await _context.TblUsers.FirstOrDefaultAsync(x => x.UserId == id);
+                TblUser model = new TblUser();
+                ViewBag.Roles = await _admins.GetAllRoles();
+                if (id > 0)
+                {
+                    model = await _context.TblUsers.FirstOrDefaultAsync(x => x.UserId == id);
+                }
+                return View(model);
             }
-            return View(model);
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
         }
 
         [HttpPost]

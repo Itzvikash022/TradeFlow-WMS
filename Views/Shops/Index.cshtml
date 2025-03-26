@@ -5,9 +5,12 @@
                 <h4>Shop LIST </h4>
                 <h6>Manage your Shop</h6>
             </div>
-            <div class="page-btn">
-                <a href="@Url.Action("SaveShop", "Shops", new { addNew = true })" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New Shop</a>
-            </div>
+            @if(ViewBag.PermissionType != "canView")
+            {
+                <div class="page-btn">
+                    <a href="@Url.Action("SaveShop", "Shops", new { addNew = true })" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New Shop</a>
+                </div>
+            }
         </div>
 
         <div class="card">
@@ -57,9 +60,12 @@
                                         <a class="me-3" href="@Url.Action("Details", "Admins", new { id =  shop.AdminId})">
                                             <img src="~/assets/img/icons/eye.svg" alt="img">
                                         </a>
-                                        <a class="me-3" href="@Url.Action("SaveShop", "Shops", new { id =  shop.ShopId})">
-                                            <img src="~/assets/img/icons/edit.svg" alt="img">
-                                        </a>
+                                        @if (ViewBag.PermissionType != "canView")
+                                        {
+                                            <a class="me-3" href="@Url.Action("SaveShop", "Shops", new { id =  shop.ShopId})">
+                                                <img src="~/assets/img/icons/edit.svg" alt="img">
+                                            </a>
+                                        }
                                     </td>
                                 </tr>
                             }

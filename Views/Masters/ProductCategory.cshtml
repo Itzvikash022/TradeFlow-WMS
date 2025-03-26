@@ -10,35 +10,39 @@
         </div>
         <div class="row">
             <!-- Form Section -->
-            <div class="col-lg-6 col-sm-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="card-header">
-                            <h5 class="card-title text-center">Manage Category</h5>
-                            <hr>
-                        </div>
-                        <div class="row">
-                            <form id="productCategoryForm">
-                                <input type="hidden" id="ProductCategoryID" name="ProductCategoryID">
-                                <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Category Name:</label>
-                                    <div class="col-lg-6">
-                                        <input type="text" id="ProductCategoryName" name="ProductCategoryName" class="form-control">
+            @if(ViewBag.PermissionType != "canView")
+            {
+                <div class="col-lg-6 col-sm-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card-header">
+                                <h5 class="card-title text-center">Manage Category</h5>
+                                <hr>
+                            </div>
+                            <div class="row">
+                                <form id="productCategoryForm">
+                                    <input type="hidden" id="ProductCategoryID" name="ProductCategoryID">
+                                    <div class="form-group row">
+                                        <label class="col-lg-3 col-form-label">Category Name:</label>
+                                        <div class="col-lg-6">
+                                            <input type="text" id="ProductCategoryName" name="ProductCategoryName" class="form-control">
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Active:</label>
-                                    <input type="checkbox" id="IsActive" name="IsActive" class="check">
-                                    <label for="IsActive" class="checktoggle"></label>
-                                </div>
-                                <div class="text-start">
-                                    <button type="submit" id="btnProductCategory" class="btn btn-primary">Submit</button>
-                                </div>
-                            </form>
+                                    <div class="form-group row">
+                                        <label class="col-lg-3 col-form-label">Active:</label>
+                                        <input type="checkbox" id="IsActive" name="IsActive" class="check">
+                                        <label for="IsActive" class="checktoggle"></label>
+                                    </div>
+                                    <div class="text-start">
+                                        <button type="submit" id="btnProductCategory" class="btn btn-primary">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            }
+
 
             <!-- Table Section -->
             <div class="col-lg-6 col-sm-12">
@@ -61,10 +65,13 @@
                                             <td>@category.ProdCatId</td>
                                             <td>@category.ProductCategory</td>
                                             <td>@((bool) category.IsActive ? "Yes" : "No")</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-warning" onclick="editCategory('@category.ProdCatId', '@category.ProductCategory', '@category.IsActive')">Edit</button>
-                                                <a href="@Url.Action("DeleteProductCategory", "Masters", new { id = category.ProdCatId })" class="btn btn-sm btn-danger">Delete</a>
-                                            </td>
+                                            @if (ViewBag.PermissionType != "canView")
+                                            {
+                                                <td>
+                                                    <button class="btn btn-sm btn-warning" onclick="editCategory('@category.ProdCatId', '@category.ProductCategory', '@category.IsActive')">Edit</button>
+                                                    <a href="@Url.Action("DeleteProductCategory", "Masters", new { id = category.ProdCatId })" class="btn btn-sm btn-danger">Delete</a>
+                                                </td>
+                                            }
                                         </tr>
                                     }
                                 </tbody>

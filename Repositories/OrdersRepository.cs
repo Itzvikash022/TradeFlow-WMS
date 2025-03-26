@@ -205,9 +205,9 @@ namespace WMS_Application.Repositories
 
             if (company != null && company > 0)
             {
-                query = query.Where(p => _context.TblCompanies
-                                  .Any(c => c.CompanyId == company));
+                query = query.Where(p => p.CompanyId == company);
             }
+
 
             query = query.Where(p => p.ProductQty > 0);
             // Filter out deleted/inactive companies **directly in the query**

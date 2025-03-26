@@ -8,10 +8,13 @@
                 <h4>Company List</h4>
                 <h6>Manage your Companies</h6>
             </div>
-            <div class="page-btn">
-                @* <a href="/company/SaveEmployee" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New company</a> *@
-                <a href="@Url.Action("UpdateCompany", "Company")" class="btn btn-added"><img src="assets/img/icons/plus.svg" alt="img" class="me-1">Add New Company</a>
-            </div>
+            @if(ViewBag.PermissionType != "canView")
+            {
+                <div class="page-btn">
+                    @* <a href="/company/SaveEmployee" class="btn btn-added"><img src="assets/img/icons/plus.svg" class="me-2" alt="img">Add New company</a> *@
+                    <a href="@Url.Action("UpdateCompany", "Company")" class="btn btn-added"><img src="assets/img/icons/plus.svg" alt="img" class="me-1">Add New Company</a>
+                </div>
+            }
         </div>
 
         <div class="card">
@@ -59,14 +62,17 @@
                                                 <img src="~/assets/img/icons/eye.svg" alt="img">
                                             </button>
                                         </a>
-                                        <a href="@Url.Action("UpdateCompany", "Company", new { id = company.CompanyId})">
-                                            <button class="me-3 btn">
-                                                <img src="~/assets/img/icons/edit.svg" alt="img">
+                                        @if (ViewBag.PermissionType != "canView")
+                                        {
+                                            <a href="@Url.Action("UpdateCompany", "Company", new { id = company.CompanyId})">
+                                                <button class="me-3 btn">
+                                                    <img src="~/assets/img/icons/edit.svg" alt="img">
+                                                </button>
+                                            </a>
+                                            <button class="me-3 btn delete-btn" data-id="@company.CompanyId">
+                                                <img src="~/assets/img/icons/delete.svg" alt="img">
                                             </button>
-                                        </a>
-                                        <button class="me-3 btn delete-btn" data-id="@company.CompanyId">
-                                            <img src="~/assets/img/icons/delete.svg" alt="img">
-                                        </button>
+                                        }
                                     </td>
                                 </tr>
                             }

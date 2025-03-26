@@ -9,36 +9,40 @@
             </div>
         </div>
         <div class="row">
-            <!-- Form Section -->
-            <div class="col-lg-6 col-sm-12">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="card-header">
-                            <h5 class="card-title text-center">Manage Roles</h5>
-                            <hr>
-                        </div>
-                        <div class="row">
-                            <form id="rolesForm">
-                                <input type="hidden" id="RoleId" name="RoleId">
-                                <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Category Name:</label>
-                                    <div class="col-lg-6">
-                                        <input type="text" id="RoleName" name="RoleName" class="form-control">
+
+            @if(ViewBag.PermissionType != "canView")
+            {
+                <!-- Form Section -->
+                <div class="col-lg-6 col-sm-12">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="card-header">
+                                <h5 class="card-title text-center">Manage Roles</h5>
+                                <hr>
+                            </div>
+                            <div class="row">
+                                <form id="rolesForm">
+                                    <input type="hidden" id="RoleId" name="RoleId">
+                                    <div class="form-group row">
+                                        <label class="col-lg-3 col-form-label">Category Name:</label>
+                                        <div class="col-lg-6">
+                                            <input type="text" id="RoleName" name="RoleName" class="form-control">
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="form-group row">
-                                    <label class="col-lg-3 col-form-label">Active:</label>
-                                    <input type="checkbox" id="IsActive" name="IsActive" class="check">
-                                    <label for="IsActive" class="checktoggle"></label>
-                                </div>
-                                <div class="text-start">
-                                    <button type="submit" id="btnSaveRoles" class="btn btn-primary">Submit</button>
-                                </div>
-                            </form>
+                                    <div class="form-group row">
+                                        <label class="col-lg-3 col-form-label">Active:</label>
+                                        <input type="checkbox" id="IsActive" name="IsActive" class="check">
+                                        <label for="IsActive" class="checktoggle"></label>
+                                    </div>
+                                    <div class="text-start">
+                                        <button type="submit" id="btnSaveRoles" class="btn btn-primary">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            }
 
             <!-- Table Section -->
             <div class="col-lg-6 col-sm-12">
@@ -61,10 +65,13 @@
                                             <td>@category.RoleId</td>
                                             <td>@category.RoleName</td>
                                             <td>@((bool)category.IsActive ? "Yes" : "No")</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-warning" onclick="editCategory('@category.RoleId', '@category.RoleName', '@category.IsActive')">Edit</button>
-                                                <a href="@Url.Action("DeleteRoles", "Masters", new { id = category.RoleId })" class="btn btn-sm btn-danger">Delete</a>
-                                            </td>
+                                            @if (ViewBag.PermissionType != "canView")
+                                            {
+                                                <td>
+                                                    <button class="btn btn-sm btn-warning" onclick="editCategory('@category.RoleId', '@category.RoleName', '@category.IsActive')">Edit</button>
+                                                    <a href="@Url.Action("DeleteRoles", "Masters", new { id = category.RoleId })" class="btn btn-sm btn-danger">Delete</a>
+                                                </td>
+                                            }
                                         </tr>
                                     }
                                 </tbody>

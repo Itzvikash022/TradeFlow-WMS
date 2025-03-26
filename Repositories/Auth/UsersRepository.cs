@@ -205,7 +205,15 @@ namespace WMS_Application.Repositories.Auth
             await _context.SaveChangesAsync();
             if(shop.IsAction == "UpdateSelf")
             {
-                return new { success = true, message = "Shop data updated successfully", path="MyShop"  };
+                return new { success = true, message = "Shop data updated successfully", path="MyShop" };
+            }
+            else if (shop.IsAction == "SPAddNew")
+            {
+                return new { success = true, message = "Shop data added successfully", path = "Shops" };
+            }
+            else if (shop.IsAction == "SPUpdate")
+            {
+                return new { success = true, message = "Shop data updated successfully", path = "Shops" };
             }
             else
             {

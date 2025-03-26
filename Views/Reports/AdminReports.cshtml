@@ -79,13 +79,16 @@
                                                 <img src="~/assets/img/icons/eye.svg" alt="img">
                                             </button>
                                         </a>
-                                        @if (admin.IsActive)
+                                        @if( ViewBag.PermissionType != "canView")
                                         {
-                                            <button class="btn fa fa-ban restriction-btn" data-id="@admin.AdminId"></button>
-                                        }
-                                        else
-                                        {
-                                            <button class="btn fa fa-check restriction-btn" data-id="@admin.AdminId"></button>
+                                            @if (admin.IsActive)
+                                            {
+                                                <button class="btn fa fa-ban restriction-btn" data-id="@admin.AdminId"></button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn fa fa-check restriction-btn" data-id="@admin.AdminId"></button>
+                                            }
                                         }
                                     </td>
                                 </tr>

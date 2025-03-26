@@ -1,13 +1,12 @@
 ﻿@* @model List<SidebarModel> *@
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]Hehe Application</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    @* <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" /> *@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WMS_Application.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css" />
@@ -30,13 +29,14 @@
     <link rel="stylesheet" href="~/assets/css/style.css">
     <link rel="stylesheet" href="~/assets/css/bootstrap-datetimepicker.min.css">
 
+
     <style>
         label.error {
-            color: red !important;
+        color: red !important;
         }
 
         #PhoneNumber {
-            padding-left: 50px !important;
+        padding-left: 50px !important;
         }
     </style>
 </head>
@@ -48,10 +48,10 @@
 
             <div class="header-left active">
                 <a href="index.html" class="logo">
-                    <img src="~/assets/img/logo.png" alt="">
+                    <img src="assets/img/logo.png" alt="">
                 </a>
                 <a href="index.html" class="logo-small">
-                    <img src="~/assets/img/logo-small.png" alt="">
+                    <img src="assets/img/logo-small.png" alt="">
                 </a>
                 <a id="toggle_btn" href="javascript:void(0);">
                 </a>
@@ -67,40 +67,59 @@
 
             <ul class="nav user-menu">
 
-                <li class="nav-item">
-                    <div class="top-nav-search">
-                        <a href="javascript:void(0);" class="responsive-search">
-                            <i class="fa fa-search"></i>
-                        </a>
-                        <form action="#">
-                            <div class="searchinputs">
-                                <input type="text" placeholder="Search Here ...">
-                                <div class="search-addon">
-                                    <span><img src="~/assets/img/icons/closes.svg" alt="img"></span>
+                <li class="nav-item dropdown has-arrow main-drop">
+                    <a href="javascript:void(0);" class="dropdown-toggle nav-link userset" data-bs-toggle="dropdown">
+                        <span class="user-img">
+                            <img src="@ViewBag.UserDetails.ProfileImgPath" alt="404" style="max-height : 45px">
+                            <span class="status online"></span>
+                        </span>
+                    </a>
+                    <div class="dropdown-menu menu-drop-user">
+                        <div class="profilename">
+                            <div class="profileset">
+                                <span class="user-img">
+                                    <img src="@ViewBag.UserDetails.ProfileImgPath" alt="404" style="max-height : 45px">
+                                    <span class="status online"></span>
+                                </span>
+                                <div class="profilesets">
+                                    <h6>@ViewBag.UserDetails.Username</h6>
+                                    <h5>@ViewBag.UserDetails.Designation</h5>
                                 </div>
                             </div>
-                            <a class="btn" id="searchdiv"><img src="~/assets/img/icons/search.svg" alt="img"></a>
-                        </form>
+                            <hr class="m-0">
+                            <a class="dropdown-item" href="/MyProfile">
+                                <i class="me-2" data-feather="user"></i> My Profile
+                            </a>
+                            <hr class="m-0">
+                            <a class="dropdown-item logout pb-0" href="/Auth/Logout">
+                                <img src="~/assets/img/icons/log-out.svg" class="me-2" alt="img">Logout
+                            </a>
+                        </div>
                     </div>
                 </li>
             </ul>
+
+
             <div class="dropdown mobile-user-menu">
-                <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
+                <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown"
+                aria-expanded="false"><i class="fa fa-ellipsis-v"></i></a>
                 <div class="dropdown-menu dropdown-menu-right">
-                    <a class="dropdown-item" href="profile.html">My Profile</a>
-                    <a class="dropdown-item" href="generalsettings.html">Settings</a>
-                    <a class="dropdown-item" href="signin.html">Logout</a>
+                    <a class="dropdown-item" href="/MyProfile">My Profile</a>
+                    <a class="dropdown-item" href="/Auth/Logout">Logout</a>
                 </div>
             </div>
+
         </div>
-        <div class="main-wrapper">
-            <div class="sidebar" id="sidebar">
-                <div class="sidebar-inner slimscroll">
-                    <div id="sidebar-menu" class="sidebar-menu">
-                        <ul>
-                            @foreach (var tab in (List<SidebarModel>)ViewBag.SidebarTabs)
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-inner slimscroll">
+                <div id="sidebar-menu" class="sidebar-menu">
+                    <ul>
+                        @foreach (var tab in (List<SidebarModel>)ViewBag.SidebarTabs)
+                        {
+                            @if(tab.TabName != "My Profile")
                             {
-                                var res = "";
+                                
+                            var res = "";
                                 bool subtabs = tab.SubTabs != null && tab.SubTabs.Any();
                                 @if (subtabs)
                                 {
@@ -126,18 +145,19 @@
                                     }
                                 </li>
                             }
+
+                            }
                         </ul>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
     <div>
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
     </div>
+        </div>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
@@ -175,5 +195,16 @@
     <script src="~/assets/plugins/sweetalert/sweetalerts.min.js"></script>
     <script src="~/assets/js/script.js"></script>
 
+    <script>
+        $(document).ready(function () { 
+            console.log("Dropdown script loaded!");
+
+            $('.dropdown-toggle').on('click', function (event) {
+                console.log("Dropdown clicked!");
+                event.preventDefault(); // Prevent other event conflicts
+                $(this).dropdown('toggle'); // Force Bootstrap dropdown toggle
+            });
+        });
+    </script>
 </body>
 </html>

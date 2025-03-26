@@ -23,14 +23,14 @@ namespace WMS_Application.Repositories
                                join company in _context.TblCompanies on product.CompanyId equals company.CompanyId
                                join stock in _context.TblStocks on product.ProductId equals stock.ProductId into stockJoin
                                from stock in stockJoin.DefaultIfEmpty() // Left join to include all products
-                               where stock.ShopId == shopId && company.CompanyId == companyId && stock.Quantity > 0 && product.IsDeleted == false
+                               where company.CompanyId == companyId && product.IsDeleted == false
                                select new TblProduct
                                {
                                    ProductId = product.ProductId,
                                    ProductName = product.ProductName,
                                    ProdCategory = _context.TblProductCategories.Where(c => c.ProdCatId == product.Category)
-                    .Select(c => c.ProductCategory)
-                    .FirstOrDefault(),
+                                    .Select(c => c.ProductCategory)
+                                    .FirstOrDefault(),
                                    PricePerUnit = product.PricePerUnit,
                                    CreateAt = product.CreateAt,
                                    LastUpdateDate = product.LastUpdateDate,

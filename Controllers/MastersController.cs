@@ -7,14 +7,35 @@ namespace WMS_Application.Controllers
     public class MastersController : BaseController
     {
         private readonly dbMain _context;
-        public MastersController(dbMain context, ISidebarRepository sidebar) : base(sidebar)
+        private readonly IPermisionHelperRepository _permission;
+
+        public MastersController(dbMain context, ISidebarRepository sidebar, IPermisionHelperRepository permission) : base(sidebar)
         {
             _context = context;
+            _permission = permission;
         }
+
+        // Public method to get user permission
+        public string GetUserPermission(string action)
+        {
+            int roleId = HttpContext.Session.GetInt32("UserRoleId").Value;
+            string permissionType = _permission.HasAccess(action, roleId);
+            ViewBag.PermissionType = permissionType;
+            return permissionType;
+        }
+
         public IActionResult ProductCategory()
         {
-            var productCategory = _context.TblProductCategories.ToList();
-            return View(productCategory);
+            string permissionType = GetUserPermission("Product Category");
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
+            {
+                var productCategory = _context.TblProductCategories.ToList();
+                return View(productCategory);
+            }
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
         }
 
         [HttpGet]
@@ -44,8 +65,16 @@ namespace WMS_Application.Controllers
         
         public IActionResult Roles()
         {
-            var roles = _context.TblRoles.Where(x => x.RoleId > 2 && x.RoleId != 5 && x.IsDeleted == false).ToList();
-            return View(roles);
+            string permissionType = GetUserPermission("Roles Master");
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
+            {
+                var roles = _context.TblRoles.Where(x => x.RoleId > 2 && x.RoleId != 5 && x.IsDeleted == false).ToList();
+                return View(roles);
+            }
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
         }
 
         [HttpPost]
@@ -77,12 +106,20 @@ namespace WMS_Application.Controllers
         
         public IActionResult Access()
         {
-            var tabs = _context.TblTabs.Where(x => x.IsActive == true).ToList();
-            var roles = _context.TblRoles.Where(x => x.IsActive == true).ToList();
+            string permissionType = GetUserPermission("Access Master");
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
+            {
+                var tabs = _context.TblTabs.Where(x => x.IsActive == true).ToList();
+                var roles = _context.TblRoles.Where(x => x.IsActive == true).ToList();
 
-            ViewBag.Tabs = tabs;
-            ViewBag.Roles = roles;
-            return View(new List<TblPermission>());
+                ViewBag.Tabs = tabs;
+                ViewBag.Roles = roles;
+                return View(new List<TblPermission>());
+            }
+            else
+            {
+                return RedirectToAction("UnauthorisedAccess", "Error");
+            }
         }
 
         [HttpGet]

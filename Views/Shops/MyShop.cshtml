@@ -55,9 +55,12 @@
                                     <h6>@Model.ClosingTime</h6>
                                 </li>
                             </ul>
-                            <a href="/Shops/SaveShop" id="btnRedirectToUpdate" class="btn btn-submit mt-4 align-center">
-                                Update?
-                            </a>
+                            @if(ViewBag.Permissiontype != "canView")
+                            {
+                                <a href="/Shops/SaveShop" id="btnRedirectToUpdate" class="btn btn-submit mt-4 align-center">
+                                    Update?
+                                </a>
+                            }
                         </div>
                     </div>
                 </div>

@@ -4,7 +4,7 @@
     <div class="content">
         <div class="page-header">
             <div class="page-title">
-                <h4>shop Reports</h4>
+                <h4>Company Reports</h4>
             </div>
         </div>
 
@@ -62,13 +62,17 @@
                                                 <img src="~/assets/img/icons/eye.svg" alt="img">
                                             </button>
                                         </a>
-                                        @if ((bool)company.IsActive)
+
+                                        @if( ViewBag.PermissionType != "canView")
                                         {
-                                            <button class="btn fa fa-ban restriction-btn" data-id="@company.CompanyId"></button>
-                                        }
-                                        else
-                                        {
-                                            <button class="btn fa fa-check restriction-btn" data-id="@company.CompanyId"></button>
+                                            @if ((bool)company.IsActive)
+                                            {
+                                                <button class="btn fa fa-ban restriction-btn" data-id="@company.CompanyId"></button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn fa fa-check restriction-btn" data-id="@company.CompanyId"></button>
+                                            }
                                         }
                                     </td>
                                 </tr>

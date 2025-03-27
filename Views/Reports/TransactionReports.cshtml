@@ -17,6 +17,15 @@
                             <a class="btn btn-searchset"><img src="~/assets/img/icons/search-white.svg" alt="img"></a>
                         </div>
                     </div>
+                    <div class="wordset">
+                        <ul>
+                            <li>
+                                <a data-bs-toggle="tooltip" id="exportTransactionBtn" data-bs-placement="top" title="excel">
+                                    <img src="~/assets/img/icons/excel.svg" alt="img" />
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
 
                 </div>
 
@@ -70,3 +79,13 @@
 
     </div>
 </div>
+
+@section Scripts {
+    <script>
+
+         document.getElementById("exportTransactionBtn").addEventListener("click", function () {
+                    window.location.href = "/Reports/ExportTransactionReports";
+        });
+    </script>
+
+}

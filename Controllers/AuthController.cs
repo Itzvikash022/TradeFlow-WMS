@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using WMS_Application.Models;
+using WMS_Application.DTO;
 using WMS_Application.Repositories.Interfaces;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -308,6 +310,33 @@ namespace WMS_Application.Controllers
                 model = await _users.GetAdminDocDetailsById(id);
             }
             return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO model)
+        {
+            if (string.IsNullOrWhiteSpace(model.oldPassword) || string.IsNullOrWhiteSpace(model.newPassword))
+            {
+                return BadRequest(new { success = false, message = "All fields are required." });
+            }
+
+            int userId = HttpContext.Session.GetInt32("UserId").Value; // Get logged-in user ID
+            var user = await _context.TblUsers.FindAsync(userId);
+
+            if (user == null || !BCrypt.Net.BCrypt.Verify(model.oldPassword, user.PasswordHash))
+            {
+                return BadRequest(new { success = false, message = "Old password is incorrect." });
+            }
+
+            if (model.newPassword.Length < 8)
+            {
+                return BadRequest(new { success = false, message = "Password must be at least 8 characters." });
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(model.newPassword);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Password changed successfully." });
         }
 
         [HttpPost]

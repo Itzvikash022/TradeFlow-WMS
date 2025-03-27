@@ -39,6 +39,7 @@ builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IMasterRepository, MasterRepository>();
 builder.Services.AddScoped<IPermisionHelperRepository, PermisionHelperRepository>();
+builder.Services.AddScoped<IExportServiceRepository, ExportServiceRepository>();
 builder.Services.AddMemoryCache();
 var app = builder.Build();
 app.UseSession();

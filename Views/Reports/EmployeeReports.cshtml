@@ -17,6 +17,15 @@
                             <a class="btn btn-searchset"><img src="~/assets/img/icons/search-white.svg" alt="img"></a>
                         </div>
                     </div>
+                    <div class="wordset">
+                        <ul>
+                            <li>
+                                <a data-bs-toggle="tooltip" id="exportEmployeeBtn" data-bs-placement="top" title="excel">
+                                    <img src="~/assets/img/icons/excel.svg" alt="img" />
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
 
                 </div>
 
@@ -96,6 +105,10 @@
                     }
                 });
             });
+        });
+
+         document.getElementById("exportEmployeeBtn").addEventListener("click", function () {
+                    window.location.href = "/Reports/ExportEmployeeReports";
         });
     </script>
 

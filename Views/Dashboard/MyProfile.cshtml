@@ -119,12 +119,13 @@
             </button>
         </div>
         <div class="modal-body">
+            <form id="changePasswordForm">
             <div class="row">
                     <div class="col-sm-12">
                         <div class="form-group">
                             <label> Old Password</label>
                             <div class="pass-group">
-                                <input type="password" class=" pass-input">
+                                <input type="password" id="OldPassword" class="pass-input">
                                 <span class="fas toggle-password fa-eye-slash"></span>
                             </div>
                         </div>
@@ -133,7 +134,7 @@
                         <div class="form-group">
                             <label>New Password</label>
                             <div class="pass-group">
-                                <input type="password" class=" pass-input">
+                                <input type="password" id="NewPassword" class="pass-input">
                                 <span class="fas toggle-password fa-eye-slash"></span>
                             </div>
                         </div>
@@ -142,16 +143,17 @@
                         <div class="form-group">
                             <label>Confirm Password</label>
                             <div class="pass-group">
-                                <input type="password" class=" pass-input">
+                                <input type="password" id="ConfirmPassword" class="pass-input">
                                 <span class="fas toggle-password fa-eye-slash"></span>
                             </div>
                         </div>
                     </div>
             </div>
             <div class="col-lg-12">
-                <a class="btn btn-submit me-2">Submit</a>
+                <button id="btnChangePassword" class="btn btn-submit me-2">Submit</button>
                 <a class="btn btn-cancel" data-bs-dismiss="modal">Cancel</a>
             </div>
+                </form>
         </div>
     </div>
 </div>
@@ -159,4 +161,51 @@
 
 @section Scripts {
     <script src="~/js/MoreDetails.js"></script>
+
+    <script>
+                document.getElementById("btnChangePassword").addEventListener("click", function (e) {
+            e.preventDefault();
+
+            let oldPassword = document.getElementById("OldPassword").value.trim();
+            let newPassword = document.getElementById("NewPassword").value.trim();
+            let confirmPassword = document.getElementById("ConfirmPassword").value.trim();
+
+            // Basic Validation
+            if (!oldPassword || !newPassword || !confirmPassword) {
+                alert("All fields are required.");
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                alert("New password must be at least 8 characters long.");
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert("New password and Confirm password do not match.");
+                return;
+            }
+
+            // AJAX Request to Backend
+            fetch('/Auth/ChangePassword', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    oldPassword: oldPassword,
+                    newPassword: newPassword
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert("Password changed successfully.");
+                    document.getElementById("changePasswordForm").reset();
+                } else {
+                    alert(data.message || "Failed to change password.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
+
+    </script>
     }

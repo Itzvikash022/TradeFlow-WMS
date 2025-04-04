@@ -8,19 +8,22 @@ using MimeKit.Tnef;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using Humanizer;
+using DocumentFormat.OpenXml.ExtendedProperties;
+using System.Data;
 
 namespace WMS_Application.Controllers
 {
     public class OrdersController : BaseController
     {
-        private IOrdersRepository _orders;
-        private dbMain _context;
-        private IProductRepository _product;
-        private ICustomerRepository _customer;
-        private IEmailSenderRepository _emailSender;
+        private readonly IOrdersRepository _orders;
+        private readonly dbMain _context;
+        private readonly IProductRepository _product;
+        private readonly ICustomerRepository _customer;
+        private readonly IEmailSenderRepository _emailSender;
         private readonly IPermisionHelperRepository _permission;
+        private readonly IExportServiceRepository _export;
 
-        public OrdersController(ISidebarRepository sidebar, IOrdersRepository orders, dbMain context, IProductRepository product, ICustomerRepository customer, IEmailSenderRepository emailSender, IPermisionHelperRepository permission) : base(sidebar)
+        public OrdersController(ISidebarRepository sidebar, IOrdersRepository orders, dbMain context, IProductRepository product, ICustomerRepository customer, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export) : base(sidebar)
         {
             _orders = orders;
             _context = context;
@@ -28,6 +31,7 @@ namespace WMS_Application.Controllers
             _customer = customer;
             _emailSender = emailSender;
             _permission = permission;
+            _export = export;
         }
 
         // Public method to get user permission
@@ -39,71 +43,106 @@ namespace WMS_Application.Controllers
             return PermissionType;
         }
 
+
+        //caliing this function to fetch all orders, converted this into a fn to call it in export and index both actions
+        public async Task<List<TblOrder>> GetAllOrders()
+        {
+            List<TblOrder> orders = new List<TblOrder>();
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+
+            if (roleId != 5)
+            {
+                int adminId = (int)HttpContext.Session.GetInt32("UserId");
+                if (roleId > 2 && roleId != 5)
+                {
+                    int AdminRef = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
+                }
+                TblShop ShopData = new TblShop();
+                if (roleId <= 2)
+                {
+                    ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
+                }
+                else
+                {
+                    int refId = _context.TblUsers.FirstOrDefault(x => x.UserId == adminId).AdminRef;
+                    ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == refId);
+                }
+                if (ShopData != null)
+                {
+                    HttpContext.Session.SetInt32("ShopId", ShopData.ShopId);
+                }
+                orders = await _orders.GetAllOrders(ShopData.ShopId);
+
+                foreach (var order in orders)
+                {
+                    if (order.SellerId == ShopData.ShopId)
+                    {
+                        order.OrderType = "Sale";
+                    }
+                    else
+                    {
+                        order.OrderType = "Purchase";
+                    }
+                }
+            }
+            else
+            {
+                int companyId = (int)HttpContext.Session.GetInt32("CompanyId");
+                orders = await _orders.GetAllCompanyOrders(companyId);
+                foreach (var order in orders)
+                {
+                    if (order.SellerId == companyId)
+                    {
+                        order.OrderType = "Sale";
+                    }
+                }
+            }
+            return orders;
+        }
+
         [Route("Orders")]
         public async Task<IActionResult> Index()
         {
             string permissionType = GetUserPermission("Orders");
             if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                List<TblOrder> orders = new List<TblOrder>();
-                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
-
-                if (roleId != 5)
-                {
-                    int adminId = (int)HttpContext.Session.GetInt32("UserId");
-                    if (roleId > 2 && roleId != 5)
-                    {
-                        int AdminRef = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
-                    }
-                    TblShop ShopData = new TblShop();
-                    if (roleId <= 2)
-                    {
-                        ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == adminId);
-                    }
-                    else
-                    {
-                        int refId = _context.TblUsers.FirstOrDefault(x => x.UserId == adminId).AdminRef;
-                        ShopData = _context.TblShops.FirstOrDefault(x => x.AdminId == refId);
-                    }
-                    if (ShopData != null)
-                    {
-                        HttpContext.Session.SetInt32("ShopId", ShopData.ShopId);
-                    }
-                    orders = await _orders.GetAllOrders(ShopData.ShopId);
-
-                    foreach (var order in orders)
-                    {
-                        if (order.SellerId == ShopData.ShopId)
-                        {
-                            order.OrderType = "Sale";
-                        }
-                        else
-                        {
-                            order.OrderType = "Purchase";
-                        }
-                    }
-                }
-                else
-                {
-                    int companyId = (int)HttpContext.Session.GetInt32("CompanyId");
-                    orders = await _orders.GetAllCompanyOrders(companyId);
-                    foreach (var order in orders)
-                    {
-                        if (order.SellerId == companyId)
-                        {
-                            order.OrderType = "Sale";
-                        }
-                    }
-                }
+                List<TblOrder> orders = await GetAllOrders();
                 return View(orders);
             }
             else
             {
                 return RedirectToAction("UnauthorisedAccess", "Error");
             }
-
-
         }
+
+
+        public async Task<IActionResult> ExportOrders()
+        {
+            List<TblOrder> orders = await GetAllOrders();
+
+
+            var dataTable = new DataTable("Companies");
+            dataTable.Columns.AddRange(new DataColumn[]
+            {
+                new DataColumn("Buyer Name"),
+                new DataColumn("Seller Name"),
+                new DataColumn("Order Status"),
+                new DataColumn("Order Date"),
+                new DataColumn("Total Amount"),
+                new DataColumn("Order Quantity"),
+                new DataColumn("Payment Status"),
+            });
+
+            foreach (var order in orders)
+            {
+                dataTable.Rows.Add(order.BuyerName, order.SellerName, order.OrderStatus, order.OrderDate, order.TotalAmount, order.TotalQty, order.PaymentStatus);
+            }
+
+            var fileBytes = _export.ExportToExcel(dataTable, "Orders");
+
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Orders.xlsx");
+        }
+
 
         [HttpGet]
         //Order Details View

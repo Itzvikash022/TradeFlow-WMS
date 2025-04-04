@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Composition;
+using System.Data;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 
@@ -10,14 +12,16 @@ namespace WMS_Application.Controllers
         private readonly IProductRepository _product;
         private readonly dbMain _context;
         private readonly IUsersRepository _users;
+        private readonly IExportServiceRepository _export;
         private readonly IPermisionHelperRepository _permission;
 
-        public ProductController(ISidebarRepository sidebar, IProductRepository product, dbMain context, IUsersRepository users, IPermisionHelperRepository permission) : base(sidebar)
+        public ProductController(ISidebarRepository sidebar, IProductRepository product, dbMain context, IUsersRepository users, IPermisionHelperRepository permission, IExportServiceRepository export) : base(sidebar)
         {
             _product = product;
             _context = context;
             _users = users;
             _permission = permission;
+            _export = export;
         }
 
         // Public method to get user permission
@@ -65,6 +69,71 @@ namespace WMS_Application.Controllers
             {
                 return RedirectToAction("UnauthorisedAccess", "Error");
             }
+        }
+
+        public async Task<IActionResult> ExportProductList(int? companyId)
+        {
+            int Id = 0, shopId = 0;
+            var dataTable = new DataTable("Products");
+
+            TblShop ShopData = new TblShop();
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            if (HttpContext.Session.GetInt32("CompanyId") != null && roleId == 5)
+            {
+                Id = (int)HttpContext.Session.GetInt32("CompanyId");
+                dataTable.Columns.AddRange(new DataColumn[]
+                   {
+                        new DataColumn("Product Name"),
+                        new DataColumn("Category"),
+                        new DataColumn("Price Per Unit"),
+                        new DataColumn("Manufacturer"),
+                        new DataColumn("Stock Quantity"),
+                   });
+            }
+            else
+            {
+                Id = companyId ?? 0;
+                int adminId = (int)HttpContext.Session.GetInt32("UserId");
+                if (roleId > 2 && roleId != 5)
+                {
+                    adminId = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
+                }
+                ShopData = await _context.TblShops.FirstOrDefaultAsync(x => x.AdminId == adminId);
+                shopId = ShopData.ShopId;
+
+                dataTable.Columns.AddRange(new DataColumn[]
+                   {
+                        new DataColumn("Product Name"),
+                        new DataColumn("Category"),
+                        new DataColumn("CompanyName"),
+                        new DataColumn("Price Per Unit"),
+                        new DataColumn("Manufacturer"),
+                        new DataColumn("Quantity In Shop"),
+                        new DataColumn("Shop Price"),
+                   });
+            }
+
+            var products = await _product.GetAllProducts(Id, shopId);
+
+
+            if(HttpContext.Session.GetInt32("CompanyId") != null && roleId == 5)
+            {
+                foreach (var product in products)
+                {
+                    dataTable.Rows.Add(product.CompanyName, product.ProdCategory, product.PricePerUnit, product.Manufacturer, product.ProductQty);
+                }
+            }
+            else
+            {
+                foreach (var product in products)
+                {
+                    dataTable.Rows.Add(product.ProductName, product.ProdCategory, product.CompanyName, product.PricePerUnit, product.Manufacturer, product.ProductQty, product.ShopPrice);
+                }
+            }
+
+            var fileBytes = _export.ExportToExcel(dataTable, "ProductsList");
+
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ProductsList.xlsx");
         }
 
         [HttpGet]

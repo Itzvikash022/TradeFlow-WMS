@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Composition;
+using System.Data;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 
@@ -10,12 +12,14 @@ namespace WMS_Application.Controllers
         private readonly dbMain _context;
         private readonly IEmailSenderRepository _emailSender;
         private readonly IPermisionHelperRepository _permission;
-        public EmployeeController(ISidebarRepository sidebar,dbMain context, IEmployeeRepository employee, IEmailSenderRepository emailSender, IPermisionHelperRepository permission) : base(sidebar)
+        private readonly IExportServiceRepository _export;
+        public EmployeeController(ISidebarRepository sidebar,dbMain context, IEmployeeRepository employee, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export) : base(sidebar)
         {
             _employee = employee;
             _context = context;
             _emailSender = emailSender;
             _permission = permission;
+            _export = export;
         }
 
         // Public method to get user permission
@@ -24,7 +28,7 @@ namespace WMS_Application.Controllers
             int roleId = HttpContext.Session.GetInt32("UserRoleId").Value;
             string permissionType = _permission.HasAccess(action, roleId);
             ViewBag.PermissionType = permissionType;
-            return _permission.HasAccess(action, roleId);
+            return permissionType;
         }
 
         [Route("Employees")]
@@ -42,6 +46,35 @@ namespace WMS_Application.Controllers
             }
             
         }
+
+        public async Task<IActionResult> ExportEmployeeList()
+        {
+            int id = ((int)HttpContext.Session.GetInt32("UserId"));
+            List<TblUser> employeeList =await _employee.GetAllEmployees(id);
+
+            var dataTable = new DataTable("Employees");
+            dataTable.Columns.AddRange(new DataColumn[]
+            {
+                new DataColumn("Full Name"),
+                new DataColumn("User Name"),
+                new DataColumn("Email"),
+                new DataColumn("Joined On"),
+                new DataColumn("PhoneNumber"),
+                new DataColumn("DOB"),
+                new DataColumn("Designation"),
+                new DataColumn("IsVerified")
+            });
+
+            foreach (var employee in employeeList)
+            {
+                dataTable.Rows.Add(employee.FirstName + employee.LastName, employee.Username, employee.Email, employee.CreatedAt, employee.PhoneNumber, employee.DateOfBirth, employee.Designation, employee.IsVerified);
+            }
+
+            var fileBytes = _export.ExportToExcel(dataTable, "EmployeeList");
+
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "EmployeeList.xlsx");
+        }
+
 
         [HttpPost]
         public IActionResult DeleteEmployee(int id)

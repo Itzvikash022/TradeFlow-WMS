@@ -24,6 +24,15 @@
                             <a class="btn btn-searchset"><img src="assets/img/icons/search-white.svg" alt="img"></a>
                         </div>
                     </div>
+                    <div class="wordset">
+                        <ul>
+                            <li>
+                                <a data-bs-toggle="tooltip" id="exportAdminBtn" data-bs-placement="top" title="excel">
+                                    <img src="~/assets/img/icons/excel.svg" alt="img" />
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="table-responsive">
@@ -113,5 +122,9 @@
         $(document).ready(function () {
              initializeDeleteButtons('@Url.Action("DeleteAdmin", "Admins")');
         });
+
+        document.getElementById("exportAdminBtn").addEventListener("click", function () {
+                        window.location.href = "/Admins/ExportAdminList";
+            });
     </script>
 }

@@ -40,7 +40,7 @@ namespace WMS_Application.Controllers
             int roleId = HttpContext.Session.GetInt32("UserRoleId").Value;
             string permissionType = _permission.HasAccess(action, roleId);
             ViewBag.PermissionType = permissionType;
-            return _permission.HasAccess(action, roleId);
+            return permissionType;
         }
 
         public IActionResult AdminReports()
@@ -63,14 +63,14 @@ namespace WMS_Application.Controllers
             var dataTable = new DataTable("Admins");
             dataTable.Columns.AddRange(new DataColumn[]
             {
-        new DataColumn("Admin ID"),
-        new DataColumn("Admin Name"),
-        new DataColumn("Email"),
-        new DataColumn("Registered On"),
-        new DataColumn("ShopDetails"),
-        new DataColumn("Documents"),
-        new DataColumn("Status"),
-        new DataColumn("Employees")
+                new DataColumn("Admin ID"),
+                new DataColumn("Admin Name"),
+                new DataColumn("Email"),
+                new DataColumn("Registered On"),
+                new DataColumn("ShopDetails"),
+                new DataColumn("Documents"),
+                new DataColumn("Status"),
+                new DataColumn("Employees")
             });
 
             foreach (var admin in adminReports)
@@ -99,7 +99,7 @@ namespace WMS_Application.Controllers
                 return RedirectToAction("UnauthorisedAccess", "Error");
             }
         }
-            
+
         public async Task<IActionResult> ExportShopReports()
         {
             int userId = (int)HttpContext.Session.GetInt32("UserId");
@@ -108,13 +108,13 @@ namespace WMS_Application.Controllers
             var dataTable = new DataTable("Shops");
             dataTable.Columns.AddRange(new DataColumn[]
             {
-        new DataColumn("Shop ID"),
-        new DataColumn("Shop Name"),
-        new DataColumn("Owner Name"),
-        new DataColumn("Registered On"),
-        new DataColumn("Location"),
-        new DataColumn("Order Count"),
-        new DataColumn("Status"),
+                new DataColumn("Shop ID"),
+                new DataColumn("Shop Name"),
+                new DataColumn("Owner Name"),
+                new DataColumn("Registered On"),
+                new DataColumn("Location"),
+                new DataColumn("Order Count"),
+                new DataColumn("Status"),
             });
 
             foreach (var shop in shopReports)
@@ -149,13 +149,13 @@ namespace WMS_Application.Controllers
             var dataTable = new DataTable("Company");
             dataTable.Columns.AddRange(new DataColumn[]
             {
-        new DataColumn("Company ID"),
-        new DataColumn("Company Name"),
-        new DataColumn("Email"),
-        new DataColumn("Registered On"),
-        new DataColumn("Location"),
-        new DataColumn("Order Count"),
-        new DataColumn("Status"),
+                new DataColumn("Company ID"),
+                new DataColumn("Company Name"),
+                new DataColumn("Email"),
+                new DataColumn("Registered On"),
+                new DataColumn("Location"),
+                new DataColumn("Order Count"),
+                new DataColumn("Status"),
             });
 
             foreach (var company in companyReports)
@@ -192,14 +192,14 @@ namespace WMS_Application.Controllers
             var dataTable = new DataTable("Employee");
             dataTable.Columns.AddRange(new DataColumn[]
             {
-        new DataColumn("Employee ID"),
-        new DataColumn("Employee Name"),
-        new DataColumn("Email"),
-        new DataColumn("Joining Date"),
-        new DataColumn("Head"),
-        new DataColumn("Designation"),
-        new DataColumn("ShopName"),
-        new DataColumn("Restricted"),
+                new DataColumn("Employee ID"),
+                new DataColumn("Employee Name"),
+                new DataColumn("Email"),
+                new DataColumn("Joining Date"),
+                new DataColumn("Head"),
+                new DataColumn("Designation"),
+                new DataColumn("ShopName"),
+                new DataColumn("Restricted"),
             });
 
             foreach (var employee in employeeReports)
@@ -255,14 +255,14 @@ namespace WMS_Application.Controllers
             var dataTable = new DataTable("Employee");
             dataTable.Columns.AddRange(new DataColumn[]
             {
-        new DataColumn("Transaction ID"),
-        new DataColumn("Transaction Date"),
-        new DataColumn("Type"),
-        new DataColumn("Payment Mode"),
-        new DataColumn("Amount"),
-        new DataColumn("Order ID"),
-        new DataColumn("Order Date"),
-        new DataColumn("Order Status"),
+                new DataColumn("Transaction ID"),
+                new DataColumn("Transaction Date"),
+                new DataColumn("Type"),
+                new DataColumn("Payment Mode"),
+                new DataColumn("Amount"),
+                new DataColumn("Order ID"),
+                new DataColumn("Order Date"),
+                new DataColumn("Order Status"),
             });
 
             foreach (var transaction in transactionReports)
@@ -317,14 +317,14 @@ namespace WMS_Application.Controllers
             var dataTable = new DataTable("Product");
             dataTable.Columns.AddRange(new DataColumn[]
             {
-        new DataColumn("Product ID"),
-        new DataColumn("Company Name"),
-        new DataColumn("Bought On"),
-        new DataColumn("Manufacturer"),
-        new DataColumn("Quantity"),
-        new DataColumn("Bought Price"),
-        new DataColumn("Shop Price"),
-        new DataColumn("Sales Count"),
+                new DataColumn("Product ID"),
+                new DataColumn("Company Name"),
+                new DataColumn("Bought On"),
+                new DataColumn("Manufacturer"),
+                new DataColumn("Quantity"),
+                new DataColumn("Bought Price"),
+                new DataColumn("Shop Price"),
+                new DataColumn("Sales Count"),
             });
 
             foreach (var product in productReports)

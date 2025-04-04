@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualBasic;
+using System.Composition;
+using System.Data;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 
@@ -13,13 +15,15 @@ namespace WMS_Application.Controllers
         private readonly IAdminsRepository _admins;
         private readonly IEmailSenderRepository _emailSender;
         private readonly IPermisionHelperRepository _permission;
-        public AdminsController(dbMain context, ISidebarRepository sidebar, IAdminsRepository admins, IUsersRepository users, IEmailSenderRepository emailSender, IPermisionHelperRepository permission) : base(sidebar)
+        private readonly IExportServiceRepository _export;
+        public AdminsController(dbMain context, ISidebarRepository sidebar, IAdminsRepository admins, IUsersRepository users, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export) : base(sidebar)
         {
             _context = context;
             _admins = admins;
             _users = users;
             _emailSender = emailSender;
             _permission = permission;
+            _export = export;
         }
 
         // Public method to get user permission
@@ -28,7 +32,7 @@ namespace WMS_Application.Controllers
             int roleId = HttpContext.Session.GetInt32("UserRoleId").Value;
             string permissionType = _permission.HasAccess(action, roleId);
             ViewBag.PermissionType = permissionType;
-            return _permission.HasAccess(action, roleId);
+            return permissionType;
         }
 
 
@@ -46,11 +50,40 @@ namespace WMS_Application.Controllers
             }
         }
 
+        public async Task<IActionResult> ExportAdminList()
+        {
+            List<TblUser> adminList = await _admins.GetAllAdminsData();
+
+            var dataTable = new DataTable("Admins");
+            dataTable.Columns.AddRange(new DataColumn[]
+            {
+                new DataColumn("Full Name"),
+                new DataColumn("User Name"),
+                new DataColumn("Email"),
+                new DataColumn("Joined On"),
+                new DataColumn("PhoneNumber"),
+                new DataColumn("DOB"),
+                new DataColumn("IsVerified"),
+                new DataColumn("Current Status")
+            });
+
+            foreach (var admin in adminList)
+            {
+                dataTable.Rows.Add(admin.FirstName + " " + admin.LastName, admin.Username, admin.Email, admin.CreatedAt, admin.PhoneNumber, admin.DateOfBirth, admin.IsVerified, admin.VerificationStatus);
+            }
+
+            var fileBytes = _export.ExportToExcel(dataTable, "AdminList");
+
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "AdminList.xlsx");
+        }
+
+
+
         [HttpGet]
         public IActionResult Details(int id)
         {
             string permissionType = GetUserPermission("Admins");
-            if (permissionType == "canView" || permissionType == "canInsert" || permissionType == "canEdit" || permissionType == "fullAccess")
+            if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
                 TblUser admin= _context.TblUsers.FirstOrDefault(x => x.UserId == id);
                 TblAdminInfo adminInfo = _context.TblAdminInfos.FirstOrDefault(x => x.AdminId == id);
@@ -154,6 +187,7 @@ namespace WMS_Application.Controllers
                 return Json(new { success = true, message = msg });
             }
             catch (Exception ex)
+
             {
                 // Handle any exceptions during the deletion
                 Console.WriteLine("Error restricting user: " + ex.Message);

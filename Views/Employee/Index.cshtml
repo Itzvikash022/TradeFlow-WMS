@@ -26,30 +26,15 @@
                             </a>
                         </div>
                     </div>
-
-                    @* <!-- Column Selection Dropdown --> *@
-                    @* <div class="dropdown"> *@
-                    @*     <button class="btn btn-primary dropdown-toggle" type="button" id="columnDropdown" data-bs-toggle="dropdown"> *@
-                    @*         Select Columns *@
-                    @*     </button> *@
-                    @*     <ul class="dropdown-menu p-3"> *@
-                    @*         <li><input type="checkbox" class="column-checkbox" value="Profile" checked> Profile</li> *@
-                    @*         <li><input type="checkbox" class="column-checkbox" value="FirstName" checked> First Name</li> *@
-                    @*         <li><input type="checkbox" class="column-checkbox" value="LastName" checked> Last Name</li> *@
-                    @*         <li><input type="checkbox" class="column-checkbox" value="Username" checked> UserName</li> *@
-                    @*         <li><input type="checkbox" class="column-checkbox" value="Email" checked> Email</li> *@
-                    @*         <li><input type="checkbox" class="column-checkbox" value="PhoneNumber" checked> Phone Number</li> *@
-                    @*         <li><input type="checkbox" class="column-checkbox" value="CreatedAt" checked> Joining Date</li> *@
-                    @*         <li><input type="checkbox" class="column-checkbox" value="DOB" checked> DateOfBirth</li> *@
-                    @*         <li><input type="checkbox" class="column-checkbox" value="Designation" checked> Designation</li> *@
-                    @*         <li><input type="checkbox" class="column-checkbox" value="IsVerified" checked> IsVerified</li> *@
-                    @*         <li><input type="checkbox" class="column-checkbox" value="Action" checked> Action</li> *@
-                    @*     </ul> *@
-                    @* </div> *@
-                    @*         <li class="mt-2"> *@
-                    @*             <button class="btn btn-success" id="applyPreferences">Apply</button> *@
-                    @*             <button class="btn btn-warning" id="resetPreferences">Reset to Default</button> *@
-                    @*         </li> *@
+                    <div class="wordset">
+                        <ul>
+                            <li>
+                                <a data-bs-toggle="tooltip" id="exportEmployeeBtn" data-bs-placement="top" title="excel">
+                                    <img src="~/assets/img/icons/excel.svg" alt="img" />
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
 
                 </div>
 
@@ -60,11 +45,11 @@
                         <thead>
                             <tr>
                                 <th data-column="Profile">Profile</th>
-                                <th data-column="Full Name">First Name</th>
+                                <th data-column="Full Name">Full Name</th>
                                 <th data-column="Username">UserName</th>
                                 <th data-column="Email">Email</th>
-                                <th data-column="CreatedAt">Joining Date</th>
                                 <th data-column="PhoneNumber">Phone Number</th>
+                                <th data-column="CreatedAt">Joining Date</th>
                                 <th data-column="DOB">Date of Birth</th>
                                 <th data-column="Designation">Designation</th>
                                 <th data-column="IsVerified">IsVerified</th>
@@ -134,6 +119,10 @@
     <script>
         $(document).ready(function () {
              initializeDeleteButtons('@Url.Action("DeleteEmployee", "Employee")');
+        });
+
+         document.getElementById("exportEmployeeBtn").addEventListener("click", function () {
+                    window.location.href = "/Employee/ExportEmployeeList";
         });
     </script>
 }

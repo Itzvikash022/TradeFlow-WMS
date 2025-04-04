@@ -22,7 +22,7 @@ namespace WMS_Application.Controllers
             int roleId = HttpContext.Session.GetInt32("UserRoleId").Value;
             string permissionType = _permission.HasAccess(action, roleId);
             ViewBag.PermissionType = permissionType;
-            return _permission.HasAccess(action, roleId);
+            return permissionType;
         }
 
         [Route("dashboard")]

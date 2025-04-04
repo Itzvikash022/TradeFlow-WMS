@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Composition;
+using System.Data;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
@@ -13,12 +15,14 @@ namespace WMS_Application.Controllers
         private readonly ICompanyRepository _company;
         private readonly IEmailSenderRepository _emailSender;
         private readonly IPermisionHelperRepository _permission;
-        public CompanyController(ISidebarRepository sidebar, dbMain context, ICompanyRepository company, IEmailSenderRepository emailSender, IPermisionHelperRepository permission) : base(sidebar)
+        private readonly IExportServiceRepository _export;
+        public CompanyController(ISidebarRepository sidebar, dbMain context, ICompanyRepository company, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export) : base(sidebar)
         {
             _context = context;
             _company = company;
             _emailSender = emailSender;
             _permission = permission;
+            _export = export;
         }
 
         // Public method to get user permission
@@ -45,6 +49,36 @@ namespace WMS_Application.Controllers
                 return RedirectToAction("UnauthorisedAccess", "Error");
             }
         }
+
+        public IActionResult ExportCompanyList()
+        {
+            List<TblCompany> companyList = _company.GetAllCompanies();
+
+            var dataTable = new DataTable("Companies");
+            dataTable.Columns.AddRange(new DataColumn[]
+            {
+                new DataColumn("Company Name"),
+                new DataColumn("State"),
+                new DataColumn("City"),
+                new DataColumn("Email"),
+                new DataColumn("PhoneNumber"),
+                new DataColumn("Started On"),
+                new DataColumn("Pincode"),
+                new DataColumn("Address"),
+                new DataColumn("GST")
+            });
+
+            foreach (var company in companyList)
+            {
+                dataTable.Rows.Add(company.CompanyName, company.State, company.City, company.Email, company.PhoneNumber, company.CreatedAt, company.Pincode, company.Address, company.Gst);
+            }
+
+            var fileBytes = _export.ExportToExcel(dataTable, "CompanyList");
+
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "CompanyList.xlsx");
+        }
+
+
 
         [Route("/MyCompany")]
         public IActionResult MyCompany()

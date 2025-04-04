@@ -66,6 +66,23 @@ namespace WMS_Application.Repositories
                 })
                 .FirstOrDefault();
         }
+        
+        public TblUser GetCompanyById(int compId)
+        {
+            return _context.TblCompanies
+                .Where(x => x.CompanyId == compId)
+                .Select(comp => new TblUser
+                {
+                    UserId = comp.CompanyId,
+                    Username = comp.CompanyName,
+                    ProfileImgPath = comp.CompanyLogo,
+                    Designation = _context.TblRoles
+                        .Where(r => r.RoleId == 5)
+                        .Select(r => r.RoleName)
+                        .FirstOrDefault()
+                })
+                .FirstOrDefault();
+        }
 
 
 

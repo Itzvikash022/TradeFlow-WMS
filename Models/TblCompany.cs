@@ -38,5 +38,8 @@ public partial class TblCompany
     public string Path { get; set; }
     [NotMapped]
     public int OrderCount { get; set; }
+    
+    [NotMapped]
+    public string Designation { get; set; }
     public virtual ICollection<TblCollab> TblCollabs { get; set; } = new List<TblCollab>();
 }

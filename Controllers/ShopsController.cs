@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Composition;
+using System.Data;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 
@@ -10,12 +12,14 @@ namespace WMS_Application.Controllers
         private readonly IShopRepository _shop;
         private readonly dbMain _context;
         private readonly IPermisionHelperRepository _permission;
+        private readonly IExportServiceRepository _export;
 
-        public ShopsController(ISidebarRepository sidebar, IShopRepository shop, dbMain context, IPermisionHelperRepository permission) : base(sidebar)
+        public ShopsController(ISidebarRepository sidebar, IShopRepository shop, dbMain context, IPermisionHelperRepository permission, IExportServiceRepository export) : base(sidebar)
         {
             _shop = shop;
             _context = context;
             _permission = permission;
+            _export = export;
         }
 
         // Public method to get user permission
@@ -40,6 +44,38 @@ namespace WMS_Application.Controllers
                 return RedirectToAction("UnauthorisedAccess", "Error");
             }
         }
+
+        public async Task<IActionResult> ExportShopList()
+        {
+            List<TblShop> shopList = await _shop.GetAllShops();
+
+            var dataTable = new DataTable("Shops");
+            dataTable.Columns.AddRange(new DataColumn[]
+            {
+                new DataColumn("Shop Name"),
+                new DataColumn("State"),
+                new DataColumn("City"),
+                new DataColumn("Started On"),
+                new DataColumn("Pincode"),
+                new DataColumn("Address"),
+                new DataColumn("Timings"),
+                new DataColumn("AdminName")
+            });
+
+            foreach (var shop in shopList)
+            {
+                dataTable.Rows.Add(shop.ShopName, shop.State, shop.City, shop.CreatedAt, shop.Pincode, shop.Address, shop.StartTime + " to " + shop.ClosingTime, shop.ShopOwner);
+            }
+
+            var fileBytes = _export.ExportToExcel(dataTable, "ShopList");
+
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ShopList.xlsx");
+        }
+
+
+
+
+
 
         [Route("MyShop")]
         public async Task<IActionResult> MyShop()

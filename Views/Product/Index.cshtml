@@ -51,6 +51,15 @@
                             </a>
                         </div>
                     </div>
+                    <div class="wordset">
+                        <ul>
+                            <li>
+                                <a data-bs-toggle="tooltip" id="exportProductBtn" data-bs-placement="top" title="excel">
+                                    <img src="~/assets/img/icons/excel.svg" alt="img" />
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="table-responsive">
@@ -159,6 +168,10 @@
     <script>
         $(document).ready(function () {
              initializeDeleteButtons('@Url.Action("DeleteProduct", "Product")');
+        });
+
+         document.getElementById("exportProductBtn").addEventListener("click", function () {
+                    window.location.href = "/Product/ExportProductList";
         });
     </script>
 }

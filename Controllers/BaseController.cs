@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.EntityFrameworkCore;
 using WMS_Application.Models;
@@ -35,8 +36,16 @@ namespace WMS_Application.Controllers
                 var tabs = await _sidebar.GetTabsByRoleIdAsync(roleId.Value); // Async call
                 ViewBag.SidebarTabs = tabs;
 
-                var user = _sidebar.GetUserById((int) userId);
-                ViewBag.UserDetails = user;
+                if(userId > 0)
+                {
+                    var user = _sidebar.GetUserById((int) userId);
+                    ViewBag.UserDetails = user;
+                }
+                else
+                {
+                    var company = _sidebar.GetCompanyById((int) companyId);
+                    ViewBag.UserDetails = company;
+                }
             }
 
             await next(); // Continue with the action execution

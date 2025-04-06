@@ -20,6 +20,14 @@
                     <h4 id="UserHeadingEmployee">Employee Management</h4>
                     <h6>Add/Update User</h6>
                 </div>
+                <a class="btn" id="massEmployee"
+                   data-bs-toggle="modal"
+                   data-bs-target="#recents">
+                    <img src="~/assets/img/icons/transcation.svg"
+                         alt="img"
+                         class="me-1" />
+                    Mass Import Employees
+                </a>
             </div>
 
             <div class="card">
@@ -136,6 +144,92 @@
     </div>
 </div>
 
+
+@* Model For Buying Requests *@
+<div class="modal fade" id="recents" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold">Mass Import Shop Products</h5>
+                <button type="button"
+                        class="close"
+                        data-bs-dismiss="modal"
+                        aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <a href="/Employee/DownloadSampleFile" class="btn btn-primary mb-3">
+                    <i class="fas fa-download"></i> Download Sample File
+                </a>
+
+                <form id="uploadForm" enctype="multipart/form-data" class="p-3 border rounded shadow-sm bg-light">
+                    <label for="excelFile" class="form-label fw-semibold">Upload Excel File</label>
+                    <input type="file" id="excelFile" name="excelFile" class="form-control mb-3" required />
+
+                    <label for="imageZip" class="form-label fw-semibold">Upload Image Zip File</label>
+                    <input type="file" id="imageZip" name="imageZip" class="form-control mb-3" required />
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-upload"></i> Submit
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/js/SaveAdmin.js"></script>
+
+    <script>
+        $("#uploadForm").submit(function (e) {
+            e.preventDefault();
+
+            var formData = new FormData(this);
+
+            $.ajax({
+                url: "/Employee/UploadSampleFile", // Replace with your controller
+                type: "POST",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Success!",
+                            text: response.message,
+                            showDenyButton: true,
+                            confirmButtonText: "Download File",
+                            denyButtonText: "Close"
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Trigger file download
+                                var fileBytes = atob(response.fileData);
+                                var blob = new Blob([new Uint8Array([...fileBytes].map(c => c.charCodeAt(0)))], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                                var link = document.createElement("a");
+                                link.href = window.URL.createObjectURL(blob);
+                                link.download = response.fileName;
+                                link.click();
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Error!",
+                            text: response.message,
+                        });
+                    }
+                },
+                error: function () {
+                    Swal.fire({
+                        icon: "error",
+                        title: "Error!",
+                        text: "Something went wrong. Please try again.",
+                    });
+                }
+            });
+        });
+    </script>
 }

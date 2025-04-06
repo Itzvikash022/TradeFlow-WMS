@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Composition;
 using System.Data;
+using System.IO.Compression;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 
@@ -14,14 +15,16 @@ namespace WMS_Application.Controllers
         private readonly IUsersRepository _users;
         private readonly IExportServiceRepository _export;
         private readonly IPermisionHelperRepository _permission;
+        private readonly IImportServiceRepository _import;
 
-        public ProductController(ISidebarRepository sidebar, IProductRepository product, dbMain context, IUsersRepository users, IPermisionHelperRepository permission, IExportServiceRepository export) : base(sidebar)
+        public ProductController(ISidebarRepository sidebar, IProductRepository product, dbMain context, IUsersRepository users, IPermisionHelperRepository permission, IExportServiceRepository export, IImportServiceRepository import) : base(sidebar)
         {
             _product = product;
             _context = context;
             _users = users;
             _permission = permission;
             _export = export;
+            _import = import;
         }
 
         // Public method to get user permission
@@ -70,6 +73,96 @@ namespace WMS_Application.Controllers
                 return RedirectToAction("UnauthorisedAccess", "Error");
             }
         }
+
+        public IActionResult DownloadSampleFile()
+        {
+            var fileBytes = _import.GenerateSampleStockExcel(false);
+
+            return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "SampleFile.xlsx");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UploadSampleFile(IFormFile excelFile, IFormFile imageZip)
+        {
+            var allowedExtensions = new HashSet<string> { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+
+            if (excelFile == null || imageZip == null)
+                return BadRequest("Please upload both Excel file and Image ZIP folder.");
+
+            if (!imageZip.FileName.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new { success = false, message = "Invalid file format. Only .zip files are allowed for image upload." });
+            }
+            // Extract ZIP file
+            var imageFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\ProductUploads");
+            Directory.CreateDirectory(imageFolderPath);
+
+            using (var zipStream = new MemoryStream())
+            {
+                await imageZip.CopyToAsync(zipStream);
+                zipStream.Seek(0, SeekOrigin.Begin);
+
+                using (var archive = new ZipArchive(zipStream, ZipArchiveMode.Read))
+                {
+                    foreach (var entry in archive.Entries)
+                    {
+                        string extension = Path.GetExtension(entry.Name).ToLower();
+
+                        // ❌ Reject non-image files
+                        if (!allowedExtensions.Contains(extension))
+                        {
+                            return Json(new { success = false, message = "only image files are allowed inside the zip" });
+                        }
+
+                        // ✅ Move valid images
+                        var filePath = Path.Combine(imageFolderPath, entry.Name);
+                        if (!System.IO.File.Exists(filePath))
+                        {
+                            entry.ExtractToFile(filePath);
+                        }
+                    }
+                }
+            }
+
+
+
+            if (excelFile == null || excelFile.Length == 0)
+            {
+                return Json(new { success = false, message = "File is empty." });
+            }
+
+            if (!excelFile.FileName.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
+            {
+                return Json(new { success = false, message = "Invalid file format. Only .xlsx files are allowed." });
+            }
+
+          
+
+
+            try
+            {
+                int userId = (int)HttpContext.Session.GetInt32("UserId");
+                int shopId = (int)HttpContext.Session.GetInt32("ShopId");
+                var fileBytes = await _import.ShopProcessStockImport(excelFile, userId, shopId);
+
+                // Convert to Base64 to store temporarily
+                string fileBase64 = Convert.ToBase64String(fileBytes);
+
+                return Json(new
+                {
+                    success = true,
+                    message = "File uploaded successfully!",
+                    fileData = fileBase64,
+                    fileName = "OutputOfSampleFile.xlsx"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred: " + ex.Message });
+            }
+        }
+
+
 
         public async Task<IActionResult> ExportProductList(int? companyId)
         {

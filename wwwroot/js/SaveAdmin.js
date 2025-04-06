@@ -40,12 +40,14 @@
             $("#RoleId").val(2); // Set the role to Admin (Admin role = 2)
             $("#designationDropdown").find("select").prop("disabled", true); // Disable the designation dropdown
             $("#designationDropdown").hide();
+            $("#massEmployee").hide();
             $("#UserHeadingEmployee").hide();
             $("#CancelEmployee").hide();
         } else {
             // If it's Employee, show the designation dropdown and enable it
             $("#designationDropdown").find("select").prop("disabled", false);
             $("#designationDropdown").show();   
+            $("#massEmployee").show();   
             $("#UserHeadingAdmin").hide();   
             $("#CancelAdmin").hide();   
         }

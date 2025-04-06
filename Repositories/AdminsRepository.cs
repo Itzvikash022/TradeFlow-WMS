@@ -132,7 +132,10 @@ namespace WMS_Application.Repositories
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
             }
             user.ProfileImage = null;
-            user.ProfileImgPath = imgPath;
+            if(user.ProfileImgPath == null)
+            {
+                user.ProfileImgPath = imgPath;
+            }
             user.VerificationStatus = "Approved";
             string msg = "";
             string type = "Admins";

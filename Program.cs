@@ -4,6 +4,8 @@ using WMS_Application.Models;
 using WMS_Application.Repositories;
 using WMS_Application.Repositories.Auth;
 using WMS_Application.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +27,20 @@ builder.Services.AddSession(options =>
 });
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
+
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
+})
+.AddCookie()
+.AddGoogle(options =>
+{
+    options.ClientId = "826379557782-rvcmaurug5qiesbi218e3jrqm5ubgikb.apps.googleusercontent.com"; 
+    options.ClientSecret = "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";
+    options.CallbackPath = "/signin-google"; // or whatever you’ve set
+});
 
 
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();

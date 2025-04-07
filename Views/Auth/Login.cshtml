@@ -11,7 +11,20 @@
         label.error {
             color: red !important;
         }
+
+        .google-btn {
+            border: 1px solid #ccc;
+            color: #333;
+            transition: 0.3s;
+        }
+
+            .google-btn:hover {
+                background-color: orange;
+                border-color: orange;
+                color: white;
+            }
     </style>
+
 </head>
 <body class="account-page">
     <div id="global-loader">
@@ -30,35 +43,35 @@
                             </div>
                         </div>
                         <form id="loginForm">
-                        <div class="form-login">
-                            <label>Email/Username</label>
-                            <div class="form-addons">
-                                <input type="text" asp-for="EmailOrUsername" placeholder="Enter your email or Username here ">
-                                <img src="~/assets/img/icons/mail.svg" alt="img">
+                            <div class="form-login">
+                                <label>Email/Username</label>
+                                <div class="form-addons">
+                                    <input type="text" asp-for="EmailOrUsername" placeholder="Enter your email or Username here ">
+                                    <img src="~/assets/img/icons/mail.svg" alt="img">
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-login">
-                            <label>Password</label>
-                            <div class="pass-group">
-                                <input type="password" asp-for="Password" class="pass-input" placeholder="Enter your password">
-                                <span class="fas toggle-password fa-eye-slash"></span>
+                            <div class="form-login">
+                                <label>Password</label>
+                                <div class="pass-group">
+                                    <input type="password" asp-for="Password" class="pass-input" placeholder="Enter your password">
+                                    <span class="fas toggle-password fa-eye-slash"></span>
+                                </div>
                             </div>
-                        </div>
-                        
+
                             <div class="pass-group">
                                 <input type="checkbox" asp-for="RememberMe"> Remember Me
                             </div>
-                        <div class="form-login">
-                            <div class="alreadyuser">
-                                <h4><a href="~/Auth/ForgotPassword" class="hover-a">Forgot Password?</a></h4>
+                            <div class="form-login">
+                                <div class="alreadyuser">
+                                    <h4><a href="~/Auth/ForgotPassword" class="hover-a">Forgot Password?</a></h4>
+                                </div>
                             </div>
-                        </div>
-                        <div class="form-login">
+                            <div class="form-login">
                                 <button type="submit" id="btnLogin" class="btn btn-login">
                                     <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
                                     Sign In
                                 </button>
-                        </div>
+                            </div>
                         </form>
                         <div class="signinform text-center">
                             <h4>Don’t have an account? <a href="~/Auth/Register" class="hover-a">Sign Up</a></h4>
@@ -66,21 +79,11 @@
                         <div class="form-setlogin">
                             <h4>Or sign up with</h4>
                         </div>
-                        <div class="form-sociallink">
-                            <ul>
-                                <li>
-                                    <a href="javascript:void(0);">
-                                        <img src="~/assets/img/icons/google.png" class="me-2" alt="google">
-                                        Sign Up using Google
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="javascript:void(0);">
-                                        <img src="~/assets/img/icons/facebook.png" class="me-2" alt="google">
-                                        Sign Up using Facebook
-                                    </a>
-                                </li>
-                            </ul>
+                        <div class="form-sociallink text-center">
+                            <a href="/login-google" class="google-btn w-100 d-flex align-items-center justify-content-center p-2 rounded">
+                                <img src="~/assets/img/icons/google.png" class="me-2" alt="google" style="height: 20px;">
+                                Sign Up using Google
+                            </a>
                         </div>
                     </div>
                 </div>

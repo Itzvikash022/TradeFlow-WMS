@@ -1,0 +1,42 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Google Sign-In</title>
+</head>
+<body>
+    <div class="text-center mt-5">
+        <p>Signing you in via Google... Please wait.</p>
+    </div>
+
+    <script>
+        // Immediately fetch JSON from backend
+        fetch("/auth/google-callback")
+            .then(res => res.json())
+            .then(data => {
+                alert(data.message); // Can replace with SweetAlert2 later
+
+                if (data.success && data.redirect) {
+                    window.location.href = data.redirect;
+                }
+                else if (!data.success && data.redirect) {
+                    window.location.href = data.redirect;
+                }
+                else if (!data.success) {
+                    setTimeout(() => {
+                        window.location.href = "/auth/login"; // fallback
+                    }, 3000);
+                }
+            })
+            .catch(err => {
+                alert("Something went wrong while signing in!");
+                console.error(err);
+                window.location.href = "/auth/login";
+            });
+    </script>
+</body>
+</html>

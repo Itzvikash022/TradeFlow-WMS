@@ -11,6 +11,13 @@ using WMS_Application.DTO;
 using WMS_Application.Repositories.Interfaces;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 using System.Net.Http;
+using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using DocumentFormat.OpenXml.EMMA;
+using NuGet.Protocol.Plugins;
+
 
 namespace WMS_Application.Controllers
 {
@@ -47,11 +54,148 @@ namespace WMS_Application.Controllers
         {
             return View();
         }
+        
 
         public IActionResult ForgotPassword()
         {
             return View();
 
+        }
+        public IActionResult GoogleDetails(string email)
+        {
+            //bool emailExists = _context.TblUsers.Any(u => u.Email == email);
+            //if(emailExists)
+            //{
+
+            //}
+
+            var model = new GoogleSignupModel { Email = email };
+            return View(model);
+        }
+
+        [HttpGet("login-google")]
+        public IActionResult LoginWithGoogle()
+        {
+            var redirectUrl = Url.Action("GoogleCallback", "Auth");
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+
+        [HttpGet("auth/google-callback-view")]
+        public IActionResult GoogleCallback()
+        {
+            return View("GoogleCallback", new object()); // This is your Razor view with JS
+        }
+
+        [HttpGet("auth/google-callback")]
+        public async Task<IActionResult> GoogleResponse()
+        {
+            var result = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            if (!result.Succeeded || result.Principal == null)
+            {
+                return Json(new { success = false, message = "Google authentication failed. Please try again." });
+            }
+
+            var email = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
+            var name = result.Principal.Identity.Name;
+
+            var user = await _context.TblUsers.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user != null && user.IsGoogleAccount == false)
+            {
+                return Json(new { success = false, message = "This email is already registered manually. Use Email/Password to login." });
+            }
+
+            if (user != null && user.IsGoogleAccount == true)
+            {
+                var info = await _context.TblAdminInfos.FirstOrDefaultAsync(u => u.AdminId == user.UserId);
+                TblShop shopData = new TblShop();
+
+                if (user.RoleId <= 2)
+                    shopData = _context.TblShops.FirstOrDefault(x => x.AdminId == user.UserId);
+                else
+                    shopData = _context.TblShops.FirstOrDefault(x => x.AdminId == user.AdminRef);
+
+                if (shopData != null)
+                    HttpContext.Session.SetInt32("ShopId", shopData.ShopId);
+
+                HttpContext.Session.SetInt32("UserId", user.UserId);
+                HttpContext.Session.SetInt32("UserRoleId", user.RoleId);
+                HttpContext.Session.SetString("UserEmail", email);
+
+
+                // Check conditions and return messages accordingly
+                if (user.RoleId == 2)
+                {
+                    if (!await _users.hasShopDetails(user.UserId))
+                        return Json(new { success = false, message = "Shop details are missing. Please complete you shop details.", redirect = Url.Action("ShopDetails", "Auth") });
+
+                    if (!await _users.hasAdminDoc(user.UserId))
+                        return Json(new { success = false, message = "Documents are not uploaded yet.", redirect = Url.Action("AdminDoc", "Auth") });
+                }
+
+                if (info != null)
+                {
+                    if (user.VerificationStatus == "Rejected")
+                        return Json(new { success = false, message = "Your account is rejected. Contact support."});
+
+                    if (user.VerificationStatus == "Pending")
+                        return Json(new { success = false, message = "Your account is pending verification."});
+                }
+
+                return Json(new { success = true, message = "Login successful!", redirect = Url.Action("", "Dashboard") });
+            }
+
+            // New Google user
+            return Json(new
+            {
+                success = true,
+                message = "Google account not found. Please complete your details.",
+                redirect = Url.Action("GoogleDetails", "Auth", new { email })
+            });
+        }
+
+
+
+
+
+        [HttpPost]
+        public async Task<IActionResult> GoogleDetails(GoogleSignupModel model)
+        {
+            // Check if username already exists
+            bool usernameExists = _context.TblUsers.Any(u => u.Username == model.Username);
+            if (usernameExists)
+            {
+                return Json(new {success = false, message =  "Username Already Exists"});
+            }
+
+            // Create temp password
+            string tempPassword = Guid.NewGuid().ToString();    
+
+            // Create user
+            var user = new TblUser
+            {
+                Email = model.Email,
+                Username = model.Username,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(tempPassword),
+                IsGoogleAccount = true,
+                IsVerified = true,
+                CreatedAt = DateTime.UtcNow,
+                RoleId = 2,
+                VerificationStatus = "Pending"
+            };
+
+            HttpContext.Session.SetString("UserEmail", model.Email);
+            HttpContext.Session.SetInt32("UserId", user.UserId);
+            HttpContext.Session.SetInt32("UserRoleId", user.RoleId);
+
+
+            _context.TblUsers.Add(user);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Account Created Successfully" });
         }
 
         [HttpGet("/Auth/states")]

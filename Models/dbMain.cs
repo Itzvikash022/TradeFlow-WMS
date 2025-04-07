@@ -395,6 +395,7 @@ public partial class dbMain : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.IsActive).HasDefaultValue(false);
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
+            entity.Property(e => e.IsGoogleAccount).HasDefaultValue(false);
             entity.Property(e => e.LastName)
                 .HasMaxLength(20)
                 .IsUnicode(false);

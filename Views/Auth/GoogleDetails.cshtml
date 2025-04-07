@@ -1,0 +1,63 @@
+﻿@model WMS_Application.Models.GoogleSignupModel
+
+@{
+    Layout = "/Views/Shared/_mainLayout.cshtml";
+    // Layout = null;
+    ViewData["Title"] = "Google Details";
+}
+<html lang="en">
+<head>
+    <title>Register for WMS</title>
+    <style>
+        label.error {
+            color: red !important;
+        }
+    </style>
+</head>
+<body class="account-page">
+    <div id="global-loader">
+        <div class="whirly-loader"></div>
+    </div>
+    <div class="main-wrapper">
+        <div class="account-content">
+            <div class="login-wrapper">
+                <div class="login-content">
+                    <div class="login-userset">
+                        <form id="googleDetailsForm">
+                            <div class="login-userheading">
+                                <h3>Create an Account</h3>
+                            </div>
+                            <div class="form-login">
+                                <label>Username</label>
+                                <div class="form-addons">
+                                    <input type="text" asp-for="Username" placeholder="Enter your Username">
+                                    <img src="~/assets/img/icons/users1.svg" alt="img">
+                                </div>
+                            </div>
+                            <div class="form-login">
+                                <label>Email</label>
+                                <div class="form-addons">
+                                    <input type="text" asp-for="Email" placeholder="Enter your email address" readonly>
+                                    <img src="~/assets/img/icons/mail.svg" alt="img">
+                                </div>
+                            </div>
+                            <div class="form-login">
+                                <button type="submit" id="btnSave" class="btn btn-login">
+                                    <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
+                                    Submit
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="login-img">
+                    <img src="~/assets/img/login.jpg" alt="img">
+                </div>
+            </div>
+        </div>
+    </div>
+    @section Scripts {
+        <script src="/js/GoogleDetails.js"></script>
+    }
+</body>
+</html>

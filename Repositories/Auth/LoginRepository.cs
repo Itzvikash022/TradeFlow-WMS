@@ -34,7 +34,12 @@ namespace WMS_Application.Repositories.Auth
             {
                 return new { success = false, message = "User not found" };
             }
-           
+
+            if (user != null && user.IsGoogleAccount == true)
+            {
+                return new { success = false, message = "This account is linked with Google. Please use Google login." };
+            }
+
 
             var info = await _context.TblAdminInfos
            .FirstOrDefaultAsync(u => u.AdminId == user.UserId);

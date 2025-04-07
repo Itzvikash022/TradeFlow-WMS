@@ -24,6 +24,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true; // Ensures cookie is essential
 });
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddHttpClient();
 
 
 builder.Services.AddScoped<IUsersRepository, UsersRepository>();

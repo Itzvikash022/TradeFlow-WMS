@@ -10,6 +10,7 @@ using WMS_Application.Models;
 using WMS_Application.DTO;
 using WMS_Application.Repositories.Interfaces;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Net.Http;
 
 namespace WMS_Application.Controllers
 {
@@ -22,8 +23,10 @@ namespace WMS_Application.Controllers
         private readonly ILoginRepository _login;
         private readonly IMemoryCache _memoryCache;
         private readonly ICompanyRepository _company;
-            
-        public AuthController(ILogger<AuthController> logger, dbMain context, IUsersRepository users, IEmailSenderRepository emailSender, ILoginRepository login, IMemoryCache memoryCache, ICompanyRepository company)
+        private readonly HttpClient _httpClient;
+
+
+        public AuthController(ILogger<AuthController> logger, dbMain context, IUsersRepository users, IEmailSenderRepository emailSender, ILoginRepository login, IMemoryCache memoryCache, ICompanyRepository company, IHttpClientFactory httpClientFactory)
         {
             _logger = logger;
             _context = context;
@@ -32,6 +35,7 @@ namespace WMS_Application.Controllers
             _login = login;
             _memoryCache = memoryCache;
             _company = company;
+            _httpClient = httpClientFactory.CreateClient();
         }
 
         public IActionResult Index()
@@ -49,6 +53,22 @@ namespace WMS_Application.Controllers
             return View();
 
         }
+
+        [HttpGet("/Auth/states")]
+        public async Task<IActionResult> GetStates()
+        {
+            var response = await _httpClient.GetStringAsync("http://api.geonames.org/childrenJSON?geonameId=1269750&username=itzvikash");
+            return Content(response, "application/json");
+        }
+
+        [HttpGet("/Auth/cities/{geonameId}")]
+        public async Task<IActionResult> GetCities(int geonameId)
+        {
+            var url = $"http://api.geonames.org/childrenJSON?geonameId={geonameId}&username=itzvikash";
+            var response = await _httpClient.GetStringAsync(url);
+            return Content(response, "application/json");
+        }
+
         [HttpPost]
         public async Task<IActionResult> ForgotPassword(TblUser user)
         {
@@ -312,6 +332,8 @@ namespace WMS_Application.Controllers
             return View(model);
         }
 
+
+
         [HttpPost]
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDTO model)
         {
@@ -405,8 +427,8 @@ namespace WMS_Application.Controllers
                     if (await _users.OtpVerification(user.Otp))
                     {
                         await _users.updateStatus(email);
-                        //int roleId = _context.TblUsers.Where(x => x.Email == email).Select(y => y.RoleId).FirstOrDefault();
-                        int roleId = (int) HttpContext.Session.GetInt32("UserRoleId");
+                        int roleId = _context.TblUsers.Where(x => x.Email == email).Select(y => y.RoleId).FirstOrDefault();
+                        //int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
                         if(roleId > 2)
                         {
                             return Json(new { success = true, message = "OTP verified successfully", emp = true });

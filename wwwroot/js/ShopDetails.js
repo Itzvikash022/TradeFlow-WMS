@@ -1,14 +1,14 @@
 ﻿$(document).ready(function () {
 
-    const username = "itzvikash"; // Replace with your Geonames username
-    const stateGeonameId = 1269750; // ID for India
+    //const username = "itzvikash"; // Replace with your Geonames username
+    //const stateGeonameId = 1269750; // ID for India
 
     // Get previously selected state & city
     const selectedState = $("#State").attr("data-selected");
     const selectedCity = $("#City").attr("data-selected");
 
     // Fetch States
-    fetch(`http://api.geonames.org/childrenJSON?geonameId=${stateGeonameId}&username=${username}`)
+    fetch(`states`)
         .then(response => response.json())
         .then(data => {
             const states = data.geonames;
@@ -31,7 +31,7 @@
         const selectedStateGeonameId = $(this).find("option:selected").data("id");
 
         if (selectedStateGeonameId) {
-            fetch(`http://api.geonames.org/childrenJSON?geonameId=${selectedStateGeonameId}&username=${username}`)
+            fetch(`cities/${selectedStateGeonameId}`)
                 .then(response => response.json())
                 .then(data => {
                     const cities = data.geonames;

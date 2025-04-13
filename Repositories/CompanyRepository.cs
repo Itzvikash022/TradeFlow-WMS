@@ -88,6 +88,7 @@ namespace WMS_Application.Repositories
                 }
 
                 string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\CompanyUploads");
+                Directory.CreateDirectory(uploadsFolder); // Ensures folder exists
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + company.LogoFile.FileName;
 
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);

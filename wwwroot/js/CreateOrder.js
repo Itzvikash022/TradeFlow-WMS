@@ -2,9 +2,6 @@
     let selectedProducts = [];
     let cachedProducts = []; // Store API response globally
 
-
-
-
     $(document).ready(function () {
         let selectedProducts = [];
 
@@ -20,12 +17,8 @@
             let companyId = row.data("company-id");
             let sellerShopId = row.data("sellershop-id");
 
-            console.log("Product ID:", productId);
-            console.log("Company ID:", companyId);
-            console.log("Seller Shop ID:", sellerShopId); // Debugging statement
-
             if (!qty || qty <= 0) {
-                alert("Please enter a valid quantity.");
+                showToast("Please enter a valid quantity.","warning");
                 return;
             }
 
@@ -33,7 +26,7 @@
             let totalSelectedQty = existingProduct ? existingProduct.qty + qty : qty;
 
             if (totalSelectedQty > availableQty) {
-                alert("Cannot add more than available stock!");
+                showToast("Cannot add more than available stock!","warning");
                 return;
             }
 
@@ -88,7 +81,7 @@
         // Submit Order using AJAX
             $("#placeOrderBtn").on("click", function () {
                 if (selectedProducts.length === 0) {
-                    alert("No products selected!");
+                    showToast("No products selected!","warning");
                     return;
                 }
 
@@ -102,28 +95,22 @@
                 let allSameShop = selectedProducts.every(p => p.sellerShopId === sellerShopId);
 
                 if(!allSameShop) {
-                    alert("All selected products must be from the same Shop.");
+                    showToast("All selected products must be from the same Shop.","warning");
                     return;
                 }
 
                 if (!sellerShopId) {
                     if(!allSameCompany) {
-                        alert("All selected products must be from the same company.");
+                        showToast("All selected products must be from the same company.","warning");
                         return;
                     }
                 }
                 let SelectedshopId = $("#shopDropdownSell").val();
                 let type = $("#orderTypeSelect").val();
-                console.log("Type : " + type);
-                console.log("SelecttedShop : " + SelectedshopId);
 
                 if (type == "shopToShopSell") {
                     shopId = SelectedshopId;
                 }
-
-                console.log("Shop ID : " + shopId);
-
-            
 
                 let orderData = {
                     companyId: companyId || 0,
@@ -135,8 +122,6 @@
                     products: selectedProducts,
                 };
 
-                console.log(orderData);
-
                 // Send AJAX request to create order
                 $.ajax({
                     url: "/Orders/CreateOrder",
@@ -144,13 +129,17 @@
                     contentType: "application/json",
                     data: JSON.stringify(orderData),
                     success: function (response) {
-                        alert("Order placed successfully!");
-                        selectedProducts = [];
-                        updateSelectedProducts();
-                        window.location.href = "OrderCheckout/" + response.orderId;
+                        if (response.success) {
+                            selectedProducts = [];
+                            updateSelectedProducts();
+                            window.location.href = "OrderCheckout/" + response.orderId;
+                        }
+                        else {
+                            showToast(response.message, "error");
+                        }
                     },
                     error: function (xhr) {
-                        alert("Failed to place order. Please try again.");
+                        showToast("Failed to place order. Please try again.","error");
                     }   
                 });
             });
@@ -170,41 +159,6 @@
     });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     // AJAX Call for Filtering Products
     $("#btnSubmitC2S").on("click", function () {
         $("#btnLoader").removeClass("d-none"); // Show loader
@@ -218,12 +172,11 @@
             type: "GET",
             data: { productName, category, company },
             success: function (response) {
-                console.log("API Response:", response);
                 cachedProducts = response; // Store in global variable
                 displayProducts(response);
             },
             error: function () {
-                alert("Error fetching products.");
+                showToast("Error fetching products.","error");
             },
             complete: function () {
                 $("#btnLoader").addClass("d-none"); // Hide loader
@@ -239,7 +192,7 @@
         let customerPhone = $("#customerPhone").val().trim();
 
         if (!customerName || !customerEmail || !customerPhone) {
-            alert("Please enter all details before proceeding!");
+            showToast("Please enter all details before proceeding!","warning");
             return;
         }
 
@@ -250,15 +203,11 @@
             type: "POST",
             data: { customerName, customerEmail, customerPhone },
             success: function (response) {
-                console.log("API Response:", response);
-                alert(response.msg);
                 cachedProducts = response.result; // Store in global variable
                 displayProducts(response.result);
-                $("#customerId").val(response.customerId);
-                alert(response.customerId);
             },
             error: function () {
-                alert("Error fetching products.");
+                showToast("Error fetching products.","error");
             },
             complete: function () {
                 $("#btnLoader").addClass("d-none"); // Hide loader
@@ -279,12 +228,11 @@
             type: "GET",
             data: { productName, category, shop },
             success: function (response) {
-                console.log("API Response:", response);
                 cachedProducts = response; // Store in global variable
                 displayProducts(response);
             },
             error: function () {
-                alert("Error fetching products.");
+                showToast("Error fetching products.","error");
             },
             complete: function () {
                 $("#btnLoader").addClass("d-none"); // Hide loader
@@ -297,9 +245,6 @@
         let shopId = $("#shopDropdownSell").val();
         //console.log(shopId);
         if (!shopId) return;
-
-        //selectedProducts = [];
-        //updateSelectedProducts();
 
         // Show loader (if applicable)
         $("#btnLoader").removeClass("d-none");
@@ -314,7 +259,7 @@
                 $("#shopAddress").val(data.shopAddress);
             },
             error: function () {
-                alert("Error fetching shop details.");
+                showToast("Error fetching shop details.","error");
             }
         });
 
@@ -328,7 +273,7 @@
                 displayProducts(response);
             },
             error: function () {
-                alert("Error fetching products.");
+                showToast("Error fetching products.","error");
             },
             complete: function () {
                 $("#btnLoader").addClass("d-none"); // Hide loader

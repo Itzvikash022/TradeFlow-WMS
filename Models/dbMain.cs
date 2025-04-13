@@ -250,6 +250,7 @@ public partial class dbMain : DbContext
 
             entity.Property(e => e.ProdCatId).HasColumnName("ProdCatID");
             entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
             entity.Property(e => e.ProductCategory)
                 .HasMaxLength(20)
                 .IsUnicode(false);

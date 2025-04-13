@@ -55,7 +55,7 @@
                                     <h6>@Model.ClosingTime</h6>
                                 </li>
                             </ul>
-                            @if(ViewBag.Permissiontype != "canView")
+                            @if (ViewBag.Permissiontype != "canView")
                             {
                                 <a href="/Shops/SaveShop" id="btnRedirectToUpdate" class="btn btn-submit mt-4 align-center">
                                     Update?
@@ -68,3 +68,16 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @if (TempData["shopdetails-toast"] != null)
+    {
+        <script>
+
+            $(document).ready(function () {
+                showToast('@TempData["shopdetails-toast"]','@TempData["shopdetails-toastType"]');
+            });
+
+        </script>
+    }
+                            }

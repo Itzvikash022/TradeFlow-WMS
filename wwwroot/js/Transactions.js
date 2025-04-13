@@ -26,7 +26,6 @@
             const btnLoader = $("#btnLoader");
             btn.prop("disabled", true);
             btnLoader.removeClass("d-none");
-            console.log("test-hehe2");
 
             let TransactionData = {
                 ReferenceNo: $("#ReferenceNo").val(),
@@ -44,8 +43,12 @@
                     contentType: "application/json",
                     data: JSON.stringify(TransactionData),
                     success: function (result) {
-                        alert(result.message);
-                        window.location.href = "/Orders";
+                        if (result.success) {
+                            window.location.href = "/Orders";
+                        }
+                        else {
+                            showToast(result.message, "error");
+                        }
                     },
                     complete: function () {
                         // Re-enable button and hide loader
@@ -54,7 +57,7 @@
                     },
                     error: function (xhr) {
                         console.error(xhr.responseText); // Logs the error in the browser console
-                        alert("Error: " + xhr.responseText); // Shows the actual error message from the server
+                        showToast("Error: " + xhr.responseText,"error"); // Shows the actual error message from the server
                     }
 
                 });

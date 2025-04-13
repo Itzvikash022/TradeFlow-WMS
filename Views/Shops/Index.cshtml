@@ -93,4 +93,15 @@
                         window.location.href = "/Shops/ExportShopList";
             });
     </script>
+
+    @if (TempData["shopdetails-toast"] != null)
+    {
+        <script>
+
+            $(document).ready(function () {
+                showToast('@TempData["shopdetails-toast"]','@TempData["shopdetails-toastType"]');
+            });
+
+        </script>
+    }
 }

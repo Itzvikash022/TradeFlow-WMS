@@ -62,15 +62,15 @@ $(document).ready(function () {
 
     });
 
-    const username = "itzvikash"; // Replace with your Geonames username
-    const stateGeonameId = 1269750; // ID for India
+    // Grab current controller name from URL
+    const segments = window.location.pathname.split('/').filter(Boolean);
+    const controller = segments[0];  // 'Shops', 'Auth', 'Companies', etc.
 
-    // Get previously selected state & city
     const selectedState = $("#State").attr("data-selected");
     const selectedCity = $("#City").attr("data-selected");
 
     // Fetch States
-    fetch(`http://api.geonames.org/childrenJSON?geonameId=${stateGeonameId}&username=${username}`)
+    fetch(`/${controller}/states`)
         .then(response => response.json())
         .then(data => {
             const states = data.geonames;
@@ -93,7 +93,7 @@ $(document).ready(function () {
         const selectedStateGeonameId = $(this).find("option:selected").data("id");
 
         if (selectedStateGeonameId) {
-            fetch(`http://api.geonames.org/childrenJSON?geonameId=${selectedStateGeonameId}&username=${username}`)
+            fetch(`/${controller}/cities/${selectedStateGeonameId}`)
                 .then(response => response.json())
                 .then(data => {
                     const cities = data.geonames;
@@ -109,6 +109,7 @@ $(document).ready(function () {
             $("#City").html(`<option value="">Select City</option>`); // Reset city dropdown
         }
     });
+
     $("#companyRegistration").validate({
         rules: {
             CompanyName: {
@@ -189,7 +190,6 @@ $(document).ready(function () {
                     contentType: false,
                     data: formData,
                     success: function (result) {
-                        alert(result.message);
                         if (result.success) {
                             if (result.path != null) {
                                 window.location.href = '/' + result.path;
@@ -198,6 +198,9 @@ $(document).ready(function () {
                                 window.location.href = '/Auth/CompanyLogin';
                             }
                         }
+                        else {
+                            showToast(result.message, "error")
+                        }
                     },
                     complete: function () {
                         // Re-enable button and hide loader
@@ -205,7 +208,7 @@ $(document).ready(function () {
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while registering the user.');
+                        showToast("Unknown error occurred", "error")
                     }
                 });
         }

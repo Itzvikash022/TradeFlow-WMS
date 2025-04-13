@@ -45,11 +45,10 @@ function fetchRolePermissions(roleId) {
         type: "GET",
         data: { roleId: roleId },
         success: function (data) {
-            console.log(data)
             updatePermissionsTable(data);
         },
         error: function () {
-            alert("Failed to fetch permissions.");
+            showToast("Failed to fetch permissions.", "error")
         }
     });
 }
@@ -115,7 +114,7 @@ function savePermission() {
     var permissionId = $("#PermissionId").val();
 
     if (!roleId || !tabId || !permissionType) {
-        alert("All fields are required!");
+        showToast("All Fields are required", "warning")
         return;
     }
 
@@ -133,15 +132,20 @@ function savePermission() {
         contentType: "application/json",
         data: JSON.stringify(data),
         success: function (response) {
-                alert(response.message);
             if (response.success) {
-                location.reload();
+                showToast(response.message,"success");
+                setTimeout(function () {
+                    location.reload(); // Reload the page after 2 seconds
+                }, 1000);
+            }
+            else {  
+                showToast(response.message,"error")
             }
             //alert("Permission saved successfully!");
         },
         error: function (xhr) {
             console.error("Error:", xhr.responseText);
-            alert("Something went wrong: " + xhr.status);
+            showToast("Something went wrong: " + xhr.status, "error");
         }
     });
 }

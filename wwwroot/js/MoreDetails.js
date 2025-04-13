@@ -104,7 +104,6 @@
                     contentType: false,
                     data: formData,
                     success: function (result) {
-                        alert(result.message);
                         if (result.success) {
                             if (result.path != null) {
                                 window.location.href = '/' + result.path;
@@ -112,6 +111,9 @@
                             else {
                                 window.location.href = '/Auth/ShopDetails';
                             }
+                        }
+                        else {
+                            showToast(result.message, "error")
                         }
                     },
                     complete: function () {
@@ -121,7 +123,7 @@
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while registering the user.');
+                        showToast("Unknown error occurred", "error")
                     }
                 });
             }, 2000);
@@ -201,8 +203,6 @@
             const btnLoader = $("#btnLoader");
             btnRegister.prop("disabled", true);
             btnLoader.removeClass("d-none");
-            setTimeout(function () {
-
                 // AJAX submission
                 $.ajax({
                     url: '/Auth/CompanyRegistration',
@@ -211,9 +211,11 @@
                     contentType: false,
                     data: formData,
                     success: function (result) {
-                        alert(result.message);
                         if (result.success) {
                             window.location.href = '/';
+                        }
+                        else {
+                            showToast(result.message, "error")
                         }
                     },
                     complete: function () {
@@ -222,10 +224,9 @@
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while registering the user.');
+                        showToast("Unknown error occurred", "success")
                     }
                 });
-            }, 2000);
         }
     });
 

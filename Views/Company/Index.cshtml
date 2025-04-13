@@ -118,4 +118,15 @@
                         window.location.href = "/Company/ExportCompanyList";
             });
     </script>
+
+    @if (TempData["companyreg-toast"] != null)
+    {
+        <script>
+
+            $(document).ready(function () {
+                showToast('@TempData["companyreg-toast"]','@TempData["companyreg-toastType"]');
+            });
+
+        </script>
+    }
 }

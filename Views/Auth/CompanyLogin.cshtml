@@ -74,6 +74,18 @@
 
     @section Scripts {
         <script src="/js/Login.js"></script>
+
+
+        @if (TempData["companyreg-toast"] != null)
+        {
+            <script>
+
+                $(document).ready(function () {
+                    showToast('@TempData["companyreg-toast"]','@TempData["companyreg-toastType"]');
+                });
+
+            </script>
+        }
     }
 </body>
 </html>

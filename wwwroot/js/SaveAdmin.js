@@ -50,6 +50,13 @@
             $("#massEmployee").show();   
             $("#UserHeadingAdmin").hide();   
             $("#CancelAdmin").hide();   
+
+            // Pre-select designation if RoleId is already set (in case of edit)
+            let currentRoleId = $("#RoleId").val();
+            if (formSource !== "admin" && currentRoleId) {
+                $("#designation").val(currentRoleId);
+            }
+
         }
 
         // Handle designation change (only for Employee role)
@@ -135,7 +142,6 @@
             const btnLoader = $("#btnLoader");
             btnRegister.prop("disabled", true);
             btnLoader.removeClass("d-none");
-            setTimeout(function () {
 
                 // AJAX submission
                 $.ajax({
@@ -145,9 +151,10 @@
                     contentType: false,
                     data: formData,
                     success: function (result) {
-                        alert(result.message);
                         if (result.success) {
                             window.location.href = '/' + result.role;
+                        } else {
+                            showToast(result.message, "error")
                         }
                     },
                     complete: function () {
@@ -156,10 +163,9 @@
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while registering the user.');
+                        showToast("Unknown error occurred", "error")
                     }
                 });
-            }, 2000);
         }
     });
 

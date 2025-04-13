@@ -85,9 +85,13 @@
                     contentType: false,
                     data: formData,
                     success: function (result) {
-                        alert(result.message);
+
                         if (result.success) {
+
                             window.location.href = '/Products';
+                        }
+                        else {
+                            showToast(result.message, "error")
                         }
                     },
                     complete: function () {
@@ -96,7 +100,7 @@
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while adding the Product.');
+                        showToast("Unknown error occurred", "error")
                     }
                 });
             });

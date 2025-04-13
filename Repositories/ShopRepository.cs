@@ -22,7 +22,7 @@ namespace WMS_Application.Repositories
                             ShopId = shop.ShopId,
                             AdminId = shop.AdminId,
                             ShopName = shop.ShopName,
-                            ShopOwner = user.FirstName +" "+ user.LastName,
+                            ShopOwner = user.Username,
                             CreatedAt = shop.CreatedAt,
                             State = shop.State,
                             City = shop.City,

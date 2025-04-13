@@ -160,7 +160,7 @@ namespace WMS_Application.Controllers
                 if(admin.IsActive == false)
                 {
                     admin.IsActive = true;
-                    if(roleId <= 2)
+                    if(roleId <= 2 && shop != null)
                     {
                         shop.IsActive = true;
                     }
@@ -169,14 +169,15 @@ namespace WMS_Application.Controllers
                 else
                 {
                     admin.IsActive = false;
-                    if (roleId <= 2)
+                    
+                    if (roleId <= 2 && shop != null)
                     {
                         shop.IsActive = false;
                     }
                     msg = "User Restricted successfully.";
                 }
 
-                if(roleId <= 2)
+                if(roleId <= 2 && shop != null)
                 {
                     _context.TblShops.Update(shop);
                 }
@@ -277,8 +278,11 @@ namespace WMS_Application.Controllers
                 {
                     if (((dynamic)res).success)
                     {
+                        TempData["saveAdmin-toast"] = $"{type} Updated Successfully";
+                        TempData["saveAdmin-toastType"] = "success";
+
                         string subject = $"{type} account has been updated";
-                        string body = $"Hello there {user.FirstName}, your account has been successfully update by the SuperAdmin and you can access your account now, some information has been update and your username and email has been mailed regardless of any changes, you can now login under the given credentials. UserName : {user.Username}, Email : {user.Email}, Password : you old same pass. But keep in mind, this is a sensitive information, so plz don't share it with anyone else. Thank you";
+                        string body = $"Hello there {user.FirstName}, your account has been successfully updated by the SuperAdmin and you can access your account now, some information has been update and your username and email has been mailed regardless of any changes, you can now login under the given credentials. UserName : {user.Username}, Email : {user.Email}, Password : you old same pass. But keep in mind, this is a sensitive information, so plz don't share it with anyone else. Thank you";
                         _emailSender.SendEmailAsync(user.Email, subject, body);
                     }
                 }
@@ -286,6 +290,9 @@ namespace WMS_Application.Controllers
                 {
                     if (((dynamic)res).success)
                     {
+                        TempData["saveAdmin-toast"] = $"{type} Added Successfully";
+                        TempData["saveAdmin-toastType"] = "success";
+
                         string subject = $"{type} account has been created";
                         string body = $"Hello there {user.FirstName}, welcome to our WMS Application, you account has been successfully created and you can access your account under the given credentials. UserName : {user.Username}, Email : {user.Email}, Password : {password} and after login, you can fill out your extra informations. But keep in mind, this is a sensitive information, so plz don't share it with anyone else. Thank you";
                         _emailSender.SendEmailAsync(user.Email, subject, body);

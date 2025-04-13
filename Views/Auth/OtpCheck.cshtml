@@ -68,6 +68,27 @@
     </div>
     @section Scripts {
         <script src="~/js/Register.js"></script>
+        @if (TempData["register-toast"] != null)
+        {
+            <script>
+
+                $(document).ready(function () {
+                    showToast('@TempData["register-toast"]','@TempData["register-toastType"]');
+                });
+
+            </script>
+        }
+
+        @if (TempData["otp-toast"] != null)
+        {
+            <script>
+
+                $(document).ready(function () {
+                    showToast('@TempData["otp-toast"]','@TempData["otp-toastType"]');
+                });
+
+            </script>
+        }
     }
 </body>
 </html>

@@ -95,6 +95,31 @@
     </div>
     @section Scripts {
         <script src="~/js/MoreDetails.js"></script>
+
+
+        @if (TempData["otpcheck-toast"] != null)
+        {
+            <script>
+
+                $(document).ready(function () {
+                    showToast('@TempData["otpcheck-toast"]','@TempData["otpcheck-toastType"]');
+                });
+
+            </script>
+        }
+
+        @if (TempData["google-toast"] != null)
+        {
+            <script>
+
+                $(document).ready(function () {
+                    showToast('@TempData["google-toast"]','@TempData["google-toastType"]');
+                });
+
+            </script>
+        }
+
+
     }
 </body>
 </html>

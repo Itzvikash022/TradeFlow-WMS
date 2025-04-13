@@ -124,6 +124,8 @@ namespace WMS_Application.Repositories.Auth
                 }
 
                 string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\UserUploads");
+                Directory.CreateDirectory(uploadsFolder);
+
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + user.ProfileImage.FileName;
 
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
@@ -173,6 +175,8 @@ namespace WMS_Application.Repositories.Auth
                 }
 
                 string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\ShopUploads\\Images");
+                Directory.CreateDirectory(uploadsFolder); // Ensures folder exists
+
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + shop.ShopImage.FileName;
 
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
@@ -241,6 +245,8 @@ namespace WMS_Application.Repositories.Auth
                     return new { success = false, message = "Invalid file type. Only .pdf is allowed." };
                 }
                 string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\ShopUploads\\Documents\\IdentityDoc");
+                Directory.CreateDirectory(uploadsFolder); // Ensures folder exists
+
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + info.IdentityDoc.FileName;
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
                 using (var stream = new FileStream(filePath, FileMode.Create))
@@ -262,6 +268,8 @@ namespace WMS_Application.Repositories.Auth
                     return new { success = false, message = "Invalid file type. Only .pdf is allowed." };
                 }
                 string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\ShopUploads\\Documents\\AddressDoc");
+                Directory.CreateDirectory(uploadsFolder); // Ensures folder exists
+
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + info.AddressProof.FileName;
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
                 using (var stream = new FileStream(filePath, FileMode.Create))
@@ -283,6 +291,8 @@ namespace WMS_Application.Repositories.Auth
                     return new { success = false, message = "Invalid file type. Only .pdf is allowed." };
                 }
                 string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\ShopUploads\\Documents\\LicenseDoc");
+                Directory.CreateDirectory(uploadsFolder); // Ensures folder exists
+
                 string uniqueFileName = Guid.NewGuid().ToString() + "_" + info.ShopLicense.FileName;
                 string filePath = Path.Combine(uploadsFolder, uniqueFileName);
                 using (var stream = new FileStream(filePath, FileMode.Create))

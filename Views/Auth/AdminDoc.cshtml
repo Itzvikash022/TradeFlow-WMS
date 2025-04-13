@@ -86,6 +86,38 @@
     </div>
     @section Scripts {
         <script src="~/js/AdminDoc.js"></script>
+        @if (TempData["otpcheck-toast"] != null)
+        {
+            <script>
+
+                $(document).ready(function () {
+                    showToast('@TempData["otpcheck-toast"]','@TempData["otpcheck-toastType"]');
+                });
+
+            </script>
+        }
+
+        @if (TempData["doc-toast"] != null)
+        {
+            <script>
+
+                $(document).ready(function () {
+                    showToast('@TempData["doc-toast"]','@TempData["doc-toastType"]');
+                });
+
+            </script>
+        }
+
+        @if (TempData["shopdetails-toast"] != null)
+        {
+            <script>
+
+                $(document).ready(function () {
+                    showToast('@TempData["shopdetails-toast"]','@TempData["shopdetails-toastType"]');
+                });
+
+            </script>
+        }
     }
 </body>
 </html>

@@ -125,5 +125,16 @@
                     window.location.href = "/Employee/ExportEmployeeList";
         });
     </script>
+
+    @if (TempData["saveAdmin-toast"] != null)
+    {
+        <script>
+
+            $(document).ready(function () {
+                showToast('@TempData["saveAdmin-toast"]','@TempData["saveAdmin-toastType"]');
+            });
+
+        </script>
+    }
 }
 

@@ -1,0 +1,224 @@
+﻿@model WMS_Application.DTO.SuperAdminDashboardDto;
+
+@{
+    Layout = "/Views/Shared/_Layout.cshtml";
+    // Layout = null;
+    ViewData["Title"] = "AdminDashboard";
+}
+<div class="page-wrapper">
+    <div class="content">
+        <div class="row">
+            <div class="col-lg-3 col-sm-6 col-12 d-flex">
+                <div class="dash-count">
+                    <div class="dash-counts">
+                        <h4>@Model.ActiveAdminsCount</h4>
+                        <h5>Active ShopOwners</h5>
+                    </div>
+                    <div class="dash-imgs">
+                        <i data-feather="user"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 col-12 d-flex">
+                <div class="dash-count das1">
+                    <div class="dash-counts">
+                        <h4>@Model.TotalCompaniesCount</h4>
+                        <h5>Active Companies</h5>
+                    </div>
+                    <div class="dash-imgs">
+                        <i data-feather="user-check"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 col-12 d-flex">
+                <div class="dash-count das2">
+                    <div class="dash-counts">
+                        <h4>@Model.SuccessfulOrdersThisMonth</h4>
+                        <h5>Successfull Orders This Month</h5>
+                    </div>
+                    <div class="dash-imgs">
+                        <i data-feather="file-text"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-sm-6 col-12 d-flex">
+                <div class="dash-count das3">
+                    <div class="dash-counts">
+                        <h4>@Model.TotalRegisteredUsers</h4>
+                        <h5>Total Registered Users</h5>
+                    </div>
+                    <div class="dash-imgs">
+                        <i data-feather="file"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-7 col-sm-12 col-12 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">User Registration</h5>
+                    </div>
+                    <div class="card-body">
+                        <select id="yearSelector" class="form-select w-auto mb-3">
+                            @for (int y = DateTime.Now.Year; y >= DateTime.Now.Year - 5; y--)
+                            {
+                                <option value="@y" selected="@(y == DateTime.Now.Year ? "selected" : null)">@y</option>
+                            }
+                        </select>
+                            <canvas id="userStatsChart" height="180"></canvas>
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-lg-5 col-sm-12 col-12 d-flex">
+                <div class="card flex-fill">
+                    <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mb-0">Recently Joined Users</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table ">
+                                <thead>
+                                    <tr>
+                                        <th>User</th>
+                                        <th>UserType</th>
+                                        <th>Status</th>
+                                        <th>RegisteredOn</th>
+                                    </tr>
+                                </thead>
+                                 <tbody> 
+                                     @foreach (var user in Model.LatestRegisteredUsers) 
+                                     { 
+                                         <tr> 
+                                             <td class="productimgname"> 
+                                                 <a class="product-img">
+                                                    <img src="@user.ImagePath" alt="user">
+                                                </a>
+                                                <a href="">@user.FullName</a>
+                                            </td>
+                                            <td>@user.UserType</td>
+                                            <td>
+                                                @if (@user.Status == "Approved")
+                                                {
+                                                    <span class="badges bg-lightgreen">Approved</span>
+                                                }
+                                                else if (@user.Status == "Rejected")
+                                                {
+                                                    <span class="badges bg-lightred">Rejected</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badges bg-warning">Pending</span>
+                                                }
+                                            </td>
+                                            <td>@user.RegisteredOn</td>
+                                        </tr> 
+                                     } 
+                                 </tbody> 
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (TempData["toast"] != null)
+    {
+        <script>
+
+            $(document).ready(function () {
+                showToast('@TempData["toast"]','@TempData["toastType"]');
+            });
+
+        </script>
+    }
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('userStatsChart').getContext('2d');
+        let userChart;
+
+        function loadChart(year) {
+            fetch(`/user-activity-stats/${year}`)
+                .then(res => res.json())
+                .then(data => {
+                    const labels = data.map(x => x.monthName);
+                    const registeredData = data.map(x => x.registeredCount);
+                    const activeData = data.map(x => x.activeCount);
+
+                    const chartData = {
+                        labels: labels,
+                        datasets: [
+                            {
+                                label: 'Registered Users',
+                                data: registeredData,
+                                backgroundColor: '#42a5f5'
+                            },
+                            {
+                                label: 'Active Users',
+                                data: activeData,
+                                backgroundColor: '#66bb6a'
+                            }
+                        ]
+                    };
+
+                    if (userChart) {
+                        userChart.destroy();
+                    }
+
+                    userChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: chartData,
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                tooltip: {
+                                    mode: 'index',
+                                    intersect: false
+                                },
+                                legend: {
+                                    position: 'top'
+                                },
+                                title: {
+                                    display: false,
+                                    text: `User Registration & Activity - ${year}`
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    title: {
+                                        display: true,
+                                        text: 'Users'
+                                    }
+                                }
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    tooltip: {
+                                        enabled: true
+                                    }
+                                }
+                        }
+
+                        }
+                    });
+                });
+        }
+
+        document.getElementById("yearSelector").addEventListener("change", function () {
+            loadChart(this.value);
+        });
+
+        // Load default year
+        loadChart(new Date().getFullYear());
+    </script>
+
+}

@@ -18,7 +18,9 @@ namespace WMS_Application.Controllers
         private readonly IPermisionHelperRepository _permission;
         private readonly IExportServiceRepository _export;
         private readonly IImportServiceRepository _import;
-        public CompanyController(ISidebarRepository sidebar, dbMain context, ICompanyRepository company, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export, IImportServiceRepository import) : base(sidebar)
+        private readonly HttpClient _httpClient;
+
+        public CompanyController(ISidebarRepository sidebar, dbMain context, ICompanyRepository company, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export, IImportServiceRepository import, IHttpClientFactory httpClientFactory) : base(sidebar)
         {
             _context = context;
             _company = company;
@@ -26,6 +28,24 @@ namespace WMS_Application.Controllers
             _permission = permission;
             _export = export;
             _import = import;
+            _httpClient = httpClientFactory.CreateClient();
+
+        }
+
+
+        [HttpGet("/Company/states")]
+        public async Task<IActionResult> GetStates()
+        {
+            var response = await _httpClient.GetStringAsync("http://api.geonames.org/childrenJSON?geonameId=1269750&username=itzvikash");
+            return Content(response, "application/json");
+        }
+
+        [HttpGet("/Company/cities/{geonameId}")]
+        public async Task<IActionResult> GetCities(int geonameId)
+        {
+            var url = $"http://api.geonames.org/childrenJSON?geonameId={geonameId}&username=itzvikash";
+            var response = await _httpClient.GetStringAsync(url);
+            return Content(response, "application/json");
         }
 
         // Public method to get user permission
@@ -107,32 +127,42 @@ namespace WMS_Application.Controllers
                 return RedirectToAction("UnauthorisedAccess", "Error");
             }
 
-           
+
         }
 
 
         public IActionResult UpdateCompany(int? id)
         {
-            string permissionType = GetUserPermission("Company");
-            if (permissionType == "canEdit" || permissionType == "fullAccess")
+
+            TblCompany companyData = new TblCompany();
+            if (HttpContext.Session.GetInt32("UserRoleId") == 5)
             {
-                TblCompany companyData = new TblCompany();
-                if (HttpContext.Session.GetInt32("UserRoleId") == 5)
+                string permissionType = GetUserPermission("My Company");
+                if (permissionType == "canEdit" || permissionType == "fullAccess")
                 {
                     int companyId = (int)HttpContext.Session.GetInt32("CompanyId");
                     companyData = _context.TblCompanies.FirstOrDefault(x => x.CompanyId == companyId);
                 }
-                else if (id > 0)
+                else
+                {
+                    return RedirectToAction("UnauthorisedAccess", "Error");
+                }
+            }
+            else if (id > 0)
+            {
+                string permissionType = GetUserPermission("Company");
+                if (permissionType == "canEdit" || permissionType == "fullAccess")
                 {
                     companyData = _context.TblCompanies.FirstOrDefault(x => x.CompanyId == id);
                 }
+                else
+                {
+                    return RedirectToAction("UnauthorisedAccess", "Error");
+                }
+            }
 
-                return View(companyData);
-            }
-            else
-            {
-                return RedirectToAction("UnauthorisedAccess", "Error");
-            }
+            return View(companyData);
+
         }
 
 
@@ -143,7 +173,7 @@ namespace WMS_Application.Controllers
         {
             int CompanyId = (int)HttpContext.Session.GetInt32("CompanyId");
             product.CompanyId = CompanyId;
-            return Ok(await _company.AddProduct(product));  
+            return Ok(await _company.AddProduct(product));
         }
 
         [HttpGet]
@@ -159,7 +189,7 @@ namespace WMS_Application.Controllers
             {
                 return RedirectToAction("UnauthorisedAccess", "Error");
             }
-            
+
         }
 
         public IActionResult DownloadSampleFile()

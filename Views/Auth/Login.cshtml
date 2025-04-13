@@ -96,6 +96,27 @@
 
     @section Scripts {
         <script src="/js/Login.js"></script>
+        @if (TempData["reset-toast"] != null)
+        {
+            <script>
+
+                $(document).ready(function () {
+                    showToast('@TempData["reset-toast"]','@TempData["reset-toastType"]');
+                });
+
+            </script>
+        }
+
+        @if (TempData["admindoc-toast"] != null)
+        {
+            <script>
+
+                $(document).ready(function () {
+                    showToast('@TempData["admindoc-toast"]','@TempData["admindoc-toastType"]');
+                });
+
+            </script>
+        }
     }
 </body>
 </html>

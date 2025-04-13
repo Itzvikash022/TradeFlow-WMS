@@ -111,6 +111,30 @@
     </div>
     @section Scripts {
         <script src="~/js/ShopDetails.js"></script>
+        @{
+            var toastKeys = new List<string>
+            {
+            "otpcheck-toast",
+            "shop-toast",
+            "moredetails-toast",
+            "shopleft-toast",
+            "docleft-toast"
+            };
+        }
+
+        @foreach (var key in toastKeys)
+        {
+            if (TempData[key] != null)
+            {
+                var toastTypeKey = key.Replace("-toast", "-toastType");
+                <script>
+                    $(document).ready(function () {
+                        showToast('@TempData[key]', '@TempData[toastTypeKey]');
+                    });
+                </script>
+            }
+        }
+
     }
 </body>
 </html>

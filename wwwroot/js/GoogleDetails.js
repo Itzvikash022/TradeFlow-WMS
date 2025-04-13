@@ -36,9 +36,10 @@
                     contentType: false,
                     data: formData,
                     success: function (result) {
-                        alert(result.message);
                         if (result.success) {
-                            window.location.href='/auth/moredetails'
+                            window.location.href = '/auth/moredetails'
+                        } else {
+                            showToast(result.message, "error")
                         }
                     },
                     complete: function () {
@@ -47,7 +48,7 @@
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while login');
+                        showToast("Unknown error occurred", "error")
                     }
                 });
             }, 2000);

@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using System.Security.Claims;
+using System.Security.Claims;   
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -63,12 +63,6 @@ namespace WMS_Application.Controllers
         }
         public IActionResult GoogleDetails(string email)
         {
-            //bool emailExists = _context.TblUsers.Any(u => u.Email == email);
-            //if(emailExists)
-            //{
-
-            //}
-
             var model = new GoogleSignupModel { Email = email };
             return View(model);
         }
@@ -130,10 +124,18 @@ namespace WMS_Application.Controllers
                 if (user.RoleId == 2)
                 {
                     if (!await _users.hasShopDetails(user.UserId))
+                    {
+                        TempData["shopleft-toast"] = "Shop details are missing. Please complete you shop details.";
+                        TempData["shopleft-toastType"] = "error";
                         return Json(new { success = false, message = "Shop details are missing. Please complete you shop details.", redirect = Url.Action("ShopDetails", "Auth") });
+                    }
 
                     if (!await _users.hasAdminDoc(user.UserId))
+                    {
+                        TempData["docleft-toast"] = "Verification Documents are not uploaded yet.";
+                        TempData["docleft-toastType"] = "error";
                         return Json(new { success = false, message = "Documents are not uploaded yet.", redirect = Url.Action("AdminDoc", "Auth") });
+                    }
                 }
 
                 if (info != null)
@@ -194,6 +196,8 @@ namespace WMS_Application.Controllers
 
             _context.TblUsers.Add(user);
             await _context.SaveChangesAsync();
+            TempData["google-toast"] = "Account Created Successfully using Google!";
+            TempData["google-toastType"] = "success";
 
             return Json(new { success = true, message = "Account Created Successfully" });
         }
@@ -241,7 +245,9 @@ namespace WMS_Application.Controllers
         {
             string user = HttpContext.Session.GetString("ForgotPassEmail");
             var res = await _login.ResetPassword(user, PasswordHash);
-            
+
+            TempData["reset-toast"] = "Password Changed Successgfully!";
+            TempData["reset-toastType"] = "success";
             return Ok(res);
         }
         public IActionResult OtpCheck()
@@ -273,6 +279,8 @@ namespace WMS_Application.Controllers
                 HttpContext.Session.SetInt32("UserRoleId", 5);
                 HttpContext.Session.SetInt32("CompanyId", companyData.CompanyId);
             }
+            TempData["toast"] = "Login successful!";
+            TempData["toastType"] = "success";
             return (Json(result));
         }
 
@@ -286,6 +294,8 @@ namespace WMS_Application.Controllers
                     return Json(new { success = false, message = "Email already exists" });
                 }
                 HttpContext.Session.SetString("UserEmail", company.Email);
+                TempData["companyreg-toast"] = "Company Saved Successfully";
+                TempData["companyreg-toastType"] = "success";
                 return Json(await _company.SaveCompany(company));
             }
             catch (Exception e)
@@ -405,11 +415,15 @@ namespace WMS_Application.Controllers
                             {
                                 if (!await _users.hasAdminDoc(id))
                                 {
+                                    TempData["doc-toast"] = "Complete you Documentation form";
+                                    TempData["doc-toastType"] = "warning";
                                     RedirectTo = "AdminDoc";
                                 }
                             }
                             else
                             {
+                                TempData["shop-toast"] = "Complete you shop form";
+                                TempData["shop-toastType"] = "warning";
                                 RedirectTo = "ShopDetails"; // Redirect to shop details if not filled
                             }
                         }
@@ -429,13 +443,17 @@ namespace WMS_Application.Controllers
                         user.OtpExpiry = DateTime.Now.AddMinutes(5);
                         await _emailSender.SendEmailAsync(user.Email, "OTP Verification!!", user.Otp);
                         await _context.SaveChangesAsync();
+
+                        TempData["otp-toast"] = "OTP sent Successfully";
+                        TempData["otp-toastType"] = "success";
                     }
 
                 }
 
                 // Reset login attempts after successful login
                 _memoryCache.Remove(attemptKey);
-
+                TempData["toast"] = "Login successful!";
+                TempData["toastType"] = "success";
                 return Ok(new { success = true, message = "You are successfully logged in", res = RedirectTo });
             }
             else
@@ -452,6 +470,9 @@ namespace WMS_Application.Controllers
             var data = await _users.GetUserDataByEmail(user.Email);
             int id = data.UserId;
             HttpContext.Session.SetInt32("UserId", id);
+
+            TempData["moredetails-toast"] = "Details Saved Successfully";
+            TempData["moredetails-toastType"] = "success";
             return Json(await _users.SaveMoreDetails(user));
         }
         public async Task<IActionResult> ShopDetails()
@@ -530,6 +551,9 @@ namespace WMS_Application.Controllers
                     body = $"User: {user.Username}<br>Email: {user.Email}<br>Date: {DateTime.UtcNow}<br>Click <a href='{resetUrl}'>here</a> to go to admin panel.";
                 }
                 await _emailSender.SendEmailAsync(adminEmail, subject, body);
+
+                TempData["admindoc-toast"] = "Document details Saved Successfully";
+                TempData["admindoc-toastType"] = "success";
                 return Json(await _users.SaveAdminDoc(info, id));
             }
             else
@@ -542,8 +566,11 @@ namespace WMS_Application.Controllers
         public async Task<IActionResult> ShopDetails(TblShop shop)
         {
             int id = 0;
+            shop.IsActive = true;
             if(shop.IsAction == "SPAddNew" || shop.IsAction == "SPUpdate")
             {
+                TempData["shopdetails-toast"] = "Shop details Saved Successfully";
+                TempData["shopdetails-toastType"] = "success";
                 return Json(await _users.SaveShopDetails(shop, shop.AdminId));
             }
             else
@@ -551,6 +578,8 @@ namespace WMS_Application.Controllers
                 id = (int)HttpContext.Session.GetInt32("UserId");
                 if(id != null)
                 {
+                    TempData["shopdetails-toast"] = "Shop details Saved Successfully";
+                    TempData["shopdetails-toastType"] = "success";
                     return Json(await _users.SaveShopDetails(shop, id));
                 }
                 else
@@ -578,6 +607,8 @@ namespace WMS_Application.Controllers
                             return Json(new { success = true, message = "OTP verified successfully", emp = true });
                         }
                         //_emailSender.SendEmailAsync()
+                        TempData["otpcheck-toast"] = "OTP Verified Successfully";
+                        TempData["otpcheck-toastType"] = "success";
                         return Json(new { success = true, message = "OTP verified successfully" });
                     }
                     else
@@ -618,6 +649,10 @@ namespace WMS_Application.Controllers
 
                 //TempData["UserEmail"] = user.Email;
                 HttpContext.Session.SetString("UserEmail", user.Email);
+
+                TempData["register-toast"] = "Registered Successfully, OTP sent to email, please verify to move forward";
+                TempData["register-toastType"] = "success";
+
                 return Json(await _users.SaveUsers(user));
             }
             catch (Exception e)
@@ -646,11 +681,6 @@ namespace WMS_Application.Controllers
             }
             return Json(new { success = false, message = "Email not found" });
         }
-        
-
-
-
-
 
 
             [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

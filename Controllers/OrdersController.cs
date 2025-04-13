@@ -459,13 +459,14 @@ namespace WMS_Application.Controllers
                     _emailSender.SendEmailAsync(email, "New Order Request Received", body);
 
                 }
-
-                return Ok(new { message = "Order placed successfully!", orderId });
+                TempData["order-toast"] = "Order Place Successfully";
+                TempData["order-toastType"] = "success";
+                return Ok(new { success = true, message = "Order placed successfully!", orderId });
                 //return RedirectToAction($"OrderCheckout/{orderId}");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error placing order: " + ex.Message);
+                return Json(new { success = false, message = "An error occurred: " + ex.Message });
             }
         }
 
@@ -533,11 +534,13 @@ namespace WMS_Application.Controllers
             try
             {
                 await _orders.AddTransactionInfo(transaction);
-                return Ok(new { message = "Transaction added successfully!" });
+                TempData["transaction-toast"] = "Transaction added successfully!";
+                TempData["transaction-toastType"] = "success";
+                return Ok(new {success = true, message = "Transaction added successfully!" });
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Error adding transaction: " + ex.Message);
+                return Json(new { success = false, message = "An error occurred: " + ex.Message });
             }
         }
     }

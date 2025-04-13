@@ -10,4 +10,5 @@ public partial class TblProductCategory
     public string? ProductCategory { get; set; }
 
     public bool? IsActive { get; set; }
+    public bool? IsDeleted { get; set; }
 }

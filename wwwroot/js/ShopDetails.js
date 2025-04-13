@@ -7,8 +7,14 @@
     const selectedState = $("#State").attr("data-selected");
     const selectedCity = $("#City").attr("data-selected");
 
+
+    // Grab current controller name from URL
+    const segments = window.location.pathname.split('/').filter(Boolean);
+    const controller = segments[0];  // 'Shops', 'Auth', 'Companies', etc.
+
+
     // Fetch States
-    fetch(`states`)
+    fetch(`/${controller}/states`)
         .then(response => response.json())
         .then(data => {
             const states = data.geonames;
@@ -31,7 +37,7 @@
         const selectedStateGeonameId = $(this).find("option:selected").data("id");
 
         if (selectedStateGeonameId) {
-            fetch(`cities/${selectedStateGeonameId}`)
+            fetch(`/${controller}/cities/${selectedStateGeonameId}`)
                 .then(response => response.json())
                 .then(data => {
                     const cities = data.geonames;
@@ -125,8 +131,6 @@
             const btnLoader = $("#btnLoader");
             btnRegister.prop("disabled", true);
             btnLoader.removeClass("d-none");
-            setTimeout(function () {
-
                 // AJAX submission
                 $.ajax({
                     url: '/Auth/ShopDetails',
@@ -135,7 +139,6 @@
                     contentType: false,
                     data: formData,
                     success: function (result) {
-                        alert(result.message);
                         if (result.success) {
                             if (result.path != null) {
                                 window.location.href = '/' + result.path;
@@ -144,6 +147,9 @@
                                 window.location.href = '/Auth/AdminDoc';
                             }
                         }
+                        else {
+                            showToast(result.message, "error")
+                        }
                     },
                     complete: function () {
                         // Re-enable button and hide loader
@@ -151,10 +157,9 @@
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while registering the user.');
+                        showToast("Unknown error occurred", "error")
                     }
                 });
-            }, 2000);
         }
     });
 

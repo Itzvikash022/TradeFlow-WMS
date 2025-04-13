@@ -12,6 +12,10 @@
             {
                 <div class="page-btn">
                     <a href="~/Orders/CreateOrder" class="btn btn-added"><img src="~/assets/img/icons/plus.svg" class="me-2" alt="img">Add New Orders</a>
+                </div>
+            }
+            @if (ViewBag.PermissionType != "canView" || Context.Session.GetInt32("UserRoleId") == 5)
+            {    <div class="page-btn">
                     <a class="btn"
                        data-bs-toggle="modal"
                        data-bs-target="#recents">
@@ -50,6 +54,7 @@
                             </li>
                         }
                     </ul>
+                  
 
                     <div class="tab-content">
                         @foreach (var orderType in orderTypes)
@@ -96,7 +101,7 @@
                                         <tbody>
                                             @foreach (var order in Model.ToList().Where(order => order.OrderType == orderType))
                                             {
-                                                <tr>
+                                                <tr data-order-id="@order.OrderId">
                                                     <td>@order.BuyerName</td>
                                                     <td>@order.SellerName</td>
                                                     <td>
@@ -189,51 +194,103 @@
 @section Scripts {
 
     <script>
+                function confirmOrder(orderId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You are about to mark this order as Success.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, confirm it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch('/Orders/UpdateOrderStatus', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ orderId: orderId, newStatus: "Success" })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire(
+                                'Success!',
+                                'Order status updated to Success!',
 
-               function confirmOrder(orderId) {
-                   console.log(orderId);
-            // Confirm the action with the user
-            if (confirm("Are you sure you want to mark this order as Success?")) {
-                // Perform the fetch request to update the order status
-                fetch('/Orders/UpdateOrderStatus', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ orderId: orderId, newStatus: "Success" })
-                })
-                .then(response => response.json())  // Parse the response as JSON
-                .then(data => {
-                    // Check if the status update was successful
-                    if (data.success) {
-                        alert("Order status updated to Success!");
-                        // Optionally, update the UI to reflect the change without reloading the page
-                        updateOrderRow(orderId); // Implement this function if you want to update the order status dynamically
-                    } else {
-                        alert(data.message || "An error occurred while updating the order status.");
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert("An error occurred while processing your request. Please try again.");
-                });
-            }
+                                'success'
+                            );
+                            setTimeout(function () {
+                                location.reload(); // Reload the page after 2 seconds
+                            }, 2000);
+                            updateOrderRow(orderId); // Optional: reflect the change in UI
+                        } else {
+                            Swal.fire(
+                                'Error',
+                                data.message || "An error occurred while updating the order status.",
+                                'error'
+                            );
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire(
+                            'Oops!',
+                            'An error occurred while processing your request. Please try again.',
+                            'error'
+                        );
+                    });
+                }
+            });
         }
 
+
         // Optional function to update the order row on the page without reloading
-        function updateOrderRow(orderId) {
+                function updateOrderRow(orderId) {
             const orderRow = document.querySelector(`tr[data-order-id="${orderId}"]`);
             if (orderRow) {
                 const statusCell = orderRow.querySelector('.order-status');
                 if (statusCell) {
-                    statusCell.textContent = "Success"; // Update the status cell dynamically
+                    statusCell.innerHTML = `<span class="badges bg-lightgreen">Success</span>`;
                 }
             }
         }
 
+
          document.getElementById("exportOrderBtn").addEventListener("click", function () {
                         window.location.href = "/Orders/ExportOrders";
             });
+    </script>
+
+    @if (TempData["transaction-toast"] != null)
+    {
+        <script>
+
+            $(document).ready(function () {
+                showToast('@TempData["transaction-toast"]','@TempData["transaction-toastType"]');
+            });
+
+        </script>
+    }
+
+    <script>
+        $(document).ready(function () {
+            $('#applyDateFilter').on('click', function () {
+                var from = new Date($('#fromDate').val());
+                var to = new Date($('#toDate').val());
+                to.setHours(23, 59, 59); // include the entire day
+
+                $('#ordertable tbody tr').each(function () {
+                    var rowDate = new Date($(this).find('td:nth-child(5)').text().trim());
+                    if ((!isNaN(from) && rowDate < from) || (!isNaN(to) && rowDate > to)) {
+                        $(this).hide();
+                    } else {
+                        $(this).show();
+                    }
+                });
+            });
+        });
     </script>
 
 }

@@ -115,7 +115,7 @@
                                         {
                                             @if (Context.Session.GetInt32("UserRoleId") == 5)
                                             {
-                                                <a href="@Url.Action("AddProducts", "Company", new { id = product.ProductId})">
+                                                <a href="@Url.Action("AddProducts", "Product", new { id = product.ProductId})">
                                                     <button class="me-3 btn">
                                                         <img src="~/assets/img/icons/edit.svg" alt="img">
                                                     </button>
@@ -173,5 +173,17 @@
          document.getElementById("exportProductBtn").addEventListener("click", function () {
                     window.location.href = "/Product/ExportProductList";
         });
+
     </script>
+
+    @if (TempData["shopProd-toast"] != null)
+    {
+        <script>
+
+            $(document).ready(function () {
+                showToast('@TempData["shopProd-toast"]','@TempData["shopProd-toastType"]');
+            });
+
+        </script>
+    }
 }

@@ -44,7 +44,6 @@
             // AJAX submission
             btnRegister.prop("disabled", true);
             btnLoader.removeClass("d-none");
-            setTimeout(function () {
 
                 $.ajax({
                     url: '/Auth/Login',
@@ -53,15 +52,17 @@
                     contentType: false,
                     data: formData,
                     success: function (result) {
-                        alert(result.message);
                         if (result.success) {
                             if (result.res != "Dashboard") {
                                 window.location.href = "/Auth/" + result.res;
                             }
                             else {
-                                window.location.href = "/"+result.res;
+                                window.location.href = "/" + result.res;
                             }
 
+                        }
+                        else {
+                            showToast(result.message, "error")
                         }
                     },
                     complete: function () {
@@ -70,10 +71,10 @@
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while login');
+                        showToast('Unknown error occurred during login', "error")
+
                     }
                 });
-            }, 2000);
         }
     });
 
@@ -103,7 +104,6 @@
             // AJAX submission
             btnRegister.prop("disabled", true);
             btnLoader.removeClass("d-none");
-            setTimeout(function () {
 
                 $.ajax({
                     url: '/Auth/CompanyLogin',
@@ -112,9 +112,11 @@
                     contentType: false,
                     data: formData,
                     success: function (result) {
-                        alert(result.message);
                         if (result.success) {
                                 window.location.href = "/Dashboard" ;
+                        }
+                        else {
+                            showToast(result.message, "error")
                         }
                     },
                     complete: function () {
@@ -123,10 +125,9 @@
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while login');
+                        showToast("Unknown error occurred", "error")
                     }
                 });
-            }, 2000);
         }
     });
 
@@ -149,9 +150,10 @@
             const formData = new FormData(form);
             const btnRegister = $("#btnSubmit");
             const btnLoader = $("#btnLoader");
-            // AJAX submission
-            setTimeout(function () {
 
+            btnRegister.prop("disabled", true);
+            btnLoader.removeClass("d-none");
+            // AJAX submission
                 $.ajax({
                     url: '/Auth/ForgotPassword',
                     type: 'POST',
@@ -159,7 +161,12 @@
                     contentType: false,
                     data: formData,
                     success: function (result) {
-                        alert(result.message);
+                        if (result.success) {
+                            showToast(result.message, "success")
+                        }
+                        else {
+                            showToast(result.message, "warning")
+                        }
                     },
                     complete: function () {
                         // Re-enable button and hide loader
@@ -167,9 +174,8 @@
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while sending the email.');
+                        showToast("Unknown error occurred", "error")
                     }
-                }, 2000);
             });
         }
     });
@@ -208,7 +214,8 @@
 
             const btnRegister = $("#btnSubmit");
             const btnLoader = $("#btnLoader");
-            setTimeout(function () {
+            btnRegister.prop("disabled", true);
+            btnLoader.removeClass("d-none");
 
                 // AJAX submission
                 $.ajax({
@@ -218,7 +225,6 @@
                     contentType: false,
                     data: formData,
                     success: function (result) {
-                        alert(result.message);
                         if (result.success) {
                             window.location.href = '/Auth/Login';
                         }
@@ -229,10 +235,9 @@
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while registering the user.');
+                        showToast("Unknown error occurred", "error")
                     }
                 });
-            }, 2000);
         }
     });
 

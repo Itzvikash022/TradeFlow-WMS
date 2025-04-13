@@ -107,18 +107,24 @@
                     IsActive: isActive
                 };
 
+                  if (roleName.length < 3 || roleName.length > 50) {
+                    showToast("RoleName must be between 3 and 50 characters.", "warning");
+                    return; }
+
                 $.ajax({
                     url: '/Masters/SaveRoles',
                     type: 'POST',
                     contentType: "application/json",
                     data: JSON.stringify(data),
                     success: function (response) {
-                        alert("Roles saved successfully!");
-                        location.reload();
+                        showToast("Roles saved successfully!", "success");
+                       setTimeout(function () {
+                            location.reload(); // Reload the page after 2 seconds
+                        }, 1000);
                     },
                     error: function (xhr, status, error) {
                         console.error("Error:", xhr.responseText);
-                        alert("Something went wrong: " + xhr.status);
+                        showToast("Something went wrong: " + xhr.status , "error");
                     }
                 });
             });

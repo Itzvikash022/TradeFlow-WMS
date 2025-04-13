@@ -44,7 +44,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach(var admin in Model)
+                            @foreach (var admin in Model)
                             {
                                 <tr>
                                     <td>
@@ -54,29 +54,36 @@
                                     <td>@admin.Email</td>
                                     <td>@admin.RegisteredOn</td>
                                     <td>
-                                        @if(@admin.ShopDetails){
+                                        @if (@admin.ShopDetails)
+                                        {
                                             <span class="badges bg-lightgreen">Submitted</span>
                                         }
-                                        else{
+                                        else
+                                        {
                                             <span class="badges bg-lightred">Yet to Submit</span>
                                         }
                                     </td>
                                     <td>
-                                        @if(@admin.Documents){
+                                        @if (@admin.Documents)
+                                        {
                                             <span class="badges bg-lightgreen">Uploaded</span>
                                         }
-                                        else{
+                                        else
+                                        {
                                             <span class="badges bg-lightred">Yet to Upload</span>
                                         }
                                     </td>
                                     <td>
-                                        @if(@admin.Status == "Approved"){
+                                        @if (@admin.Status == "Approved")
+                                        {
                                             <span class="badges bg-lightgreen">Approved</span>
                                         }
-                                        else if(@admin.Status == "Rejected"){
+                                        else if (@admin.Status == "Rejected")
+                                        {
                                             <span class="badges bg-lightred">Rejected</span>
                                         }
-                                        else{
+                                        else
+                                        {
                                             <span class="badges bg-warning">Pending</span>
                                         }
                                     </td>
@@ -87,7 +94,7 @@
                                                 <img src="~/assets/img/icons/eye.svg" alt="img">
                                             </button>
                                         </a>
-                                        @if( ViewBag.PermissionType != "canView")
+                                        @if (ViewBag.PermissionType != "canView")
                                         {
                                             @if (admin.IsActive)
                                             {
@@ -112,33 +119,42 @@
 @section Scripts {
     <script>
 
-        document.getElementById("exportProductsBtn").addEventListener("click", function () {
-            window.location.href = "/Reports/ExportAdminReports";
-});
-
-
-
-        $(document).ready(function () {
-            $(".restriction-btn").click(function () {
-                var adminId = $(this).data("id");
-
-                $.ajax({
-                    url: '/Admins/RestrictionStatus',
-                    type: 'POST', // Use POST if modifying data, otherwise use GET
-                    data: { id: adminId },
-                    success: function (response) {
-                        alert(response.message);
-                        if(response.success){
-                            location.reload();
-                        }
-                    },
-                    error:function (xhr, status, error) {
-                        console.error("Error:", xhr.responseText);
-                        alert("Something went wrong: " + xhr.status);
-                    }
-                });
-            });
+                document.getElementById("exportProductsBtn").addEventListener("click", function () {
+                    window.location.href = "/Reports/ExportAdminReports";
         });
+
+
+
+                $(document).ready(function () {
+
+
+
+                    $(".restriction-btn").click(function () {
+                        var adminId = $(this).data("id");
+
+                        $.ajax({
+                            url: '/Admins/RestrictionStatus',
+                            type: 'POST', // Use POST if modifying data, otherwise use GET
+                            data: { id: adminId },
+                            success: function (response) {
+                                if(response.success){
+                                    showToast(response.message,"success");
+                                    setTimeout(function () {
+                                        location.reload(); // Reload the page after 2 seconds
+                                    }, 1000);
+                                }
+                                else{
+                                            showToast(response.message,"error");
+                                }
+                            },
+                            error:function (xhr, status, error) {
+                                console.error("Error:", xhr.responseText);
+                                alert("Something went wrong: " + xhr.status);
+                            }
+                        });
+                    });
+                });
+
     </script>
 
 }

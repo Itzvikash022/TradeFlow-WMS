@@ -122,6 +122,8 @@ namespace WMS_Application.Repositories
                     }
 
                     string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot\\ProductUploads");
+                    Directory.CreateDirectory(uploadsFolder); // Ensures folder exists
+
                     string uniqueFileName = Guid.NewGuid().ToString() + "_" + product.ProductImage.FileName;
                     string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 

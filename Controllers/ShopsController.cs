@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.Composition;
 using System.Data;
+using System.Net.Http;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
 
@@ -13,13 +14,17 @@ namespace WMS_Application.Controllers
         private readonly dbMain _context;
         private readonly IPermisionHelperRepository _permission;
         private readonly IExportServiceRepository _export;
+        private readonly HttpClient _httpClient;
 
-        public ShopsController(ISidebarRepository sidebar, IShopRepository shop, dbMain context, IPermisionHelperRepository permission, IExportServiceRepository export) : base(sidebar)
+
+        public ShopsController(ISidebarRepository sidebar, IShopRepository shop, dbMain context, IPermisionHelperRepository permission, IExportServiceRepository export, IHttpClientFactory httpClientFactory) : base(sidebar)
         {
             _shop = shop;
             _context = context;
             _permission = permission;
             _export = export;
+            _httpClient = httpClientFactory.CreateClient();
+
         }
 
         // Public method to get user permission
@@ -44,6 +49,22 @@ namespace WMS_Application.Controllers
                 return RedirectToAction("UnauthorisedAccess", "Error");
             }
         }
+
+        [HttpGet("/Shops/states")]
+        public async Task<IActionResult> GetStates()
+        {
+            var response = await _httpClient.GetStringAsync("http://api.geonames.org/childrenJSON?geonameId=1269750&username=itzvikash");
+            return Content(response, "application/json");
+        }
+
+        [HttpGet("/Shops/cities/{geonameId}")]
+        public async Task<IActionResult> GetCities(int geonameId)
+        {
+            var url = $"http://api.geonames.org/childrenJSON?geonameId={geonameId}&username=itzvikash";
+            var response = await _httpClient.GetStringAsync(url);
+            return Content(response, "application/json");
+        }
+
 
         public async Task<IActionResult> ExportShopList()
         {

@@ -65,7 +65,7 @@
                                         <h6>@Model.CreatedAt</h6>
                                     </li>
                                 </ul>
-                                @if(ViewBag.PermissionType != "canView")
+                                @if (ViewBag.PermissionType != "canView")
                                 {
                                     <a href="/Company/UpdateCompany" id="btnRedirectToUpdate" class="btn btn-submit mt-4 align-center">
                                         Update?
@@ -79,3 +79,16 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @if (TempData["companyreg-toast"] != null)
+    {
+        <script>
+
+            $(document).ready(function () {
+                showToast('@TempData["companyreg-toast"]','@TempData["companyreg-toastType"]');
+            });
+
+        </script>
+    }
+}

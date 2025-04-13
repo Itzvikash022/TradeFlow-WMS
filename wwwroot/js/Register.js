@@ -77,9 +77,11 @@
                 contentType: false,
                 data: formData,
                 success: function (result) {
-                    alert(result.message);
                     if (result.success) {
                         window.location.href = '/Auth/OtpCheck';
+                    }
+                    else {
+                        showToast(result.message, "error")
                     }
                 },
                 complete: function () {
@@ -88,7 +90,7 @@
                     btnLoader.addClass("d-none");
                 },
                 error: function () {
-                    alert('An error occurred while registering the user.');
+                    showToast("Unknown Error occurred", "error")
                 }
             });
         }
@@ -109,15 +111,12 @@
         btnVerify.prop("disabled", true);
         btnLoader.removeClass("d-none");
 
-        // Add a 5-second delay before making the AJAX request
-        setTimeout(function () {
             // AJAX submission
             $.ajax({
                 url: '/Auth/OtpCheck',
                 type: 'POST',
                 data: formData,
                 success: function (result) {
-                    alert(result.message);
                     if (result.success) {
                         if (result.emp) {
                             window.location.href = '/Dashboard';
@@ -126,6 +125,9 @@
                             window.location.href = '/Auth/MoreDetails';
                         }
                     }
+                    else {
+                        showToast(result.message, "error")
+                    }
                 },
                 complete: function () {
                     // Re-enable button and hide loader
@@ -133,10 +135,9 @@
                     btnLoader.addClass("d-none");
                 },
                 error: function () {
-                    alert('An error occurred while registering the user.');
+                    showToast("Unknown error occurred", "error")
                 }
             });
-        }, 2000);
     });
 
 
@@ -198,11 +199,11 @@
             method: "GET",
             success: function (data) {
                 if (data.success) {
-                    alert("OTP has been resent to your email.");
+                    showToast(data.message, "success")
                     clearInterval(interval); // Clear the existing timer
                     startTimer(); // Restart the timer
                 } else {
-                    alert("Failed to resend OTP. Please try again.");
+                    showToast(data.message, "error")
                 }
             },
             complete: function () {
@@ -212,7 +213,7 @@
             },
             error: function (xhr, status, error) {
                 console.error("Error resending OTP:", error);
-                alert("An error occurred. Please try again.");
+                showToast("Unknown error occurred", "error")
             }
         });
     });

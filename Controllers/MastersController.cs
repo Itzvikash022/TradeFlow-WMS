@@ -29,7 +29,7 @@ namespace WMS_Application.Controllers
             string permissionType = GetUserPermission("Product Category");
             if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                var productCategory = _context.TblProductCategories.ToList();
+                var productCategory = _context.TblProductCategories.Where(x => x.IsDeleted == false).ToList();
                 return View(productCategory);
             }
             else
@@ -42,7 +42,10 @@ namespace WMS_Application.Controllers
         public IActionResult DeleteProductCategory(int id)
         {
             var productCategory = _context.TblProductCategories.Where(x => x.ProdCatId == id).FirstOrDefault();
-            _context.TblProductCategories.Remove(productCategory);
+
+            productCategory.IsDeleted = true;
+            productCategory.IsActive = false;
+            _context.TblProductCategories.Update(productCategory);
             _context.SaveChanges();
             return RedirectToAction("ProductCategory");
         }
@@ -56,6 +59,7 @@ namespace WMS_Application.Controllers
             }
             else // Update existing
             {
+                prodCat.IsDeleted = false;
                 _context.TblProductCategories.Update(prodCat);
             }
 

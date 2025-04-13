@@ -72,7 +72,7 @@
                                             </button>
                                         </a>
 
-                                        @if( ViewBag.PermissionType != "canView")
+                                        @if (ViewBag.PermissionType != "canView")
                                         {
                                             @if ((bool)company.IsActive)
                                             {
@@ -113,14 +113,18 @@
                     type: 'POST', // Use POST if modifying data, otherwise use GET
                     data: { companyId: companyId },
                     success: function (response) {
-                        alert(response.message);
                         if(response.success){
-                            location.reload();
+                            showToast(response.message,"success");
+                            setTimeout(function () {
+                                        location.reload(); // Reload the page after 2 seconds
+                                    }, 1000);
+                        } else{
+                            showToast(response.message,"error");
                         }
                     },
                     error:function (xhr, status, error) {
                         console.error("Error:", xhr.responseText);
-                        alert("Something went wrong: " + xhr.status);
+                        showToast("Something went wrong: " + xhr.status, "error");
                     }
                 });
             });

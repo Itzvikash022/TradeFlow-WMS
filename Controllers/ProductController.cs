@@ -136,9 +136,6 @@ namespace WMS_Application.Controllers
                 return Json(new { success = false, message = "Invalid file format. Only .xlsx files are allowed." });
             }
 
-          
-
-
             try
             {
                 int userId = (int)HttpContext.Session.GetInt32("UserId");
@@ -282,13 +279,17 @@ namespace WMS_Application.Controllers
                     int newProductId = ((dynamic)result).productId;
 
                     await _product.SaveStockAsync(newProductId, shopId, qty, product.ShopPrice);
+                    TempData["shopProd-toast"] = "Product Stock Added Successfully";
+                    TempData["shopProd-toastType"] = "success";
                 }
                 return Json(result);
             }
             else
             {
                 await _product.SaveStockAsync(product.ProductId, shopId, qty, product.ShopPrice);
-                return Json(new { success = true, message = "Product Stock Update Successfully" });
+                TempData["shopProd-toast"] = "Product Stock Updated Successfully";
+                TempData["shopProd-toastType"] = "success";
+                return Json(new { success = true, message = "Product Stock Updated Successfully" });
             }
         }
 

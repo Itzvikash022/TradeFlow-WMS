@@ -89,14 +89,24 @@ namespace WMS_Application.Controllers
             }
 
             var fileBytes = _export.ExportToExcel(dataTable, "ShopList");
+            if(fileBytes != null)
+            {
+                int id = (int)HttpContext.Session.GetInt32("UserId");
+                string username = _context.TblUsers.Where(x => x.UserId == id).Select(x => x.Username).FirstOrDefault();
+                TblActivityLog activity = new TblActivityLog()
+                {
+                    UserId = id,
+                    Role = (int)HttpContext.Session.GetInt32("UserRoleId"),
+                    ActivityType = "Shop List Export",
+                    Description = $"{username} exported Shop List"
+                };
+                _context.TblActivityLogs.Add(activity);
+                _context.SaveChanges();
+
+            }
 
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ShopList.xlsx");
         }
-
-
-
-
-
 
         [Route("MyShop")]
         public async Task<IActionResult> MyShop()

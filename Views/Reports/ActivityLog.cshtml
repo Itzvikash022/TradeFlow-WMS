@@ -1,0 +1,34 @@
+﻿@model List<TblActivityLog>;
+
+<div class="page-wrapper">
+    <div class="content">
+        <div class="page-header">
+            <div class="page-title">
+                <h4>Activity Log</h4>
+                <h6>View your all activities</h6>
+            </div>
+        </div>
+
+        <div class="activity">
+            <div class="activity-box">
+                <ul class="activity-list">
+                    @foreach (var activity in Model)
+                    {
+                        <li>
+                            <div class="activity-user">
+                                <img alt="404" src="@activity.ImagePath" class=" img-fluid">
+                            </div>
+                            <div class="activity-content">
+                                <div class="timeline-content">
+                                    <p>@activity.Description</p>
+                                    <span class="time">@activity.Timestamp</span>
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</div>

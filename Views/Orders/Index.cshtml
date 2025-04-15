@@ -274,23 +274,5 @@
         </script>
     }
 
-    <script>
-        $(document).ready(function () {
-            $('#applyDateFilter').on('click', function () {
-                var from = new Date($('#fromDate').val());
-                var to = new Date($('#toDate').val());
-                to.setHours(23, 59, 59); // include the entire day
-
-                $('#ordertable tbody tr').each(function () {
-                    var rowDate = new Date($(this).find('td:nth-child(5)').text().trim());
-                    if ((!isNaN(from) && rowDate < from) || (!isNaN(to) && rowDate > to)) {
-                        $(this).hide();
-                    } else {
-                        $(this).show();
-                    }
-                });
-            });
-        });
-    </script>
 
 }

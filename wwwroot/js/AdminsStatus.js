@@ -3,9 +3,16 @@
 
     // For Reject button
     $("#btnReject").on("click", function () {
+        const remark = $("#remarkInput").val().trim(); // Get remark input value
+        if (!remark) {
+            showToast("Please provide a remark before approving.", "warning");
+            return;
+        }
+
         const data = {
             UserId: userId,
-            Status: false
+            Status: false,
+            Remark: remark
         };
         const btnRegister = $("#btnReject");
         const btnLoader = $("#btnLoader");
@@ -16,9 +23,14 @@
             type: 'POST',
             data: data,
             success: function (result) {
-                alert(result.message); // Notify the user
                 if (result.success) {
-                    window.location.reload(); // Reload the page after successful update
+                    showToast(result.message, "success"); // Notify the user
+                    setTimeout(function () {
+                        location.reload(); // Reload the page after 2 seconds
+                    }, 1000);// Reload the page after successful update
+                }
+                else {
+                    showToast(result.message,"error"); // Notify the user
                 }
             },
             complete: function () {
@@ -27,7 +39,7 @@
                 btnLoader.addClass("d-none");
             },
             error: function () {
-                alert('An error occurred while updating the status.');
+                showToast('An error occurred while updating the status.');
             }
         });
     });
@@ -36,7 +48,7 @@
     $("#btnAccept").on("click", function () {
         const remark = $("#remarkInput").val().trim(); // Get remark input value
         if (!remark) {
-            alert("Please provide a remark before approving.");
+            showToast("Please provide a remark before approving.","warning");
             return;
         }
 
@@ -55,9 +67,14 @@
             type: 'POST',
             data: data,
             success: function (result) {
-                alert(result.message); // Notify the user
                 if (result.success) {
-                    window.location.reload(); // Reload the page after successful update
+                    showToast(result.message, "success"); // Notify the user
+                    setTimeout(function () {
+                        location.reload(); // Reload the page after 2 seconds
+                    }, 1000); // Reload the page after successful update
+                }
+                else {
+                    showToast(result.message,"error"); // Notify the user
                 }
             },
             complete: function () {
@@ -66,7 +83,7 @@
                 btnLoader.addClass("d-none");
             },
             error: function () {
-                alert('An error occurred while updating the status.');
+                showToast('An error occurred while updating the status.',"error");
             }
         });
     });

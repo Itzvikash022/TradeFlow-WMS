@@ -26,8 +26,8 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true; // Ensures cookie is essential
 });
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddHttpClient();
 
+builder.Services.AddHttpClient();
 
 builder.Services.AddAuthentication(options =>
 {
@@ -60,6 +60,7 @@ builder.Services.AddScoped<IExportServiceRepository, ExportServiceRepository>();
 builder.Services.AddScoped<IImportServiceRepository, ImportServiceRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();
+builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
 
 
 builder.Services.AddMemoryCache();

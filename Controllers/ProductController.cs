@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AspNetCoreGeneratedDocument;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Composition;
 using System.Data;
@@ -16,8 +17,9 @@ namespace WMS_Application.Controllers
         private readonly IExportServiceRepository _export;
         private readonly IPermisionHelperRepository _permission;
         private readonly IImportServiceRepository _import;
+        private readonly IActivityRepository _activity;
 
-        public ProductController(ISidebarRepository sidebar, IProductRepository product, dbMain context, IUsersRepository users, IPermisionHelperRepository permission, IExportServiceRepository export, IImportServiceRepository import) : base(sidebar)
+        public ProductController(ISidebarRepository sidebar, IProductRepository product, dbMain context, IUsersRepository users, IPermisionHelperRepository permission, IExportServiceRepository export, IImportServiceRepository import, IActivityRepository activity) : base(sidebar)
         {
             _product = product;
             _context = context;
@@ -25,6 +27,7 @@ namespace WMS_Application.Controllers
             _permission = permission;
             _export = export;
             _import = import;
+            _activity = activity;
         }
 
         // Public method to get user permission
@@ -140,10 +143,21 @@ namespace WMS_Application.Controllers
             {
                 int userId = (int)HttpContext.Session.GetInt32("UserId");
                 int shopId = (int)HttpContext.Session.GetInt32("ShopId");
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
                 var fileBytes = await _import.ShopProcessStockImport(excelFile, userId, shopId);
 
                 // Convert to Base64 to store temporarily
                 string fileBase64 = Convert.ToBase64String(fileBytes);
+                
+                if (fileBase64 != null)
+                {
+                    string type = "Mass Import Shop Product";
+                    int count = (int)HttpContext.Session.GetInt32("ImportedProductCount");
+                    string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(s => s.Username).FirstOrDefault();
+                    string desc = $"{userName} Mass imported {count} new products";
+
+                    _activity.AddNewActivity(userId, roleId, type, desc);
+                }
 
                 return Json(new
                 {
@@ -165,12 +179,10 @@ namespace WMS_Application.Controllers
         {
             int Id = 0, shopId = 0;
             var dataTable = new DataTable("Products");
-
             TblShop ShopData = new TblShop();
             int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
             if (HttpContext.Session.GetInt32("CompanyId") != null && roleId == 5)
             {
-                Id = (int)HttpContext.Session.GetInt32("CompanyId");
                 dataTable.Columns.AddRange(new DataColumn[]
                    {
                         new DataColumn("Product Name"),
@@ -223,6 +235,28 @@ namespace WMS_Application.Controllers
 
             var fileBytes = _export.ExportToExcel(dataTable, "ProductsList");
 
+            if(fileBytes != null)
+            {
+                //rechecking the session not reusing the upper ones cuz, it was a mess changing bit might crash something so im not touching it
+                int userId = 0;
+                string name = "";
+                if(roleId != 5)
+                {
+                    userId = (int)HttpContext.Session.GetInt32("UserId");
+                    name = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+                }
+                else
+                {
+                    userId = (int)HttpContext.Session.GetInt32("CompanyId");
+                    name = _context.TblCompanies.Where(x => x.CompanyId == userId).Select(y => y.CompanyName).FirstOrDefault();
+                }
+
+                string type = "Export Product List";
+                string desc = $"{name} exported Product list";
+
+                _activity.AddNewActivity(userId, roleId, type, desc);
+            }
+
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ProductsList.xlsx");
         }
 
@@ -268,6 +302,9 @@ namespace WMS_Application.Controllers
             int qty = product.ProductQty;
             int userId = (int)HttpContext.Session.GetInt32("UserId");
             int shopId = (int)HttpContext.Session.GetInt32("ShopId");
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+
             if (product.ProductId == 0)
             {
                 int UnregCompanyId = await _product.SaveUnregCompanyAsync(product.CompanyName, userId);
@@ -281,6 +318,12 @@ namespace WMS_Application.Controllers
                     await _product.SaveStockAsync(newProductId, shopId, qty, product.ShopPrice);
                     TempData["shopProd-toast"] = "Product Stock Added Successfully";
                     TempData["shopProd-toastType"] = "success";
+
+                    string desc = $"{userName} added a new Product with stock quantity {qty}";
+                    string type = "Add Product in Shop";
+
+                    _activity.AddNewActivity(userId, roleId, type, desc);
+                    
                 }
                 return Json(result);
             }
@@ -289,6 +332,12 @@ namespace WMS_Application.Controllers
                 await _product.SaveStockAsync(product.ProductId, shopId, qty, product.ShopPrice);
                 TempData["shopProd-toast"] = "Product Stock Updated Successfully";
                 TempData["shopProd-toastType"] = "success";
+
+                string desc = $"{userName} updated {product.ProductName}'s Stock Quantity to {qty}";
+                string type = "Update Product in Shop";
+
+                _activity.AddNewActivity(userId, roleId, type, desc);
+
                 return Json(new { success = true, message = "Product Stock Updated Successfully" });
             }
         }
@@ -302,7 +351,8 @@ namespace WMS_Application.Controllers
                 return Json(new { success = false, message = "Invalid Product ID." });
             }
             int userRoldId = (int)HttpContext.Session.GetInt32("UserRoleId");
-            // Try deleting the admin from the database or perform your logic here
+            int userId = 0;
+            string type, desc;
             try
             {
                 var product = _context.TblProducts.Find(id);
@@ -314,6 +364,11 @@ namespace WMS_Application.Controllers
                 {
                     product.IsDeleted = true;
                     _context.TblProducts.Update(product);
+
+                    userId = (int)HttpContext.Session.GetInt32("CompanyId");
+                    string companyName = _context.TblCompanies.Where(x => x.CompanyId == userId).Select(x => x.CompanyName).FirstOrDefault();
+                    type = "Company Product Delete";
+                    desc = $"{companyName} deleted a product named : {product.ProductName}";
                 }
                 else
                 {
@@ -321,8 +376,17 @@ namespace WMS_Application.Controllers
 
                     var stock = _context.TblStocks.Where(x => x.ShopId == shopId && x.ProductId == product.ProductId).FirstOrDefault();
                     _context.TblStocks.Remove(stock);
+
+                    userId = (int)HttpContext.Session.GetInt32("UserId");
+                    string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(x => x.Username).FirstOrDefault();
+                    type = "Shop Product Delete";
+                    desc = $"{userName} deleted a product named : {product.ProductName}";
                 }
+
+                _activity.AddNewActivity(userId, userRoldId, type, desc);
                 _context.SaveChanges();
+
+
                 return Json(new { success = true, message = "Product deleted successfully." });
             }
             catch (Exception ex)

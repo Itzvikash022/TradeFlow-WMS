@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using DocumentFormat.OpenXml.Spreadsheet;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
@@ -12,12 +13,14 @@ namespace WMS_Application.Repositories
         private readonly IProductRepository _product;
         private readonly IAdminsRepository _admin;
         private readonly IUsersRepository _user;
-        public ImportServiceRepository(dbMain context, IProductRepository product, IAdminsRepository admin, IUsersRepository user)
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        public ImportServiceRepository(dbMain context, IProductRepository product, IAdminsRepository admin, IUsersRepository user, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _product = product;
             _admin = admin;
             _user = user;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public byte[] GenerateSampleStockExcel(bool company)
@@ -85,7 +88,7 @@ namespace WMS_Application.Repositories
         public async Task<byte[]> CompanyProcessStockImport(IFormFile file, int companyId)
         {
             var resultList = new List<ImportStatusModel>();
-
+            int count = 0;
             using (var stream = new MemoryStream())
             {
                 file.CopyTo(stream);
@@ -175,7 +178,7 @@ namespace WMS_Application.Repositories
 
                                 _context.TblProducts.Add(product);
                                 _context.SaveChanges();
-
+                                count++;
                                 importStatus.Status = "Success";
                             }
                         }
@@ -189,7 +192,7 @@ namespace WMS_Application.Repositories
                     }
                 }
             }
-
+            _httpContextAccessor.HttpContext.Session.SetInt32("ImportedProductCount", count);
             return GenerateStatusReport(resultList);
         }
 
@@ -197,6 +200,7 @@ namespace WMS_Application.Repositories
 
         public async Task<byte[]> ShopProcessStockImport(IFormFile file, int userId, int shopId)
         {
+            int count = 0;
             var resultList = new List<ImportStatusModel>();
 
             using (var stream = new MemoryStream())
@@ -303,7 +307,7 @@ namespace WMS_Application.Repositories
 
                                 _context.TblProducts.Add(product);
                                 _context.SaveChanges();
-
+                                count++;
                                 // ✅ Insert into tblStock
                                 await _product.SaveStockAsync(product.ProductId, shopId, quantity, shopPrice);
 
@@ -320,6 +324,7 @@ namespace WMS_Application.Repositories
                     }
                 }
             }
+            _httpContextAccessor.HttpContext.Session.SetInt32("ImportedProductCount", count);
 
             return GenerateStatusReport(resultList);
         }
@@ -379,6 +384,7 @@ namespace WMS_Application.Repositories
 
         public async Task<byte[]> EmployeeProcessImport(IFormFile file, int userId)
         {
+            int count = 0;
             var resultList = new List<ImportStatusModel>();
 
             using (var stream = new MemoryStream())
@@ -492,6 +498,7 @@ namespace WMS_Application.Repositories
                                     await _admin.SaveUsers(user); // Ensure SaveUsers is properly async
 
                                     importStatus.Status = "Success";
+                                    count++;
                                 }
                             }
                         }
@@ -507,6 +514,7 @@ namespace WMS_Application.Repositories
                 }
             }
 
+            _httpContextAccessor.HttpContext.Session.SetInt32("ImportedEmployeeCount", count);
             return GenerateStatusReport(resultList);
         }
 

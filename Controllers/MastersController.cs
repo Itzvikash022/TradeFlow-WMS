@@ -8,11 +8,13 @@ namespace WMS_Application.Controllers
     {
         private readonly dbMain _context;
         private readonly IPermisionHelperRepository _permission;
+        private readonly IActivityRepository _activity;
 
-        public MastersController(dbMain context, ISidebarRepository sidebar, IPermisionHelperRepository permission) : base(sidebar)
+        public MastersController(dbMain context, ISidebarRepository sidebar, IPermisionHelperRepository permission, IActivityRepository activity) : base(sidebar)
         {
             _context = context;
             _permission = permission;
+            _activity = activity;
         }
 
         // Public method to get user permission
@@ -47,23 +49,39 @@ namespace WMS_Application.Controllers
             productCategory.IsActive = false;
             _context.TblProductCategories.Update(productCategory);
             _context.SaveChanges();
+
+            int userId = (int)HttpContext.Session.GetInt32("UserId");
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+            string type = "Product Category Delete";
+            string desc = $"{userName} deleted a product category : {productCategory.ProductCategory}";
+            _activity.AddNewActivity(userId, roleId, type, desc);
             return RedirectToAction("ProductCategory");
         }
 
         [HttpPost]
         public IActionResult SaveProductCategories([FromBody] TblProductCategory prodCat)
         {
+            int userId = (int)HttpContext.Session.GetInt32("UserId");
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+            string type = "", desc = "";
             if (prodCat.ProdCatId == 0) // New entry
             {
                 _context.TblProductCategories.Add(prodCat);
+                type = "Product Category Add";
+                desc = $"{userName} added a new product category : {prodCat.ProductCategory}";
             }
             else // Update existing
             {
                 prodCat.IsDeleted = false;
                 _context.TblProductCategories.Update(prodCat);
+                type = "Product Category Update";
+                desc = $"{userName} updated the product category : {prodCat.ProductCategory}";
             }
 
             _context.SaveChanges();
+            _activity.AddNewActivity(roleId, roleId, type, desc);
             return Ok();
         }
         
@@ -84,14 +102,24 @@ namespace WMS_Application.Controllers
         [HttpPost]
         public IActionResult SaveRoles([FromBody] TblRole role)
         {
-            if(role.RoleId == 0)
+            int userId = (int)HttpContext.Session.GetInt32("UserId");
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+            string type = "", desc = "";
+            if (role.RoleId == 0)
             {
                 _context.TblRoles.Add(role);
+                type = "User Role Add";
+                desc = $"{userName} added a new User Role : {role.RoleName}";
             }
             else
             {
                 _context.TblRoles.Update(role);
+                type = "User Role Update";
+                desc = $"{userName} updated a User Role : {role.RoleName}";
             }
+            _activity.AddNewActivity(userId, roleId, type, desc);
+
             _context.SaveChanges();
             return Ok();
         }
@@ -105,6 +133,14 @@ namespace WMS_Application.Controllers
             roles.IsActive = false;
             _context.Update(roles);
             _context.SaveChanges();
+
+            int userId = (int)HttpContext.Session.GetInt32("UserId");
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+            string type = "User Role Delete";
+            string desc = $"{userName} deleted a user role : {roles.RoleName}";
+            _activity.AddNewActivity(userId, roleId, type, desc);
+
             return RedirectToAction("Roles");
         }
         
@@ -147,6 +183,13 @@ namespace WMS_Application.Controllers
             string msg = "";
             bool isSuccess = true;
             bool alreadyExists = _context.TblPermissions.Any(x => x.TabId == permission.TabId && x.RoleId == permission.RoleId);
+
+            int userId = (int)HttpContext.Session.GetInt32("UserId");
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+            string roleName = _context.TblRoles.Where(x => x.RoleId == permission.RoleId).Select(y => y.RoleName).FirstOrDefault();
+            string type = "", desc = "";
+
             if (alreadyExists && permission.PermissionId == 0)
             {
                 isSuccess = false;
@@ -156,12 +199,18 @@ namespace WMS_Application.Controllers
             {
                 _context.TblPermissions.Add(permission);
                 msg = "Permission Added Successfully";
+                type = "New Permission Add";
+                desc = $"{userName} added a new access permission to role : {roleName}";
             }
             else
             {
                 _context.TblPermissions.Update(permission);
                 msg = "Permission Updated Successfully";
+                type = "Role Permission Update";
+                desc = $"{userName} updated access permission of role : {roleName}";
             }
+
+            _activity.AddNewActivity(userId, roleId, type, desc);
             _context.SaveChanges();
             return Ok(new { success = isSuccess, message = msg });
         }
@@ -172,6 +221,15 @@ namespace WMS_Application.Controllers
             var permission = _context.TblPermissions.Where(x => x.PermissionId == id).FirstOrDefault();
             _context.TblPermissions.Remove(permission);
             _context.SaveChanges();
+
+            int userId = (int)HttpContext.Session.GetInt32("UserId");
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+            string roleName = _context.TblRoles.Where(x => x.RoleId == permission.RoleId).Select(y => y.RoleName).FirstOrDefault();
+
+            string type = "Role Permission Delete";
+            string desc = $"{userName} deleted a access permisson for role : {roleName}";
+            _activity.AddNewActivity(userId, roleId, type, desc);
             return RedirectToAction("Access");
         }
 

@@ -141,7 +141,6 @@ function savePermission() {
             else {  
                 showToast(response.message,"error")
             }
-            //alert("Permission saved successfully!");
         },
         error: function (xhr) {
             console.error("Error:", xhr.responseText);

@@ -57,24 +57,19 @@ public partial class dbMain : DbContext
     {
         modelBuilder.Entity<TblActivityLog>(entity =>
         {
-            entity.HasKey(e => e.LogId).HasName("PK__tblActiv__5E5499A8A7383945");
+            entity.HasKey(e => e.LogId).HasName("PK__tblActiv__5E5499A85D1FF4C0");
 
             entity.ToTable("tblActivityLog");
 
             entity.Property(e => e.LogId).HasColumnName("LogID");
-            entity.Property(e => e.ActionDate)
+            entity.Property(e => e.ActivityType)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.Description).IsUnicode(false);
+            entity.Property(e => e.Role);
+            entity.Property(e => e.Timestamp)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
-            entity.Property(e => e.ActionType)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.EntityId).HasColumnName("EntityID");
-            entity.Property(e => e.EntityType)
-                .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.Remarks)
-                .HasMaxLength(255)
-                .IsUnicode(false);
             entity.Property(e => e.UserId).HasColumnName("UserID");
         });
 
@@ -149,7 +144,6 @@ public partial class dbMain : DbContext
                 .HasMaxLength(30)
                 .IsUnicode(false);
         });
-
 
         modelBuilder.Entity<TblCustomer>(entity =>
         {
@@ -232,6 +226,7 @@ public partial class dbMain : DbContext
             entity.Property(e => e.CreateAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
             entity.Property(e => e.LastUpdateDate).HasColumnType("datetime");
             entity.Property(e => e.Manufacturer)
                 .HasMaxLength(30)
@@ -241,7 +236,6 @@ public partial class dbMain : DbContext
             entity.Property(e => e.ProductName)
                 .HasMaxLength(30)
                 .IsUnicode(false);
-            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
         });
 
         modelBuilder.Entity<TblProductCategory>(entity =>
@@ -262,6 +256,8 @@ public partial class dbMain : DbContext
 
             entity.ToTable("tblRoles");
 
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.IsDeleted).HasDefaultValue(false);
             entity.Property(e => e.RoleName)
                 .HasMaxLength(20)
                 .IsUnicode(false);
@@ -394,7 +390,7 @@ public partial class dbMain : DbContext
             entity.Property(e => e.FirstName)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.IsActive).HasDefaultValue(false);
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.IsDeleted).HasDefaultValue(false);
             entity.Property(e => e.IsGoogleAccount).HasDefaultValue(false);
             entity.Property(e => e.LastName)

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Composition;
 using System.Data;
+using System.Diagnostics;
 using System.IO.Compression;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
@@ -15,7 +16,8 @@ namespace WMS_Application.Controllers
         private readonly IPermisionHelperRepository _permission;
         private readonly IExportServiceRepository _export;
         private readonly IImportServiceRepository _import;
-        public EmployeeController(ISidebarRepository sidebar,dbMain context, IEmployeeRepository employee, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export, IImportServiceRepository import) : base(sidebar)
+        private readonly IActivityRepository _activity;
+        public EmployeeController(ISidebarRepository sidebar, dbMain context, IEmployeeRepository employee, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export, IImportServiceRepository import, IActivityRepository activity) : base(sidebar)
         {
             _employee = employee;
             _context = context;
@@ -23,6 +25,7 @@ namespace WMS_Application.Controllers
             _permission = permission;
             _export = export;
             _import = import;
+            _activity = activity;
         }
 
         // Public method to get user permission
@@ -47,13 +50,13 @@ namespace WMS_Application.Controllers
             {
                 return RedirectToAction("UnauthorisedAccess", "Error");
             }
-            
+
         }
 
         public async Task<IActionResult> ExportEmployeeList()
         {
             int id = ((int)HttpContext.Session.GetInt32("UserId"));
-            List<TblUser> employeeList =await _employee.GetAllEmployees(id);
+            List<TblUser> employeeList = await _employee.GetAllEmployees(id);
 
             var dataTable = new DataTable("Employees");
             dataTable.Columns.AddRange(new DataColumn[]
@@ -74,6 +77,20 @@ namespace WMS_Application.Controllers
             }
 
             var fileBytes = _export.ExportToExcel(dataTable, "EmployeeList");
+
+            if (fileBytes != null)
+            {
+                //rechecking the session not reusing the upper ones cuz, it was a mess changing bit might crash something so im not touching it
+
+                int userId = (int)HttpContext.Session.GetInt32("UserId");
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                string name = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+
+                string type = "Export Employee List";
+                string desc = $"{name} exported Employee list";
+
+                _activity.AddNewActivity(userId, roleId, type, desc);
+            }
 
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "EmployeeList.xlsx");
         }
@@ -99,8 +116,15 @@ namespace WMS_Application.Controllers
 
                 //Sending email after deletion
                 string subject = "Account Deleted!! heehehehehehe";
-                string body= "I'm sorry to inform you but your account has been terminated, please contact the support team if you have query regarding it";
+                string body = "I'm sorry to inform you but your account has been terminated, please contact the support team if you have query regarding it";
                 _emailSender.SendEmailAsync(emp.Email, subject, body);
+
+                int userId = (int)HttpContext.Session.GetInt32("UserId");
+                string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                string type = "Employee Delete";
+                string desc = $"{userName} deleted {emp.Username}'s account";
+
 
                 // If successful, redirect to Index
                 return Json(new { success = true, message = "Employee deleted successfully." });
@@ -178,16 +202,24 @@ namespace WMS_Application.Controllers
             }
 
 
-
-
             try
             {
                 int userId = (int)HttpContext.Session.GetInt32("UserId");
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
                 var fileBytes = await _import.EmployeeProcessImport(excelFile, userId);
 
                 // Convert to Base64 to store temporarily
                 string fileBase64 = Convert.ToBase64String(fileBytes);
 
+                if (fileBase64 != null)
+                {
+                    string type = "Mass Import Employees";
+                    int count = (int)HttpContext.Session.GetInt32("ImportedEmployeeCount");
+                    string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(s => s.Username).FirstOrDefault();
+                    string desc = $"{userName} Mass imported {count} new Employees";
+
+                    _activity.AddNewActivity(userId, roleId, type, desc);
+                }
                 return Json(new
                 {
                     success = true,
@@ -204,4 +236,3 @@ namespace WMS_Application.Controllers
 
     }
 }
-    

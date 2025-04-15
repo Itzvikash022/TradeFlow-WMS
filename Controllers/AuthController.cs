@@ -1,5 +1,5 @@
 using System.Diagnostics;
-using System.Security.Claims;   
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -31,9 +31,10 @@ namespace WMS_Application.Controllers
         private readonly IMemoryCache _memoryCache;
         private readonly ICompanyRepository _company;
         private readonly HttpClient _httpClient;
+        private readonly IActivityRepository _activity;
 
 
-        public AuthController(ILogger<AuthController> logger, dbMain context, IUsersRepository users, IEmailSenderRepository emailSender, ILoginRepository login, IMemoryCache memoryCache, ICompanyRepository company, IHttpClientFactory httpClientFactory)
+        public AuthController(ILogger<AuthController> logger, dbMain context, IUsersRepository users, IEmailSenderRepository emailSender, ILoginRepository login, IMemoryCache memoryCache, ICompanyRepository company, IHttpClientFactory httpClientFactory, IActivityRepository activity)
         {
             _logger = logger;
             _context = context;
@@ -43,6 +44,7 @@ namespace WMS_Application.Controllers
             _memoryCache = memoryCache;
             _company = company;
             _httpClient = httpClientFactory.CreateClient();
+            _activity = activity;
         }
 
         public IActionResult Index()
@@ -54,7 +56,7 @@ namespace WMS_Application.Controllers
         {
             return View();
         }
-        
+
 
         public IActionResult ForgotPassword()
         {
@@ -141,10 +143,10 @@ namespace WMS_Application.Controllers
                 if (info != null)
                 {
                     if (user.VerificationStatus == "Rejected")
-                        return Json(new { success = false, message = "Your account is rejected. Contact support."});
+                        return Json(new { success = false, message = "Your account is rejected. Contact support." });
 
                     if (user.VerificationStatus == "Pending")
-                        return Json(new { success = false, message = "Your account is pending verification."});
+                        return Json(new { success = false, message = "Your account is pending verification." });
                 }
 
                 return Json(new { success = true, message = "Login successful!", redirect = Url.Action("", "Dashboard") });
@@ -170,11 +172,11 @@ namespace WMS_Application.Controllers
             bool usernameExists = _context.TblUsers.Any(u => u.Username == model.Username);
             if (usernameExists)
             {
-                return Json(new {success = false, message =  "Username Already Exists"});
+                return Json(new { success = false, message = "Username Already Exists" });
             }
 
             // Create temp password
-            string tempPassword = Guid.NewGuid().ToString();    
+            string tempPassword = Guid.NewGuid().ToString();
 
             // Create user
             var user = new TblUser
@@ -254,13 +256,13 @@ namespace WMS_Application.Controllers
         {
             return View();
         }
-        
+
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
             return RedirectToAction("Login");
         }
-        
+
         public IActionResult CompanyRegistration()
         {
             return View(new TblCompany());
@@ -289,6 +291,8 @@ namespace WMS_Application.Controllers
         {
             try
             {
+                int compId = company.CompanyId;
+
                 if (await _company.IsEmailExists(company.Email) && company.CompanyId == 0)
                 {
                     return Json(new { success = false, message = "Email already exists" });
@@ -296,7 +300,38 @@ namespace WMS_Application.Controllers
                 HttpContext.Session.SetString("UserEmail", company.Email);
                 TempData["companyreg-toast"] = "Company Saved Successfully";
                 TempData["companyreg-toastType"] = "success";
-                return Json(await _company.SaveCompany(company));
+
+                var result = await _company.SaveCompany(company);
+                if (((dynamic)result).success)
+                {
+                    int id = 0;
+                    string type = "", desc = "";
+
+                    if (company.Path == "MyCompany")
+                    {
+                        id = (int)HttpContext.Session.GetInt32("CompanyId");
+                        type = "Self Company Details Update";
+                        desc = $"{company.CompanyName} Updated his Company Details";
+                    }
+                    else if (company.Path == "Company")
+                    {
+                        id = (int)HttpContext.Session.GetInt32("UserId");
+                        string username = _context.TblUsers.Where(x => x.UserId == id).Select(s => s.Username).FirstOrDefault();
+                        type = "Company Details Update";
+                        if (compId > 0)
+                        {
+                            desc = $"{username} updated {company.CompanyName}'s Company Details";
+                        }
+                        else
+                        {
+                            desc = $"{username} added a new Company named : {company.CompanyName}";
+                        }
+                    }
+
+
+                    _activity.AddNewActivity(id, (int)HttpContext.Session.GetInt32("UserRoleId"), type, desc);
+                }
+                return Json(result);
             }
             catch (Exception e)
             {
@@ -388,7 +423,7 @@ namespace WMS_Application.Controllers
                 int id = data.UserId;
 
                 TblShop shopData = new TblShop();
-                if(data.RoleId <= 2)
+                if (data.RoleId <= 2)
                 {
                     shopData = _context.TblShops.FirstOrDefault(x => x.AdminId == id);
                 }
@@ -409,7 +444,7 @@ namespace WMS_Application.Controllers
                 {
                     if (await _users.IsVerified(login.EmailOrUsername))
                     {
-                        if(data.RoleId == 2)
+                        if (data.RoleId == 2)
                         {
                             if (await _users.hasShopDetails(id))
                             {
@@ -434,7 +469,7 @@ namespace WMS_Application.Controllers
                     }
                 }
 
-                if(RedirectTo == "OtpCheck")
+                if (RedirectTo == "OtpCheck")
                 {
                     var user = await _context.TblUsers.FirstOrDefaultAsync(x => x.Email == email);
                     if (user != null)
@@ -478,8 +513,8 @@ namespace WMS_Application.Controllers
         public async Task<IActionResult> ShopDetails()
         {
             var model = new TblShop();
-            int id = (int) HttpContext.Session.GetInt32("UserId");
-            if(id != 0)
+            int id = (int)HttpContext.Session.GetInt32("UserId");
+            if (id != 0)
             {
                 model = await _users.GetShopDataByUserId(id) ?? new TblShop();
             }
@@ -536,10 +571,10 @@ namespace WMS_Application.Controllers
                 string subject = "";
                 string body = "";
                 string email = HttpContext.Session.GetString("UserEmail");
-                var user =await _users.GetUserDataByEmail(email); 
+                var user = await _users.GetUserDataByEmail(email);
                 string adminEmail = "vikash.my022@gmail.com";
                 string resetUrl = "http://localhost:5026/Admins";
-                
+
                 if (user.VerificationStatus != "Pending")
                 {
                     subject = "Admin has logged for first time";
@@ -565,22 +600,68 @@ namespace WMS_Application.Controllers
         [HttpPost]
         public async Task<IActionResult> ShopDetails(TblShop shop)
         {
-            int id = 0;
+            int id = (int)HttpContext.Session.GetInt32("UserId");
             shop.IsActive = true;
-            if(shop.IsAction == "SPAddNew" || shop.IsAction == "SPUpdate")
+            if (shop.IsAction == "SPAddNew" || shop.IsAction == "SPUpdate")
             {
                 TempData["shopdetails-toast"] = "Shop details Saved Successfully";
                 TempData["shopdetails-toastType"] = "success";
-                return Json(await _users.SaveShopDetails(shop, shop.AdminId));
+                var result = await _users.SaveShopDetails(shop, shop.AdminId);
+
+
+                if (((dynamic)result).success)
+                {
+                    string username = _context.TblUsers.Where(x => x.UserId == id).Select(x => x.Username).FirstOrDefault();
+                    string shopKeeperName = _context.TblUsers.Where(x => x.UserId == shop.AdminId).Select(x => x.Username).FirstOrDefault();
+                    string type, desc;
+                    if (shop.IsAction == "SPAddNew")
+                    {
+                        type = "Shop Details Add";
+                        desc = $"{username} added {shopKeeperName}'s Shop Details";
+                    }
+                    else
+                    {
+                        type = "Shop Details Update";
+                        desc = $"{username} updated {shopKeeperName}'s Shop Details";
+                    }
+
+                    _activity.AddNewActivity(id, (int)HttpContext.Session.GetInt32("UserRoleId"), type, desc);
+                    //TblActivityLog activity = new TblActivityLog()
+                    //{
+                    //    UserId = id,
+                    //    Role = (int)HttpContext.Session.GetInt32("UserRoleId"),
+                    //    ActivityType = type,
+                    //    Description = desc
+                    //};
+                    //_context.TblActivityLogs.Add(activity);
+                    //_context.SaveChanges();
+                }
+
+                return Json(result);
             }
             else
             {
-                id = (int)HttpContext.Session.GetInt32("UserId");
-                if(id != null)
+                if (id != null)
                 {
                     TempData["shopdetails-toast"] = "Shop details Saved Successfully";
                     TempData["shopdetails-toastType"] = "success";
-                    return Json(await _users.SaveShopDetails(shop, id));
+
+                    var result = await _users.SaveShopDetails(shop, id);
+
+                    if (((dynamic)result).success)
+                    {
+                        string username = _context.TblUsers.Where(x => x.UserId == id).Select(x => x.Username).FirstOrDefault();
+                        TblActivityLog activity = new TblActivityLog()
+                        {
+                            UserId = id,
+                            Role = (int)HttpContext.Session.GetInt32("UserRoleId"),
+                            ActivityType = "Self Shop Details Update",
+                            Description = $"{username} updated his Shop Details"
+                        };
+                        _context.TblActivityLogs.Add(activity);
+                        _context.SaveChanges();
+                    }
+                    return Json(result);
                 }
                 else
                 {
@@ -602,7 +683,7 @@ namespace WMS_Application.Controllers
                         await _users.updateStatus(email);
                         int roleId = _context.TblUsers.Where(x => x.Email == email).Select(y => y.RoleId).FirstOrDefault();
                         //int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
-                        if(roleId > 2)
+                        if (roleId > 2)
                         {
                             return Json(new { success = true, message = "OTP verified successfully", emp = true });
                         }
@@ -637,7 +718,7 @@ namespace WMS_Application.Controllers
         public async Task<IActionResult> Register([FromForm] TblUser user)
         {
             try
-             {
+            {
                 if (await _users.IsUsernameExists(user.Username))
                 {
                     return Json(new { success = false, message = "Username already exists" });
@@ -683,7 +764,7 @@ namespace WMS_Application.Controllers
         }
 
 
-            [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });

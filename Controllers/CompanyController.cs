@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 using System.Composition;
 using System.Data;
 using System.IO.Compression;
@@ -19,8 +21,9 @@ namespace WMS_Application.Controllers
         private readonly IExportServiceRepository _export;
         private readonly IImportServiceRepository _import;
         private readonly HttpClient _httpClient;
+        private readonly IActivityRepository _activity;
 
-        public CompanyController(ISidebarRepository sidebar, dbMain context, ICompanyRepository company, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export, IImportServiceRepository import, IHttpClientFactory httpClientFactory) : base(sidebar)
+        public CompanyController(ISidebarRepository sidebar, dbMain context, ICompanyRepository company, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export, IImportServiceRepository import, IHttpClientFactory httpClientFactory, IActivityRepository activity) : base(sidebar)
         {
             _context = context;
             _company = company;
@@ -29,7 +32,7 @@ namespace WMS_Application.Controllers
             _export = export;
             _import = import;
             _httpClient = httpClientFactory.CreateClient();
-
+            _activity = activity;
         }
 
 
@@ -97,6 +100,16 @@ namespace WMS_Application.Controllers
             }
 
             var fileBytes = _export.ExportToExcel(dataTable, "CompanyList");
+
+            if (fileBytes != null)
+            {
+                int id = (int)HttpContext.Session.GetInt32("UserId");
+                string username = _context.TblUsers.Where(x => x.UserId == id).Select(s => s.Username).FirstOrDefault();
+                string type = "Company List Exported";
+                string desc = $"{username} exported Company List";
+                _activity.AddNewActivity(id, (int)HttpContext.Session.GetInt32("UserRoleId"), type, desc);
+
+            }
 
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "CompanyList.xlsx");
         }
@@ -172,8 +185,34 @@ namespace WMS_Application.Controllers
         public async Task<IActionResult> AddProducts(TblProduct product)
         {
             int CompanyId = (int)HttpContext.Session.GetInt32("CompanyId");
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            string companyName = _context.TblCompanies.Where(x => x.CompanyId == CompanyId).Select(y => y.CompanyName).FirstOrDefault();
+            string type = "", desc = "";
             product.CompanyId = CompanyId;
-            return Ok(await _company.AddProduct(product));
+            int prodId = product.ProductId;
+
+            var result = await _company.AddProduct(product);
+
+            TempData["shopProd-toast"] = "Product Stock Updated Successfully";
+            TempData["shopProd-toastType"] = "success";
+
+            if (((dynamic)result).success)
+            {
+                if (prodId > 0)
+                {
+                    type = "Company Product Update";
+                    desc = $"{companyName} updated product details named {product.ProductName}";
+                }
+                else
+                {
+                    type = "Company Product Add";
+                    desc = $"{companyName} Added a new product details named {product.ProductName}";
+                }
+
+                _activity.AddNewActivity(CompanyId, roleId, type, desc);
+            }
+
+            return Ok(result);
         }
 
         [HttpGet]
@@ -260,11 +299,21 @@ namespace WMS_Application.Controllers
             try
             {
                 int companyId = (int)HttpContext.Session.GetInt32("CompanyId");
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
                 var fileBytes = await _import.CompanyProcessStockImport(excelFile, companyId);
 
                 // Convert to Base64 to store temporarily
                 string fileBase64 = Convert.ToBase64String(fileBytes);
 
+                if(fileBase64 != null)
+                {
+                    string type = "Mass Import Company Product";
+                    int count = (int)HttpContext.Session.GetInt32("ImportedProductCount");
+                    string compName = _context.TblCompanies.Where(x => x.CompanyId == companyId).Select(s => s.CompanyName).FirstOrDefault();
+                    string desc = $"{compName} Mass imported {count} new products";
+
+                    _activity.AddNewActivity(companyId, roleId, type, desc);
+                }
                 return Json(new
                 {
                     success = true,
@@ -293,6 +342,7 @@ namespace WMS_Application.Controllers
             try
             {
                 var company = _context.TblCompanies.Find(id);
+                string companyName = company.CompanyName;
                 company.IsDeleted = true;
                 company.IsActive = false;
                 _context.TblCompanies.Update(company);
@@ -302,6 +352,13 @@ namespace WMS_Application.Controllers
                 string subject = "Account Deleted!! heehehehehehe";
                 string body = "I'm sorry to inform you but your account has been terminated, please contact the support team if you have query regarding it";
                 _emailSender.SendEmailAsync(company.Email, subject, body);
+
+                int userId = (int)HttpContext.Session.GetInt32("UserId");
+                string username = _context.TblUsers.Where(x => x.UserId == userId).Select(s => s.Username).FirstOrDefault();
+                string type = "Company Deleted";
+                string desc = $"{username} Deleted Company named : {companyName}";
+
+                _activity.AddNewActivity(userId, (int)HttpContext.Session.GetInt32("UserRoleId"), type, desc);
 
                 // If successful, redirect to Index
                 return Json(new { success = true, message = "Company deleted successfully." });
@@ -326,20 +383,30 @@ namespace WMS_Application.Controllers
             // Try deleting the admin from the database or perform your logic here
             try
             {
-                string msg = "";
+                string msg = "", type = "";
                 var company = _context.TblCompanies.Find(companyId);
                 if ((bool)company.IsActive)
                 {
                     company.IsActive = false;
                     msg = "Company Restricted successfully.";
+                    type = "Restricted";
                 }
                 else
                 {
                     company.IsActive = true;
                     msg = "Company UnRestricted successfully.";
+                    type = "Unrestricted";
                 }
                 _context.TblCompanies.Update(company);
                 _context.SaveChanges();
+
+                int userId = (int)HttpContext.Session.GetInt32("UserId");
+                string username = _context.TblUsers.Where(x => x.UserId == userId).Select(s => s.Username).FirstOrDefault();
+                type = "Company " + type;
+                string desc = $"{username} {type} Company named : {company.CompanyName}";
+
+                _activity.AddNewActivity(userId, (int)HttpContext.Session.GetInt32("UserRoleId"), type, desc);
+
 
                 // If successful, redirect to Index
                 return Json(new { success = true, message = msg });

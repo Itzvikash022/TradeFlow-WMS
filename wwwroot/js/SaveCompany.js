@@ -17,7 +17,7 @@
     const stateGeonameId = 1269750; // ID for India
 
     // Fetch States
-    fetch((`states`))
+    fetch((`/${controller}/states`))
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -42,7 +42,7 @@
         const selectedStateGeonameId = $(this).find("option:selected").data("id"); // Get geonameId from data-id
 
         if (selectedStateGeonameId) {
-            fetch(`cities/${selectedStateGeonameId})
+            fetch(`cities/${selectedStateGeonameId}`)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -154,7 +154,6 @@
             const btnLoader = $("#btnLoader");
             btnRegister.prop("disabled", true);
             btnLoader.removeClass("d-none");
-            setTimeout(function () {
 
                 // AJAX submission
                 $.ajax({
@@ -175,10 +174,9 @@
                         btnLoader.addClass("d-none");
                     },
                     error: function () {
-                        alert('An error occurred while registering the company.');
+                        showToast('An error occurred while registering the company.');
                     }
                 });
-            }, 2000);
         }
     });
 

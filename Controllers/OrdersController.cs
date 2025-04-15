@@ -10,6 +10,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 using Humanizer;
 using DocumentFormat.OpenXml.ExtendedProperties;
 using System.Data;
+using System.Diagnostics;
 
 namespace WMS_Application.Controllers
 {
@@ -22,8 +23,9 @@ namespace WMS_Application.Controllers
         private readonly IEmailSenderRepository _emailSender;
         private readonly IPermisionHelperRepository _permission;
         private readonly IExportServiceRepository _export;
+        private readonly IActivityRepository _activity;
 
-        public OrdersController(ISidebarRepository sidebar, IOrdersRepository orders, dbMain context, IProductRepository product, ICustomerRepository customer, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export) : base(sidebar)
+        public OrdersController(ISidebarRepository sidebar, IOrdersRepository orders, dbMain context, IProductRepository product, ICustomerRepository customer, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export, IActivityRepository activity) : base(sidebar)
         {
             _orders = orders;
             _context = context;
@@ -32,6 +34,7 @@ namespace WMS_Application.Controllers
             _emailSender = emailSender;
             _permission = permission;
             _export = export;
+            _activity = activity;
         }
 
         // Public method to get user permission
@@ -139,6 +142,20 @@ namespace WMS_Application.Controllers
             }
 
             var fileBytes = _export.ExportToExcel(dataTable, "Orders");
+
+            if (fileBytes != null)
+            {
+                //rechecking the session not reusing the upper ones cuz, it was a mess changing bit might crash something so im not touching it
+
+                int userId = (int)HttpContext.Session.GetInt32("UserId");
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                string name = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+
+                string type = "Export Orders List";
+                string desc = $"{name} exported Orders List";
+
+                _activity.AddNewActivity(userId, roleId, type, desc);
+            }
 
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Orders.xlsx");
         }
@@ -386,6 +403,12 @@ namespace WMS_Application.Controllers
             }
             int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
             int adminId = (int)HttpContext.Session.GetInt32("UserId");
+
+
+
+            int prodCount = orderDto.Products.Count();
+            string type = "", desc = "", customerName = "";
+            string userName = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.Username).FirstOrDefault();
             if (roleId > 2 && roleId != 5)
             {
                 adminId = _context.TblUsers.Where(x => x.UserId == adminId).Select(y => y.AdminRef).FirstOrDefault();
@@ -407,6 +430,8 @@ namespace WMS_Application.Controllers
                         "Pending",
                         "Pending"
                     );
+                    type = "Sold";
+                    customerName = _context.TblCustomers.Where(x => x.CustomerId == orderDto.CustomerId).Select(y => y.CustomerName).FirstOrDefault();
                 }
                 else if (orderDto.SellerShopId > 0 && orderDto.SellerShopId != ShopData.ShopId) // Shop-to-Shop Buying (S2SB)
                 {
@@ -420,6 +445,9 @@ namespace WMS_Application.Controllers
                         "Pending",
                         "Pending"
                     );
+
+                    type = "Bought";
+                    customerName = _context.TblShops.Where(x => x.ShopId == orderDto.SellerShopId).Select(y => y.ShopName).FirstOrDefault();
 
                     string email = _context.TblUsers.Where(x => x.UserId == (_context.TblShops.Where(y => y.ShopId == orderDto.SellerShopId).Select(z => z.AdminId).FirstOrDefault())).Select(a => a.Email).FirstOrDefault();
                     string buyerName = _context.TblShops.Where(x => x.ShopId == orderDto.ShopId).Select(y => y.ShopName).FirstOrDefault();
@@ -438,6 +466,10 @@ namespace WMS_Application.Controllers
                         "Pending",
                         "Pending"
                     );
+
+                    type = "Sold";
+                    customerName = _context.TblShops.Where(x => x.ShopId == orderDto.ShopId).Select(y => y.ShopName).FirstOrDefault();
+
                 }
                 else
                 {
@@ -452,6 +484,9 @@ namespace WMS_Application.Controllers
                         "Pending",
                         "Pending"
                     );
+                    
+                    type = "Bought";
+                    customerName = _context.TblCompanies.Where(x => x.CompanyId == orderDto.CompanyId).Select(y => y.CompanyName).FirstOrDefault();
 
                     string email = _context.TblCompanies.Where(x => x.CompanyId == orderDto.CompanyId).Select(y => y.Email).FirstOrDefault();
                     string buyerName = _context.TblShops.Where(x => x.ShopId == orderDto.ShopId).Select(y => y.ShopName).FirstOrDefault();
@@ -461,6 +496,11 @@ namespace WMS_Application.Controllers
                 }
                 TempData["order-toast"] = "Order Place Successfully";
                 TempData["order-toastType"] = "success";
+
+                string verb = type == "Sold" ? "To" : "From";
+                desc = $"{userName} {type} {prodCount} Products {verb} {customerName} with total quantity being {orderDto.TotalQty} worth of {orderDto.TotalAmount}";
+                _activity.AddNewActivity(adminId, roleId, $"Products {type}", desc);
+
                 return Ok(new { success = true, message = "Order placed successfully!", orderId });
                 //return RedirectToAction($"OrderCheckout/{orderId}");
             }
@@ -517,6 +557,25 @@ namespace WMS_Application.Controllers
                     // ✅ Now send the complete product list for stock update
                     await _orders.UpdateStockAsync(order.OrderId, productList);
 
+                    int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                    int id = 0;
+                    string name = "";
+                    if(roleId == 5)
+                    {
+                        id = (int)HttpContext.Session.GetInt32("CompanyId");
+                        name = _context.TblCompanies.Where(x => x.CompanyId == id).Select(y => y.CompanyName).FirstOrDefault();
+                    }
+                    else
+                    {
+                        id = (int)HttpContext.Session.GetInt32("UserId");
+                        name = _context.TblUsers.Where(x => x.UserId == id).Select(y => y.Username).FirstOrDefault();
+                    }
+                    string buyerName = _context.TblShops.Where(x => x.ShopId == order.BuyerId).Select(y => y.ShopName).FirstOrDefault();
+
+                    string type = "Order Request Status Updated";
+                    string desc = $"{name} accepted {buyerName}'s order request";
+                    _activity.AddNewActivity(id, roleId, type, desc);
+
                     return Json(new { success = true, message = "Order status updated successfully." });
                 }
                 return Json(new { success = true, message = "Order not successfull" });
@@ -536,6 +595,22 @@ namespace WMS_Application.Controllers
                 await _orders.AddTransactionInfo(transaction);
                 TempData["transaction-toast"] = "Transaction added successfully!";
                 TempData["transaction-toastType"] = "success";
+
+                int id = (int)HttpContext.Session.GetInt32("UserId");
+                int shopId = (int)HttpContext.Session.GetInt32("ShopId");
+                string userName = _context.TblUsers.Where(x => x.UserId == id).Select(y => y.Username).FirstOrDefault();
+                string shopName = _context.TblShops.Where(x => x.ShopId == shopId).Select(y => y.ShopName).FirstOrDefault();
+
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                var order = _context.TblOrders.FirstOrDefault(x => x.OrderId == transaction.OrderId);
+                string type = "Manual Add Payment";
+                string desc = $"{userName} manually added payment details for {shopName} for OrderID : {transaction.OrderId}";
+                if(order.BuyerId == shopId)
+                {
+                    type = "Add Payment";
+                    desc = $"{shopName} added it's payment details for OrderID : {transaction.OrderId}";
+                }
+
                 return Ok(new {success = true, message = "Transaction added successfully!" });
             }
             catch (Exception ex)

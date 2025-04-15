@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.Design;
 using System.Data;
+using System.Diagnostics;
 using WMS_Application.DTO;
 using WMS_Application.Models;
 using WMS_Application.Repositories.Interfaces;
@@ -20,8 +21,9 @@ namespace WMS_Application.Controllers
         private readonly IProductRepository _product;
         private readonly IPermisionHelperRepository _permission;
         private readonly IExportServiceRepository _export;
+        private readonly IActivityRepository _activity;
 
-        public ReportsController(ISidebarRepository sidebar, dbMain context, IAdminsRepository admin, IShopRepository shop, ICompanyRepository company, IEmployeeRepository employee, IOrdersRepository orders, IProductRepository product, IPermisionHelperRepository permission, IExportServiceRepository export) : base(sidebar)
+        public ReportsController(ISidebarRepository sidebar, dbMain context, IAdminsRepository admin, IShopRepository shop, ICompanyRepository company, IEmployeeRepository employee, IOrdersRepository orders, IProductRepository product, IPermisionHelperRepository permission, IExportServiceRepository export, IActivityRepository activity) : base(sidebar)
         {
             _context = context;
             _admin = admin;
@@ -32,6 +34,7 @@ namespace WMS_Application.Controllers
             _product = product;
             _permission = permission;
             _export = export;
+            _activity = activity;
         }
 
         // Public method to get user permission
@@ -80,6 +83,17 @@ namespace WMS_Application.Controllers
 
             var fileBytes = _export.ExportToExcel(dataTable, "AdminReports");
 
+            if(fileBytes != null)
+            {
+                int userId = (int)HttpContext.Session.GetInt32("UserId");
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+
+                string type = "Admin Reports Export";
+                string desc = $"{userName} exported Admin Reports";
+                _activity.AddNewActivity(userId, roleId, type, desc);
+            }
+
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "AdminReports.xlsx");
         }
 
@@ -124,6 +138,16 @@ namespace WMS_Application.Controllers
 
             var fileBytes = _export.ExportToExcel(dataTable, "ShopReports");
 
+            if (fileBytes != null)
+            {
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+
+                string type = "Shop Reports Export";
+                string desc = $"{userName} exported Shop Reports";
+                _activity.AddNewActivity(userId, roleId, type, desc);
+            }
+
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ShopReports.xlsx");
         }
 
@@ -164,6 +188,18 @@ namespace WMS_Application.Controllers
             }
 
             var fileBytes = _export.ExportToExcel(dataTable, "CompanyReports");
+
+            if (fileBytes != null)
+            {
+                int userId = (int)HttpContext.Session.GetInt32("UserId");
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+
+                string type = "Company Reports Export";
+                string desc = $"{userName} exported Company Reports";
+                _activity.AddNewActivity(userId, roleId, type, desc);
+            }
+
 
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "CompanyReports.xlsx");
         }
@@ -209,6 +245,16 @@ namespace WMS_Application.Controllers
 
             var fileBytes = _export.ExportToExcel(dataTable, "EmployeeReports");
 
+            if (fileBytes != null)
+            {
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+
+                string type = "Employee Reports Export";
+                string desc = $"{userName} exported Employee Reports";
+                _activity.AddNewActivity(userId, roleId, type, desc);
+            }
+
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "EmployeeReports.xlsx");
         }
 
@@ -240,7 +286,7 @@ namespace WMS_Application.Controllers
 
         public async Task<IActionResult> ExportTransactionReports()
         {
-            int userId = 0;
+            int userId = 0, id = 0 ;
             int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
             if (roleId == 5)
             {
@@ -249,6 +295,8 @@ namespace WMS_Application.Controllers
             else
             {
                 userId = (int)HttpContext.Session.GetInt32("ShopId");
+                id = (int)HttpContext.Session.GetInt32("UserId");
+
             }
             var transactionReports = _orders.GetTransactionReports(userId);
 
@@ -272,6 +320,24 @@ namespace WMS_Application.Controllers
 
             var fileBytes = _export.ExportToExcel(dataTable, "TransactionReports");
 
+
+            if (fileBytes != null)
+            {
+                string name = "";
+                if(roleId == 5)
+                {
+                    name = _context.TblCompanies.Where(x => x.CompanyId == userId).Select(y => y.CompanyName).FirstOrDefault();
+                }
+                else
+                {
+                    name = _context.TblUsers.Where(x => x.UserId == id).Select(y => y.Username).FirstOrDefault();
+                }
+
+                string type = "Transaction Reports Export";
+                string desc = $"{name} exported Transaction Reports";
+                _activity.AddNewActivity(userId, roleId, type, desc);
+            }
+
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "TransactionReports.xlsx");
         }
 
@@ -281,7 +347,7 @@ namespace WMS_Application.Controllers
             string permissionType = GetUserPermission("Product Reports");
             if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                int userId = 0;
+                int userId = 0, id = 0;
                 int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
                 if (roleId == 5)
                 {
@@ -290,6 +356,7 @@ namespace WMS_Application.Controllers
                 else
                 {
                     userId = (int)HttpContext.Session.GetInt32("ShopId");
+                    id = (int)HttpContext.Session.GetInt32("UserId");
                 }
                 return View(_product.GetProductsReports(userId, roleId));
             }
@@ -302,7 +369,7 @@ namespace WMS_Application.Controllers
 
         public async Task<IActionResult> ExportProductReports()
         {
-            int userId = 0;
+            int userId = 0, id = 0;
             int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
             if (roleId == 5)
             {
@@ -311,6 +378,7 @@ namespace WMS_Application.Controllers
             else
             {
                 userId = (int)HttpContext.Session.GetInt32("ShopId");
+                id = (int)HttpContext.Session.GetInt32("UserId");
             }
             var productReports = _product.GetProductsReports(userId, roleId);
 
@@ -334,6 +402,24 @@ namespace WMS_Application.Controllers
 
             var fileBytes = _export.ExportToExcel(dataTable, "ProductReports");
 
+            if (fileBytes != null)
+            {
+                string name = "";
+
+                if (roleId == 5)
+                {
+                    name = _context.TblCompanies.Where(x => x.CompanyId == userId).Select(y => y.CompanyName).FirstOrDefault();
+                }
+                else
+                {
+                    name = _context.TblUsers.Where(x => x.UserId == id).Select(y => y.Username).FirstOrDefault();
+                }
+
+                string type = "Product Reports Export";
+                string desc = $"{name} exported Product Reports";
+                _activity.AddNewActivity(userId, roleId, type, desc);
+            }
+
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "ProductReports.xlsx");
         }
 
@@ -342,13 +428,34 @@ namespace WMS_Application.Controllers
             string permissionType = GetUserPermission("Activity Log");
             if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                return View();
+                var activities = _context.TblActivityLogs.OrderByDescending(x => x.Timestamp).ToList();
+
+                List<TblActivityLog> activityLog = new List<TblActivityLog>();
+
+                foreach (var activity in activities)
+                {
+                    activityLog.Add(new TblActivityLog
+                    {
+                        ActivityType = activity.ActivityType,
+                        Description = activity.Description,
+                        Role = activity.Role,
+                        Timestamp = activity.Timestamp,
+                        UserId = activity.UserId,
+                        LogId = activity.LogId,
+                        ImagePath = activity.Role == 5
+                            ? _context.TblCompanies.Where(x => x.CompanyId == activity.UserId).Select(y => y.CompanyLogo).FirstOrDefault()
+                            : _context.TblUsers.Where(x => x.UserId == activity.UserId).Select(y => y.ProfileImgPath).FirstOrDefault()
+                    });
+                }
+
+                return View(activityLog);
             }
             else
             {
                 return RedirectToAction("UnauthorisedAccess", "Error");
             }
-
         }
+
+
     }
 }

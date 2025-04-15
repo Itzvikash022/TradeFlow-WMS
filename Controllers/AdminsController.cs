@@ -16,7 +16,8 @@ namespace WMS_Application.Controllers
         private readonly IEmailSenderRepository _emailSender;
         private readonly IPermisionHelperRepository _permission;
         private readonly IExportServiceRepository _export;
-        public AdminsController(dbMain context, ISidebarRepository sidebar, IAdminsRepository admins, IUsersRepository users, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export) : base(sidebar)
+        private readonly IActivityRepository _activity;
+        public AdminsController(dbMain context, ISidebarRepository sidebar, IAdminsRepository admins, IUsersRepository users, IEmailSenderRepository emailSender, IPermisionHelperRepository permission, IExportServiceRepository export, IActivityRepository activity) : base(sidebar)
         {
             _context = context;
             _admins = admins;
@@ -24,6 +25,7 @@ namespace WMS_Application.Controllers
             _emailSender = emailSender;
             _permission = permission;
             _export = export;
+            _activity = activity;
         }
 
         // Public method to get user permission
@@ -74,6 +76,18 @@ namespace WMS_Application.Controllers
 
             var fileBytes = _export.ExportToExcel(dataTable, "AdminList");
 
+            if (fileBytes != null)
+            {
+                int userId = (int)HttpContext.Session.GetInt32("UserId");
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                string name = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+
+                string type = "Export Admin List";
+                string desc = $"{name} exported Admin list";
+
+                _activity.AddNewActivity(userId, roleId, type, desc);
+            }
+
             return File(fileBytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "AdminList.xlsx");
         }
 
@@ -85,7 +99,7 @@ namespace WMS_Application.Controllers
             string permissionType = GetUserPermission("Admins");
             if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                TblUser admin= _context.TblUsers.FirstOrDefault(x => x.UserId == id);
+                TblUser admin = _context.TblUsers.FirstOrDefault(x => x.UserId == id);
                 TblAdminInfo adminInfo = _context.TblAdminInfos.FirstOrDefault(x => x.AdminId == id);
                 TblShop shopInfo = _context.TblShops.FirstOrDefault(x => x.AdminId == id);
 
@@ -113,10 +127,10 @@ namespace WMS_Application.Controllers
             {
                 var admin = _context.TblUsers.Find(id);
                 var shop = _context.TblShops.FirstOrDefault(x => x.AdminId == id);
-                
+
                 admin.IsDeleted = true;
                 admin.IsActive = false;
-                if(shop != null)
+                if (shop != null)
                 {
                     shop.IsDeleted = true;
                     shop.IsActive = false;
@@ -131,6 +145,14 @@ namespace WMS_Application.Controllers
                 string body = "I'm sorry to inform you but your account has been terminated, please contact the support team if you have query regarding it";
                 _emailSender.SendEmailAsync(admin.Email, subject, body);
 
+                int userId = (int)HttpContext.Session.GetInt32("UserId");
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+
+                string type = "Admin Delete";
+                string desc = $"{userName} deleted {admin.Username}";
+
+                _activity.AddNewActivity(userId, roleId, type, desc);
                 // If successful, redirect to Index
                 return Json(new { success = true, message = "Admin deleted successfully." });
             }
@@ -154,35 +176,44 @@ namespace WMS_Application.Controllers
             // Try deleting the admin from the database or perform your logic here
             try
             {
+                string type = "";
                 var admin = _context.TblUsers.Find(id);
                 var shop = _context.TblShops.FirstOrDefault(x => x.AdminId == id);
                 string msg = "";
-                if(admin.IsActive == false)
+                if (admin.IsActive == false)
                 {
                     admin.IsActive = true;
-                    if(roleId <= 2 && shop != null)
+                    if (roleId <= 2 && shop != null)
                     {
                         shop.IsActive = true;
                     }
                     msg = "User UnRestricted successfully.";
+                    type = "Unrestrict";
                 }
                 else
                 {
                     admin.IsActive = false;
-                    
+
                     if (roleId <= 2 && shop != null)
                     {
                         shop.IsActive = false;
                     }
                     msg = "User Restricted successfully.";
+                    type = "Restrict";
                 }
 
-                if(roleId <= 2 && shop != null)
+                if (roleId <= 2 && shop != null)
                 {
                     _context.TblShops.Update(shop);
                 }
                 _context.TblUsers.Update(admin);
                 _context.SaveChanges();
+
+                int userId = (int)HttpContext.Session.GetInt32("UserId");
+                string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
+                string desc = $"{userName} {type}ed {admin.Username}";
+
+                _activity.AddNewActivity(userId, roleId, $"{type} User", desc); 
 
                 // If successful, redirect to Index
                 return Json(new { success = true, message = msg });
@@ -200,10 +231,28 @@ namespace WMS_Application.Controllers
 
         [HttpPost]
         public async Task<IActionResult> UpdateStatus(int UserId, bool Status, string remark)
-        {   
-            string verifier = ((int) HttpContext.Session.GetInt32("UserId")).ToString();
+        {
+            string verifier = ((int)HttpContext.Session.GetInt32("UserId")).ToString();
             var result = await _admins.UpdateStatus(UserId, Status, verifier, remark);
-            return Json(result);
+
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            int Id = (int)HttpContext.Session.GetInt32("UserId");
+            string userName = _context.TblUsers.Where(x => x.UserId == Id).Select(y => y.Username).FirstOrDefault();
+            string shopKeeperName = _context.TblUsers.Where(x => x.UserId == UserId).Select(y => y.Username).FirstOrDefault();
+            string type = "", desc = "";
+            if (Status)
+            {
+                type = "Application Approval";
+                desc = $"{userName} Approved {shopKeeperName}'s application request";
+            }
+            else
+            {
+                type = "Application Rejection";
+                desc = $"{userName} rejected {shopKeeperName}'s application request";
+            }
+
+            _activity.AddNewActivity(Id, roleId, type, desc);
+                return Json(result);
         }
 
         //[Route("Admins/Save")]
@@ -234,23 +283,23 @@ namespace WMS_Application.Controllers
         {
             try
             {
-                if(user.UserId > 0)
+                if (user.UserId > 0)
                 {
                     TblUser resData = _admins.checkExistence(user.Username, user.Email, user.UserId);
-                    if(resData != null)
+                    if (resData != null)
                     {
-                        if(resData.Email == user.Email)
+                        if (resData.Email == user.Email)
                         {
                             return Json(new { success = false, message = "Email already exists - edit" });
                         }
-                        if(resData.Username == user.Username)
+                        if (resData.Username == user.Username)
                         {
                             return Json(new { success = false, message = "Username already exists - edit" });
                         }
                     }
                 }
-                else 
-                { 
+                else
+                {
                     if (await _users.IsUsernameExists(user.Username))
                     {
                         return Json(new { success = false, message = "Username already exists" });
@@ -262,19 +311,23 @@ namespace WMS_Application.Controllers
                 }
                 string password = user.PasswordHash;
                 int id = user.UserId;
-
-                int ResId = (int) HttpContext.Session.GetInt32("UserId");
+                int ResId = (int)HttpContext.Session.GetInt32("UserId");
                 int verifier = ResId;
                 user.VerifiedBy = verifier.ToString();
                 string type = "Admin";
-                if(user.RoleId > 2)
+                if (user.RoleId > 2)
                 {
                     user.AdminRef = verifier;
                     type = "Employee";
                 }
                 var res = await _admins.SaveUsers(user);
 
-                if(id > 0)
+
+                string activityDesc = "", activityType = "";
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                string username = _context.TblUsers.Where(x => x.UserId == ResId).Select(y => y.Username).FirstOrDefault();
+
+                if (id > 0)
                 {
                     if (((dynamic)res).success)
                     {
@@ -284,6 +337,9 @@ namespace WMS_Application.Controllers
                         string subject = $"{type} account has been updated";
                         string body = $"Hello there {user.FirstName}, your account has been successfully updated by the SuperAdmin and you can access your account now, some information has been update and your username and email has been mailed regardless of any changes, you can now login under the given credentials. UserName : {user.Username}, Email : {user.Email}, Password : you old same pass. But keep in mind, this is a sensitive information, so plz don't share it with anyone else. Thank you";
                         _emailSender.SendEmailAsync(user.Email, subject, body);
+
+                        activityDesc = $"{username} updated {user.Username}'s details";
+                        activityType = $"{type} Update";
                     }
                 }
                 else
@@ -296,9 +352,14 @@ namespace WMS_Application.Controllers
                         string subject = $"{type} account has been created";
                         string body = $"Hello there {user.FirstName}, welcome to our WMS Application, you account has been successfully created and you can access your account under the given credentials. UserName : {user.Username}, Email : {user.Email}, Password : {password} and after login, you can fill out your extra informations. But keep in mind, this is a sensitive information, so plz don't share it with anyone else. Thank you";
                         _emailSender.SendEmailAsync(user.Email, subject, body);
+
+                        activityDesc = $"{username} added new {type} named : {user.Username}";
+                        activityType = $"Add new {type}";
                     }
                 }
-                    return Ok(res);
+
+                _activity.AddNewActivity(ResId, roleId, activityType, activityDesc);
+                return Ok(res);
             }
             catch (Exception e)
             {

@@ -49,7 +49,8 @@ namespace WMS_Application.Repositories
                     Status = data.VerificationStatus,
                     Employees = _context.TblUsers.Count(x => x.AdminRef == data.UserId),
                     ProfilePic = data.ProfileImgPath,
-                    IsActive = (bool)data.IsActive
+                    IsActive = (bool)data.IsActive,
+                    LastLogin = data.LastLogin,
                 }).OrderByDescending(x => x.RegisteredOn)
                 .ToList();
             return adminData;

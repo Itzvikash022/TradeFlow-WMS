@@ -194,23 +194,26 @@
 @section Scripts {
 
     <script>
-                function confirmOrder(orderId) {
+                     function confirmOrder(orderId) {
             Swal.fire({
-                title: 'Are you sure?',
-                text: "You are about to mark this order as Success.",
-                icon: 'warning',
+                title: 'Choose an action',
+                text: "You can either accept, reject, or cancel this order.",
+                icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#28a745',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, confirm it!'
+                confirmButtonColor: '#28a745', // Green for accept
+                cancelButtonColor: '#d33', // Red for reject
+                showDenyButton: true, // For reject
+                denyButtonText: 'Reject Order', // Reject button
+                confirmButtonText: 'Accept Order', // Accept button
             }).then((result) => {
                 if (result.isConfirmed) {
+                    // Accept order logic
                     fetch('/Orders/UpdateOrderStatus', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ orderId: orderId, newStatus: "Success" })
+                        body: JSON.stringify({ orderId: orderId, newStatus: "Success", paymentStatus: "Paid" }) // Assuming you will handle payment status in the backend
                     })
                     .then(response => response.json())
                     .then(data => {
@@ -218,13 +221,11 @@
                             Swal.fire(
                                 'Success!',
                                 'Order status updated to Success!',
-
                                 'success'
                             );
                             setTimeout(function () {
                                 location.reload(); // Reload the page after 2 seconds
                             }, 2000);
-                            updateOrderRow(orderId); // Optional: reflect the change in UI
                         } else {
                             Swal.fire(
                                 'Error',
@@ -241,6 +242,49 @@
                             'error'
                         );
                     });
+                } else if (result.isDenied) {
+                    // Reject order logic
+                    fetch('/Orders/UpdateOrderStatus', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ orderId: orderId, newStatus: "Rejected", paymentStatus: "Pending On Refund" })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire(
+                                'Rejected!',
+                                'Order status updated to Rejected. Refund will be processed soon.',
+                                'error'
+                            );
+                            setTimeout(function () {
+                                location.reload(); // Reload the page after 2 seconds
+                            }, 2000);
+                        } else {
+                            Swal.fire(
+                                'Error',
+                                data.message || "An error occurred while rejecting the order.",
+                                'error'
+                            );
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire(
+                            'Oops!',
+                            'An error occurred while processing your request. Please try again.',
+                            'error'
+                        );
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    // Cancel order logic (no changes)
+                    Swal.fire(
+                        'Cancelled',
+                        'The order status was not changed.',
+                        'info'
+                    );
                 }
             });
         }

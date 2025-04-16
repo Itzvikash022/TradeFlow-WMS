@@ -33,6 +33,7 @@ public partial class TblCompany
     public IFormFile? LogoFile { get; set; }
 
     public DateTime? CreatedAt { get; set; }
+    public DateTime? LastLogin { get; set; }
 
     [NotMapped]
     public string Path { get; set; }

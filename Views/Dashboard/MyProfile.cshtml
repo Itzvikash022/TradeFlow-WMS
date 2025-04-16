@@ -172,17 +172,17 @@
 
             // Basic Validation
             if (!oldPassword || !newPassword || !confirmPassword) {
-                alert("All fields are required.");
+                showToast("All fields are required.","warning");
                 return;
             }
 
             if (newPassword.length < 8) {
-                alert("New password must be at least 8 characters long.");
+                showToast("New password must be at least 8 characters long.","warning");
                 return;
             }
 
             if (newPassword !== confirmPassword) {
-                alert("New password and Confirm password do not match.");
+                showToast("New password and Confirm password do not match.","warning");
                 return;
             }
 
@@ -198,10 +198,10 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert("Password changed successfully.");
+                    showToast("Password changed successfully.","success");
                     document.getElementById("changePasswordForm").reset();
                 } else {
-                    alert(data.message || "Failed to change password.");
+                    showToast(data.message || "Failed to change password.","error");
                 }
             })
             .catch(error => console.error("Error:", error));

@@ -83,7 +83,7 @@ namespace WMS_Application.Controllers
 
             var fileBytes = _export.ExportToExcel(dataTable, "AdminReports");
 
-            if(fileBytes != null)
+            if (fileBytes != null)
             {
                 int userId = (int)HttpContext.Session.GetInt32("UserId");
                 int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
@@ -286,7 +286,7 @@ namespace WMS_Application.Controllers
 
         public async Task<IActionResult> ExportTransactionReports()
         {
-            int userId = 0, id = 0 ;
+            int userId = 0, id = 0;
             int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
             if (roleId == 5)
             {
@@ -324,7 +324,7 @@ namespace WMS_Application.Controllers
             if (fileBytes != null)
             {
                 string name = "";
-                if(roleId == 5)
+                if (roleId == 5)
                 {
                     name = _context.TblCompanies.Where(x => x.CompanyId == userId).Select(y => y.CompanyName).FirstOrDefault();
                 }
@@ -428,7 +428,63 @@ namespace WMS_Application.Controllers
             string permissionType = GetUserPermission("Activity Log");
             if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
-                var activities = _context.TblActivityLogs.OrderByDescending(x => x.Timestamp).ToList();
+
+                int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+                List<TblActivityLog> activities = new List<TblActivityLog>();
+
+                if (roleId == 5)
+                {
+                    int compId = (int)HttpContext.Session.GetInt32("CompanyId");
+                    activities = _context.TblActivityLogs.Where(y => y.UserId == compId).OrderByDescending(x => x.Timestamp).ToList();
+                }
+                else
+                {
+                    int userId = (int)HttpContext.Session.GetInt32("UserId");
+
+                    List<int> relatedUserIds = new List<int>();
+
+                    if (roleId <= 2) // Admin or SuperAdmin
+                    {
+                        // Admin is logged in — get all users under them
+                        relatedUserIds = _context.TblUsers
+                                            .Where(u => u.AdminRef == userId)
+                                            .Select(u => u.UserId)
+                                            .ToList();
+
+                        // Include self
+                        relatedUserIds.Add(userId);
+                    }
+                    else
+                    {
+                        // Employee is logged in — get their admin ID first
+                        int? adminRef = _context.TblUsers
+                                            .Where(u => u.UserId == userId)
+                                            .Select(u => u.AdminRef)
+                                            .FirstOrDefault();
+
+                        if (adminRef != null)
+                        {
+                            relatedUserIds = _context.TblUsers
+                                                .Where(u => u.AdminRef == adminRef)
+                                                .Select(u => u.UserId)
+                                                .ToList();
+
+                            relatedUserIds.Add((int)adminRef); // include their admin
+                        }
+                        else
+                        {
+                            relatedUserIds.Add(userId); // fallback, just in case
+                        }
+                    }
+
+                    // Finally, fetch all logs for those related IDs
+                    activities = _context.TblActivityLogs
+                                        .Where(log => relatedUserIds.Contains(log.UserId))
+                                        .OrderByDescending(log => log.Timestamp)
+                                        .ToList();
+
+                }
+
 
                 List<TblActivityLog> activityLog = new List<TblActivityLog>();
 
@@ -455,6 +511,8 @@ namespace WMS_Application.Controllers
                 return RedirectToAction("UnauthorisedAccess", "Error");
             }
         }
+
+
 
 
     }

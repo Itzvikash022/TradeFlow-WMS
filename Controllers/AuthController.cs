@@ -149,6 +149,9 @@ namespace WMS_Application.Controllers
                         return Json(new { success = false, message = "Your account is pending verification." });
                 }
 
+                user.LastLogin = DateTime.Now;
+                _context.TblUsers.Update(user);
+                _context.SaveChanges();
                 return Json(new { success = true, message = "Login successful!", redirect = Url.Action("", "Dashboard") });
             }
 
@@ -280,6 +283,9 @@ namespace WMS_Application.Controllers
             {
                 HttpContext.Session.SetInt32("UserRoleId", 5);
                 HttpContext.Session.SetInt32("CompanyId", companyData.CompanyId);
+                companyData.LastLogin = DateTime.Now;
+                _context.TblCompanies.Update(companyData);
+                _context.SaveChanges();
             }
             TempData["toast"] = "Login successful!";
             TempData["toastType"] = "success";
@@ -489,6 +495,11 @@ namespace WMS_Application.Controllers
                 _memoryCache.Remove(attemptKey);
                 TempData["toast"] = "Login successful!";
                 TempData["toastType"] = "success";
+
+
+                data.LastLogin = DateTime.Now;
+                _context.TblUsers.Update(data);
+                _context.SaveChanges();
                 return Ok(new { success = true, message = "You are successfully logged in", res = RedirectTo });
             }
             else
@@ -508,7 +519,14 @@ namespace WMS_Application.Controllers
 
             TempData["moredetails-toast"] = "Details Saved Successfully";
             TempData["moredetails-toastType"] = "success";
-            return Json(await _users.SaveMoreDetails(user));
+
+            var result = await _users.SaveMoreDetails(user);
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            string type = "Update My Profile";
+            string desc = $"{user.Username} updated his profile";
+            _activity.AddNewActivity(id, roleId, type, desc);
+
+            return Json(result);
         }
         public async Task<IActionResult> ShopDetails()
         {

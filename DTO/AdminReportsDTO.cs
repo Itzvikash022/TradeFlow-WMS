@@ -4,6 +4,7 @@
     {
         public int AdminId { get; set; }
         public DateTime RegisteredOn { get; set; }
+        public DateTime? LastLogin { get; set; }
         public bool ShopDetails { get; set; }
         public bool Documents { get; set; }
         public bool IsActive { get; set; }

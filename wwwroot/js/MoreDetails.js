@@ -106,7 +106,10 @@
                     success: function (result) {
                         if (result.success) {
                             if (result.path != null) {
-                                window.location.href = '/' + result.path;
+                                showToast(result.message, "success")
+                                setTimeout(function () {
+                                    location.reload(); // Reload the page after 2 seconds
+                                }, 1000);
                             }
                             else {
                                 window.location.href = '/Auth/ShopDetails';

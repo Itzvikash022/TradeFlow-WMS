@@ -11,6 +11,7 @@ using Humanizer;
 using DocumentFormat.OpenXml.ExtendedProperties;
 using System.Data;
 using System.Diagnostics;
+using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace WMS_Application.Controllers
 {
@@ -532,6 +533,8 @@ namespace WMS_Application.Controllers
 
                 // Update the order status
                 order.OrderStatus = request.NewStatus;
+                var buyerInfo = _context.TblShops.FirstOrDefault(x => x.ShopId == order.BuyerId);
+                string buyerEmail = _context.TblUsers.Where(x => x.UserId == buyerInfo.AdminId).Select(y => y.Email).FirstOrDefault();
 
                 // Only update stock if the status is "Success"
                 if (request.NewStatus == "Success")
@@ -570,15 +573,31 @@ namespace WMS_Application.Controllers
                         id = (int)HttpContext.Session.GetInt32("UserId");
                         name = _context.TblUsers.Where(x => x.UserId == id).Select(y => y.Username).FirstOrDefault();
                     }
-                    string buyerName = _context.TblShops.Where(x => x.ShopId == order.BuyerId).Select(y => y.ShopName).FirstOrDefault();
-
+                    
+                    string buyerName = buyerInfo.ShopName;
                     string type = "Order Request Status Updated";
                     string desc = $"{name} accepted {buyerName}'s order request";
                     _activity.AddNewActivity(id, roleId, type, desc);
 
+                    string subject = "Order Request Approved";
+                    string body = $"{buyerName} your order request for order id : {order.OrderId} has been approved by {name}. It will be delivered to your soon, or you can pick it from our premises too.";
+                    _emailSender.SendEmailAsync(buyerEmail, subject, body);
                     return Json(new { success = true, message = "Order status updated successfully." });
                 }
-                return Json(new { success = true, message = "Order not successfull" });
+                else
+                {
+                    order.OrderStatus = request.NewStatus;
+                    order.PaymentStatus = "Pending Refund";
+                    _context.TblOrders.Update(order);
+
+                    _context.SaveChanges();
+
+                    string subject = "Order Request Rejected";
+                    string body = $"{buyerInfo.ShopName} your order request for order id : {order.OrderId} has been rejected. You can request for again for another order sometime, or you can support the owner for more details";
+
+                    _emailSender.SendEmailAsync(buyerEmail, subject, body);
+                    return Json(new { success = true, message = "Order Rejected" });
+                }
             }
             catch (Exception ex)
             {

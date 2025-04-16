@@ -37,6 +37,7 @@ public partial class TblUser
     public int RoleId { get; set; }
 
     public DateTime? CreatedAt { get; set; }
+    public DateTime? LastLogin { get; set; }
 
     public DateOnly? DateOfBirth { get; set; }
 

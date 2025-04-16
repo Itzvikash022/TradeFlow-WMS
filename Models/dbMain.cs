@@ -131,6 +131,8 @@ public partial class dbMain : DbContext
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime");
+            entity.Property(e => e.LastLogin)
+                .HasColumnType("datetime");
             entity.Property(e => e.Email)
                 .HasMaxLength(30)
                 .IsUnicode(false);
@@ -400,6 +402,7 @@ public partial class dbMain : DbContext
                 .HasMaxLength(10)
                 .IsUnicode(false);
             entity.Property(e => e.OtpExpiry).HasColumnType("datetime");
+            entity.Property(e => e.LastLogin).HasColumnType("datetime");
             entity.Property(e => e.PasswordHash).IsUnicode(false);
             entity.Property(e => e.PhoneNumber)
                 .HasMaxLength(20)

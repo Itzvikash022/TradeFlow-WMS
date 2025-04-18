@@ -482,7 +482,29 @@ namespace WMS_Application.Controllers
                     {
                         user.Otp = _emailSender.GenerateOtp();
                         user.OtpExpiry = DateTime.Now.AddMinutes(5);
-                        await _emailSender.SendEmailAsync(user.Email, "OTP Verification!!", user.Otp);
+
+                        string emailBody = @"
+                                <!DOCTYPE html>
+                                <html>
+                                <head>
+                                    <meta charset='UTF-8'>
+                                    <title>OTP Verification</title>
+                                </head>
+                                <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                                    <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                                        <h2 style='color: #333;'>Verify Your Email</h2>
+                                        <p style='font-size: 16px; color: #555;'>Your One-Time Password (OTP) for email verification is:</p>
+                                        <div style='font-size: 24px; font-weight: bold; color: #2c3e50; margin: 20px 0; text-align: center;'>
+                                            " + user.Otp + @"
+                                        </div>
+                                        <p style='font-size: 14px; color: #888;'>This OTP is valid for a limited time. Please do not share it with anyone.</p>
+                                        <p style='margin-top: 30px; font-size: 12px; color: #aaa;'>If you did not request this email, you can safely ignore it.</p>
+                                    </div>
+                                </body>
+                                </html>";
+
+
+                        await _emailSender.SendEmailAsync(user.Email, "OTP Verification!!", emailBody);
                         await _context.SaveChangesAsync();
 
                         TempData["otp-toast"] = "OTP sent Successfully";
@@ -524,7 +546,7 @@ namespace WMS_Application.Controllers
             int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
             string type = "Update My Profile";
             string desc = $"{user.Username} updated his profile";
-            _activity.AddNewActivity(id, roleId, type, desc);
+            _activity.AddNewActivity(id, 2, type, desc);
 
             return Json(result);
         }
@@ -591,17 +613,57 @@ namespace WMS_Application.Controllers
                 string email = HttpContext.Session.GetString("UserEmail");
                 var user = await _users.GetUserDataByEmail(email);
                 string adminEmail = "vikash.my022@gmail.com";
-                string resetUrl = "http://localhost:5026/Admins";
+                string resetUrl = "https://localhost:5026/Admins";
 
                 if (user.VerificationStatus != "Pending")
                 {
                     subject = "Admin has logged for first time";
-                    body = $"{user.Username} has logged in for the first time and has saved their doc info and shop details, <br>Email: {user.Email}<br>Click <a href='{resetUrl}'>here</a> to go to admin panel. ";
+                    body = $@"
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <title>Admin First Login</title>
+                        </head>
+                        <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                            <div style='max-width: 600px; margin: auto; background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                                <h2 style='color: #333;'>Admin Logged In</h2>
+                                <p><strong>{user.Username}</strong> has logged in for the first time and completed their documentation and shop details.</p>
+                                <p><strong>Email:</strong> {user.Email}</p>
+                                <p>Click the button below to go to the Admin Panel:</p>
+                                <p style='margin: 25px 0;'>
+                                    <a href='{resetUrl}' style='background-color: #4CAF50; color: white; padding: 12px 20px; border-radius: 5px; text-decoration: none;'>Go to Admin Panel</a>
+                                </p>
+                            </div>
+                        </body>
+                        </html>";
+                    
                 }
                 else
                 {
                     subject = "New User Registration - Pending Approval";
-                    body = $"User: {user.Username}<br>Email: {user.Email}<br>Date: {DateTime.UtcNow}<br>Click <a href='{resetUrl}'>here</a> to go to admin panel.";
+                    body = $@"
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <title>New User Registration</title>
+                        </head>
+                        <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                            <div style='max-width: 600px; margin: auto; background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                                <h2 style='color: #333;'>New User Registration</h2>
+                                <p>A new user has registered and is awaiting approval:</p>
+                                <p><strong>Username:</strong> {user.Username}<br>
+                                   <strong>Email:</strong> {user.Email}<br>
+                                   <strong>Date:</strong> {DateTime.UtcNow}</p>
+                                <p>Click the button below to review in the Admin Panel:</p>
+                                <p style='margin: 25px 0;'>
+                                    <a href='{resetUrl}' style='background-color: #007BFF; color: white; padding: 12px 20px; border-radius: 5px; text-decoration: none;'>Review Now</a>
+                                </p>
+                            </div>
+                        </body>
+                        </html>";
+
                 }
                 await _emailSender.SendEmailAsync(adminEmail, subject, body);
 
@@ -751,7 +813,7 @@ namespace WMS_Application.Controllers
 
                 TempData["register-toast"] = "Registered Successfully, OTP sent to email, please verify to move forward";
                 TempData["register-toastType"] = "success";
-
+                HttpContext.Session.SetInt32("UserRoleId", 2);
                 return Json(await _users.SaveUsers(user));
             }
             catch (Exception e)
@@ -772,7 +834,28 @@ namespace WMS_Application.Controllers
                 {
                     user.Otp = _emailSender.GenerateOtp();
                     user.OtpExpiry = DateTime.Now.AddMinutes(5);
-                    await _emailSender.SendEmailAsync(user.Email, "OTP Verification!!", user.Otp);
+
+                    string emailBody = @"
+                                <!DOCTYPE html>
+                                <html>
+                                <head>
+                                    <meta charset='UTF-8'>
+                                    <title>OTP Verification</title>
+                                </head>
+                                <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                                    <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                                        <h2 style='color: #333;'>Verify Your Email</h2>
+                                        <p style='font-size: 16px; color: #555;'>Your One-Time Password (OTP) for email verification is:</p>
+                                        <div style='font-size: 24px; font-weight: bold; color: #2c3e50; margin: 20px 0; text-align: center;'>
+                                            " + user.Otp + @"
+                                        </div>
+                                        <p style='font-size: 14px; color: #888;'>This OTP is valid for a limited time. Please do not share it with anyone.</p>
+                                        <p style='margin-top: 30px; font-size: 12px; color: #aaa;'>If you did not request this email, you can safely ignore it.</p>
+                                    </div>
+                                </body>
+                                </html>";
+
+                    await _emailSender.SendEmailAsync(user.Email, "OTP Verification!!", emailBody);
                     await _context.SaveChangesAsync();
                     return Json(new { success = true, message = "OTP sent successfully" });
                 }

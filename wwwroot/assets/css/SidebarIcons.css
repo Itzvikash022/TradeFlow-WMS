@@ -1,0 +1,70 @@
+﻿/* Base style for sidebar icons */
+.sidebar-icon {
+    width: 20px;
+    height: 20px;
+    display: inline-block;
+    color: #6c757d; /* grey tone */
+    transition: 0.3s;
+    font-family: "Arial", sans-serif; /* fallback */
+    text-align: center;
+    font-size: 18px;
+    line-height: 20px;
+}
+
+/* Custom icons */
+.icon-dashboard::before {
+    content: "\1F4CA"; /* 📊 chart icon */
+}
+
+.icon-myshop::before {
+    content: "\1F3EA"; /* 🛒 shopping cart */
+}
+
+.icon-mycompany::before {
+    content: "\1F3E2"; /* 🏢 office building */
+}
+
+.icon-products::before {
+    content: "\1F4E6"; /* 📦 package */
+}
+
+.icon-admins::before {
+    content: "\1F464"; /* 👤 user icon */
+}
+
+.icon-employees::before {
+    content: "\1F465"; /* 👥 multiple users */
+}
+
+.icon-shops::before {
+    content: "\1F3EC"; /* 🏪 small shop */
+}
+
+.icon-companies::before {
+    content: "\1F3E1"; /* 🏡 building/home */
+}
+
+.icon-orders::before {
+    content: "\1F6D2"; /* 📩 order/letter */
+}
+
+.icon-masters::before {
+    content: "\2699"; /* ⚙️ settings/gear */
+}
+
+.icon-reports::before {
+    content: "\1F4C8"; /* 📈 upward graph */
+}
+
+.icon-admindashboard::before {
+    content: "\1F9D1"; /* 🖥️ monitor/dashboard */
+}
+
+/* Hover Effects */
+.sidebar-menu ul li a:hover .sidebar-icon {
+    color: #ffffff; /* icon white on hover */
+}
+
+.sidebar-menu ul li a:hover span {
+    color: #000000; /* text black on hover */
+}

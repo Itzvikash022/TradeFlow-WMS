@@ -31,6 +31,9 @@
     <link rel="stylesheet" href="~/assets/css/style.css">
     <link rel="stylesheet" href="~/assets/css/bootstrap-datetimepicker.min.css">
 
+    <link rel="stylesheet" href="~/assets/plugins/simpleline/simple-line-icons.css">
+    <link rel="stylesheet" href="~/assets/css/SidebarIcons.css">
+    <link rel="stylesheet" href="assets/plugins/icons/feather/feather.css">
 
     <style>
         label.error {
@@ -174,7 +177,7 @@
                                 }
                                 <li class=@res>
                                     <a href="@tab.TabUrl">
-                                        <i data-feather="arrow-right-circle"></i> <span> @tab.TabName </span> @if (subtabs)
+                                        <i class="sidebar-icon @tab.IconPath"></i> <span> @tab.TabName </span> @if (subtabs)
                                         {
                                             <span class="menu-arrow"></span>
                                         }

@@ -12,6 +12,7 @@ public partial class TblTab
     public string TabUrl { get; set; } = null!;
 
     public int? ParentId { get; set; }
+    public int SortOrder { get; set; }
 
     public string? IconPath { get; set; }
 

@@ -326,6 +326,7 @@ public partial class dbMain : DbContext
 
             entity.Property(e => e.IconPath).IsUnicode(false);
             entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.SortOrder);
             entity.Property(e => e.TabName)
                 .HasMaxLength(50)
                 .IsUnicode(false);

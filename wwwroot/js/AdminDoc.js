@@ -34,10 +34,14 @@
             const formData = new FormData(form);
             const btnRegister = $("#btnDocumentUpload");
             const btnLoader = $("#btnLoader");
+
+            for (let pair of formData.entries()) {
+                console.log(`${pair[0]}:`, pair[1]);
+            }
+
             // AJAX submission
             btnRegister.prop("disabled", true);
             btnLoader.removeClass("d-none");
-
                 $.ajax({
                     url: '/Auth/AdminDoc',
                     type: 'POST',

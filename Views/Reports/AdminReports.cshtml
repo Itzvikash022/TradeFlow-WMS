@@ -127,8 +127,6 @@
 
                 $(document).ready(function () {
 
-
-
                     $(".restriction-btn").click(function () {
                         var adminId = $(this).data("id");
 
@@ -144,7 +142,7 @@
                                     }, 1000);
                                 }
                                 else{
-                                            showToast(response.message,"error");
+                                    showToast(response.message,"error");
                                 }
                             },
                             error:function (xhr, status, error) {
@@ -156,5 +154,4 @@
                 });
 
     </script>
-
 }

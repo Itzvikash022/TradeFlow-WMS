@@ -22,7 +22,7 @@ namespace WMS_Application.Repositories
             _user = user;
             _httpContextAccessor = httpContextAccessor;
         }
-
+        
         public byte[] GenerateSampleStockExcel(bool company)
         {
             // Create a new workbook & sheet
@@ -37,6 +37,8 @@ namespace WMS_Application.Repositories
                 sheet.Cell(1, 2).Value = "Category";  // Dropdown applied here
                 sheet.Cell(1, 3).Value = "Price per Unit";
                 sheet.Cell(1, 4).Value = "Manufacturer";
+
+
                 sheet.Cell(1, 5).Value = "Quantity";
                 sheet.Cell(1, 6).Value = "ProfileImagePath";
 

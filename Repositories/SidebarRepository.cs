@@ -28,8 +28,8 @@ namespace WMS_Application.Repositories
                                   TabUrl = t.TabUrl,
                                   IconPath = t.IconPath,
                                   IsActive = t.IsActive,
-                                  PermissionType = p.PermissionType
-
+                                  PermissionType = p.PermissionType,
+                                  SortOrder = t.SortOrder
                               }).ToListAsync();
 
             // Group the tabs into a hierarchical structure (parent-child)
@@ -43,9 +43,10 @@ namespace WMS_Application.Repositories
                     TabUrl = tab.TabUrl,
                     IconPath = tab.IconPath,
                     PermissionType = tab.PermissionType,
+                    SortOrder = tab.SortOrder,
                     //IsActive = tab.IsActive,
                     SubTabs = tabs.Where(sub => sub.ParentId == tab.TabId && sub.IsActive == true).ToList()
-                }).ToList();
+                }).OrderBy(x => x.SortOrder).ToList();
 
             return tabHierarchy;
         }

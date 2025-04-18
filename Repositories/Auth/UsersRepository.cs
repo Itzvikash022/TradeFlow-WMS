@@ -73,9 +73,32 @@ namespace WMS_Application.Repositories.Auth
             user.OtpExpiry = DateTime.Now.AddMinutes(5);
             user.IsVerified = false;
             string subj = "OTP Verification!!";
-            await _emailSender.SendEmailAsync(user.Email, subj, user.Otp);
+
+            string emailBody = @"
+                                <!DOCTYPE html>
+                                <html>
+                                <head>
+                                    <meta charset='UTF-8'>
+                                    <title>OTP Verification</title>
+                                </head>
+                                <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                                    <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                                        <h2 style='color: #333;'>Verify Your Email</h2>
+                                        <p style='font-size: 16px; color: #555;'>Your One-Time Password (OTP) for email verification is:</p>
+                                        <div style='font-size: 24px; font-weight: bold; color: #2c3e50; margin: 20px 0; text-align: center;'>
+                                            " + user.Otp + @"
+                                        </div>
+                                        <p style='font-size: 14px; color: #888;'>This OTP is valid for a limited time. Please do not share it with anyone.</p>
+                                        <p style='margin-top: 30px; font-size: 12px; color: #aaa;'>If you did not request this email, you can safely ignore it.</p>
+                                    </div>
+                                </body>
+                                </html>";
+
+
+            await _emailSender.SendEmailAsync(user.Email, subj, emailBody);
             user.RoleId = 2;
-            user.VerificationStatus = "Pending";
+
+            user.   VerificationStatus = "Pending";
             //Saving all given data to db
             await _context.TblUsers.AddAsync(user);
             await _context.SaveChangesAsync();

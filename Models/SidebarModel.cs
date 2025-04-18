@@ -7,6 +7,7 @@
         public string TabUrl { get; set; }
         public string? IconPath { get; set; }
         public string PermissionType { get; set; }
+        public int SortOrder { get; set; }
 
         public bool IsActive { get; set; }
         public int? ParentId { get; set; }

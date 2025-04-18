@@ -48,7 +48,7 @@ namespace WMS_Application.Controllers
 
         public IActionResult AdminReports()
         {
-            string permissionType = GetUserPermission("Admins Reports");
+            string permissionType = GetUserPermission("Owners Reports");
             if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
                 return View(_admin.GetAdminReports());

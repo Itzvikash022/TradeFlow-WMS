@@ -1,4 +1,5 @@
 ﻿using DocumentFormat.OpenXml.Office2010.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.X509.Qualified;
@@ -349,8 +350,33 @@ namespace WMS_Application.Controllers
                 _context.SaveChanges();
 
                 //Sending email after deletion
-                string subject = "Account Deleted!! heehehehehehe";
-                string body = "I'm sorry to inform you but your account has been terminated, please contact the support team if you have query regarding it";
+                string subject = "Account Deletion Confirmation";
+                string body = $@"
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset='UTF-8'>
+                        <title>Account Deletion</title>
+                    </head>
+                    <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                        <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                            <h2 style='color: #333;'>Account Deletion Confirmation</h2>
+                            <p style='font-size: 16px; color: #555;'>Hello {companyName},</p>
+                            <p style='font-size: 16px; color: #555;'>We regret to inform you that your account has been successfully deleted. We understand this may be disappointing, and we are here to assist you with any queries or concerns you may have regarding this action.</p>
+
+                            <p style='font-size: 16px; color: #555;'>If you believe this deletion was made in error or if you have any questions, please don't hesitate to reach out to our support team. We are here to help.</p>
+
+                            <p style='font-size: 16px; color: #555;'>Thank you for your time with us.</p>
+
+                            <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                            <p style='font-size: 16px; color: #555;'>[Your Company Name] Support Team</p>
+
+                            <div style='margin-top: 30px; font-size: 12px; color: #aaa;'>
+                                <p>If you did not request this deletion or believe this was done by mistake, please contact us immediately.</p>
+                            </div>
+                        </div>
+                    </body>
+                    </html>";
                 _emailSender.SendEmailAsync(company.Email, subject, body);
 
                 int userId = (int)HttpContext.Session.GetInt32("UserId");
@@ -374,17 +400,21 @@ namespace WMS_Application.Controllers
         [HttpPost]
         public async Task<IActionResult> RestrictionStatus(int companyId)
         {
-
             if (companyId == 0)  // Handle the case if the ID is invalid
             {
                 return Json(new { success = false, message = "Invalid company ID." });
             }
 
-            // Try deleting the admin from the database or perform your logic here
             try
             {
                 string msg = "", type = "";
                 var company = _context.TblCompanies.Find(companyId);
+                if (company == null)
+                {
+                    return Json(new { success = false, message = "Company not found." });
+                }
+
+                // Change the company status (restrict or unrestrict)
                 if ((bool)company.IsActive)
                 {
                     company.IsActive = false;
@@ -397,26 +427,58 @@ namespace WMS_Application.Controllers
                     msg = "Company UnRestricted successfully.";
                     type = "Unrestricted";
                 }
+
                 _context.TblCompanies.Update(company);
                 _context.SaveChanges();
 
+                // Log the activity
                 int userId = (int)HttpContext.Session.GetInt32("UserId");
                 string username = _context.TblUsers.Where(x => x.UserId == userId).Select(s => s.Username).FirstOrDefault();
                 type = "Company " + type;
-                string desc = $"{username} {type} Company named : {company.CompanyName}";
+                string desc = $"{username} {type} Company named: {company.CompanyName}";
 
                 _activity.AddNewActivity(userId, (int)HttpContext.Session.GetInt32("UserRoleId"), type, desc);
 
+                // Send email to company after restriction/unrestriction
+                string companyEmail = company.Email;  // Assuming the company has an Email field
 
-                // If successful, redirect to Index
+                if (!string.IsNullOrEmpty(companyEmail))
+                {
+                    string subject = $"{company.CompanyName} Account Status Update";
+                    string body = $@"
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset='UTF-8'>
+                        <title>Account Status Update</title>
+                    </head>
+                    <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                        <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                            <h2 style='color: #333;'>Your Company Account Status</h2>
+                            <p style='font-size: 16px; color: #555;'>Dear {company.CompanyName},</p>
+                            <p style='font-size: 16px; color: #555;'>This is to inform you that your company account has been {type}.</p>
+                            <p style='font-size: 16px; color: #555;'>{msg}</p>
+                            <p style='font-size: 16px; color: #555;'>If you have any questions, feel free to contact our support team.</p>
+                            <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                            <p style='font-size: 16px; color: #555;'>[Your Company Name] Support Team</p>
+                        </div>
+                    </body>
+                    </html>";
+
+                    // Send email using your email sender service
+                    await _emailSender.SendEmailAsync(companyEmail, subject, body);
+                }
+
+                // If successful, return a JSON response
                 return Json(new { success = true, message = msg });
             }
             catch (Exception ex)
             {
-                // Handle any exceptions during the deletion
+                // Handle any exceptions during the operation
                 Console.WriteLine("Error Restricting company: " + ex.Message);
                 return Json(new { success = false, message = "Error Restricting company." });
             }
         }
+
     }
 }

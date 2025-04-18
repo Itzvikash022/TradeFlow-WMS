@@ -101,14 +101,29 @@ namespace WMS_Application.Repositories.Auth
         }
 
         //This method will send token to user's email for password reset
-        public async Task<object> TokenSenderViaEmail(string email)
+        public async Task<object> TokenSenderViaEmail(string email, string isCompany)
         {
-            //Fetching user by email
-            var user = await _context.TblUsers.FirstOrDefaultAsync(u => u.Email == email);
-
-            if (user == null)
+            int Id = 0;
+            var resetUrl = "";
+            if (isCompany == "true")
             {
-                return new { success = false, message = "No user found with that email or username" };
+                var company = await _context.TblCompanies.FirstOrDefaultAsync(u => u.Email == email);
+                if (company == null)
+                {
+                    return new { success = false, message = "No company found with that email or username" };
+                }
+                Id = company.CompanyId;
+            }
+            else
+            {
+                //Fetching user by email
+                var user = await _context.TblUsers.FirstOrDefaultAsync(u => u.Email == email);
+
+                if (user == null)
+                {
+                    return new { success = false, message = "No user found with that email or username" };
+                }
+                Id = user.UserId;
             }
 
             //We are creating token variables here
@@ -116,30 +131,117 @@ namespace WMS_Application.Repositories.Auth
             var expirationTime = DateTime.Now.AddHours(1); // Token expires in 1 hour
 
             // Store the token and expiration time in-memory
-            _memoryCache.Set(resetToken, new { UserId = user.UserId, ExpirationTime = expirationTime }, expirationTime);
+            _memoryCache.Set(resetToken, new { UserId = Id, ExpirationTime = expirationTime }, expirationTime);
 
             // Create the password reset URL with the token
-            var resetUrl = "http://localhost:5026/Auth/ResetPassword?token=" + resetToken;
 
+            if(isCompany == "true")
+            {
+                resetUrl = "http://localhost:5026/Auth/ResetCompanyPassword?token=" + resetToken;
+            }
+            else
+            {
+                resetUrl = "http://localhost:5026/Auth/ResetPassword?token=" + resetToken;
+            }
+
+            var body = $@"
+                <html>
+                <head>
+                    <style>
+                        body {{
+                            font-family: Arial, sans-serif;
+                            margin: 0;
+                            padding: 0;
+                            background-color: #f4f4f4;
+                        }}
+                        .email-container {{
+                            width: 100%;
+                            max-width: 600px;
+                            margin: 0 auto;
+                            background-color: #ffffff;
+                            padding: 20px;
+                            border-radius: 10px;
+                            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+                        }}
+                        .header {{
+                            text-align: center;
+                            padding-bottom: 20px;
+                        }}
+                        .header h1 {{
+                            color: #333333;
+                            font-size: 24px;
+                        }}
+                        .content {{
+                            font-size: 16px;
+                            color: #555555;
+                            line-height: 1.6;
+                        }}
+                        .button {{
+                            display: inline-block;
+                            padding: 12px 30px;
+                            background-color: #007bff;
+                            color: #ffffff;
+                            text-decoration: none;
+                            font-size: 16px;
+                            border-radius: 5px;
+                            margin-top: 20px;
+                        }}
+                        .footer {{
+                            text-align: center;
+                            font-size: 14px;
+                            color: #777777;
+                            margin-top: 40px;
+                        }}
+                    </style>
+                </head>
+                <body>
+                    <div class='email-container'>
+                        <div class='header'>
+                            <h1>Password Reset Request</h1>
+                        </div>
+                        <div class='content'>
+                            <p>Hi there,</p>
+                            <p>We received a request to reset your password. If you didn’t request a password reset, you can ignore this email.</p>
+                            <p>To reset your password, click the button below:</p>
+                            <a href='{resetUrl}' class='button'>Reset Password</a>
+                            <p>If you have any issues, feel free to reach out to our support team.</p>
+                        </div>
+                        <div class='footer'>
+                            <p>&copy; {DateTime.Now.Year} Your Company Name. All Rights Reserved.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>";
             // Send the reset email
-            await _emailSender.SendEmailAsync(user.Email, "Password Reset Request",
-                $"Click <a href='{resetUrl}'>here</a> to reset your password.");
+            await _emailSender.SendEmailAsync(email, "Password Reset Request",body);
 
             return new { success = true, message = "Password reset link sent to your email." };
         }
 
         //This method will reset password of user
-        public async Task<object> ResetPassword(string creds, string newPassword)
+        public async Task<object> ResetPassword(string creds, string newPassword, bool isCompany)
         {
             //_memoryCache.Remove(token);
 
-            var user = _context.TblUsers.FirstOrDefault(u => u.Email == creds || u.Username == creds);
-            if (user != null)
+            if (isCompany)
             {
-                user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
-                _context.SaveChanges();
-                return new { success = true, message = "Password Changed Successfully" };
-
+                var company = _context.TblCompanies.FirstOrDefault(u => u.Email == creds);
+                if (company != null)
+                {
+                    company.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                    _context.SaveChanges();
+                    return new { success = true, message = "Password Changed Successfully" };
+                }
+            }
+            else
+            {
+                var user = _context.TblUsers.FirstOrDefault(u => u.Email == creds || u.Username == creds);
+                if (user != null)
+                {
+                    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                    _context.SaveChanges();
+                    return new { success = true, message = "Password Changed Successfully" };
+                }
             }
 
             return new { success = false, message = "User not found" };

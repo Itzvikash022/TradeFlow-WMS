@@ -18,6 +18,12 @@ public partial class TblCompany
 
     public string? PasswordHash { get; set; }
 
+    [NotMapped]
+    public bool RememberMe { get; set; }
+    
+    [NotMapped]
+    public string ConfirmPassword { get; set; }
+
     public string? State { get; set; }
 
     public string? City { get; set; }

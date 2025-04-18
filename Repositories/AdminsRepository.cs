@@ -66,12 +66,52 @@ namespace WMS_Application.Repositories
             _context.TblUsers.Update(user);
             await _context.SaveChangesAsync();
 
+            // Fetch user data based on the provided userId
             var userData = await _context.TblUsers.FirstOrDefaultAsync(u => u.UserId == userId);
+
+            // Determine the subject and body of the email based on the approval status
             var subject = status ? "Account Approved" : "Account Rejected";
             var body = status
-                ? $"Hi {user.Username},<br>Your account is approved.<br><b>Remark:</b> {remark}<br> Log in to start."
-                : $"Hi {user.Username},<br>Your account is rejected. Please contact support. <br><b>Remark:</b> {remark}<br>";
-            await _emailSender.SendEmailAsync(user.Email, subject, body);
+                ? $@"
+                <html>
+                <head>
+                    <meta charset='UTF-8'>
+                    <title>Account Approval</title>
+                </head>
+                <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                    <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                        <h2 style='color: #333;'>Your Account Has Been Approved!</h2>
+                        <p style='font-size: 16px; color: #555;'>Dear {userData.Username},</p>
+                        <p style='font-size: 16px; color: #555;'>Your account has been successfully approved. You can now log in and start using the services.</p>
+                        <p style='font-size: 16px; color: #555;'><b>Remark:</b> {remark}</p>
+                        <p style='font-size: 16px; color: #555;'>If you have any issues, please contact our support team.</p>
+                        <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                        <p style='font-size: 16px; color: #555;'>The [Your Company Name] Team</p>
+                    </div>
+                </body>
+                </html>"
+                        : $@"
+                <html>
+                <head>
+                    <meta charset='UTF-8'>
+                    <title>Account Rejection</title>
+                </head>
+                <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                    <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                        <h2 style='color: #333;'>Account Rejection Notice</h2>
+                        <p style='font-size: 16px; color: #555;'>Dear {userData.Username},</p>
+                        <p style='font-size: 16px; color: #555;'>Unfortunately, your account has been rejected. Please contact support if you need further information.</p>
+                        <p style='font-size: 16px; color: #555;'><b>Remark:</b> {remark}</p>
+                        <p style='font-size: 16px; color: #555;'>If you have any questions or would like to discuss this further, don't hesitate to reach out.</p>
+                        <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                        <p style='font-size: 16px; color: #555;'>The [Your Company Name] Team</p>
+                    </div>
+                </body>
+                </html>"
+                ;
+
+            // Send the email
+            await _emailSender.SendEmailAsync(userData.Email, subject, body);
 
             return new { success = true, message = status ? "User approved." : "User rejected." };
         }

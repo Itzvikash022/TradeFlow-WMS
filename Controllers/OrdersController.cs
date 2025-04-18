@@ -207,9 +207,51 @@ namespace WMS_Application.Controllers
             }
         }
 
-        public async Task<IActionResult> SendReminder(string buyerEmail)
+        public async Task<IActionResult> SendReminder(string buyerEmail, int orderId)
         {
-            _emailSender.SendEmailAsync(buyerEmail, "Payment Reminder", "Paise Baaki hai order ke bhar de");
+            int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
+            int Id = 0;
+            string name = "";
+            if (roleId == 5)
+            {
+                Id = (int)HttpContext.Session.GetInt32("CompanyId");
+                name = _context.TblCompanies.Where(x => x.CompanyId == Id).Select(y => y.CompanyName).FirstOrDefault();
+            }
+            else
+            {
+                Id = (int)HttpContext.Session.GetInt32("ShopId");
+                name = _context.TblShops.Where(x => x.ShopId == Id).Select(y => y.ShopName).FirstOrDefault();
+            }
+
+            var buyerData = _context.TblUsers.FirstOrDefault(x => x.Email == buyerEmail);
+            var order = _context.TblOrders.FirstOrDefault(x => x.OrderId == orderId);
+            string subject = "Payment Reminder - Order Pending";
+            string body = $@"
+                <html>
+                <head>
+                    <meta charset='UTF-8'>
+                    <title>Payment Reminder</title>
+                </head>
+                <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                    <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                        <h2 style='color: #333;'>Payment Reminder - Order Pending</h2>
+                        <p style='font-size: 16px; color: #555;'>Dear {buyerData.FirstName + buyerData.LastName},</p>
+                        <p style='font-size: 16px; color: #555;'>We are writing to remind you that the payment for your recent order is still pending. Kindly proceed with the payment at your earliest convenience to avoid any delays.</p>
+                        <p style='font-size: 16px; color: #555;'>Order Details:</p>
+                        <ul style='font-size: 16px; color: #555;'>
+                            <li>Order ID: {orderId}</li>
+                            <li>Total Amount: {order.TotalAmount}</li>
+                        </ul>
+                        <p style='font-size: 16px; color: #555;'>Please complete the payment as soon as possible to avoid any inconvenience. If you have any questions, feel free to reach out to us.</p>
+                        <p style='font-size: 16px; color: #555;'>Thank you for your attention to this matter.</p>
+                        <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                        <p style='font-size: 16px; color: #555;'>The {name} Team</p>
+                    </div>
+                </body>
+                </html>
+            ";
+            await _emailSender.SendEmailAsync(buyerEmail, subject, body);
+
             return Ok(new
             {
                 message = "Reminder Email Sent Successfully"
@@ -452,7 +494,27 @@ namespace WMS_Application.Controllers
 
                     string email = _context.TblUsers.Where(x => x.UserId == (_context.TblShops.Where(y => y.ShopId == orderDto.SellerShopId).Select(z => z.AdminId).FirstOrDefault())).Select(a => a.Email).FirstOrDefault();
                     string buyerName = _context.TblShops.Where(x => x.ShopId == orderDto.ShopId).Select(y => y.ShopName).FirstOrDefault();
-                    string body = $"New order request received from {buyerName}, checkout your order page for more details";
+
+
+                    string body = $@"
+                            <html>
+                            <head>
+                                <meta charset='UTF-8'>
+                                <title>New Order Request</title>
+                            </head>
+                            <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                                <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                                    <h2 style='color: #333;'>New Order Request</h2>
+                                    <p style='font-size: 16px; color: #555;'>Dear {customerName},</p>
+                                    <p style='font-size: 16px; color: #555;'>You have received a new order request from <strong>{buyerName}</strong>. Please visit your order page to review and process the details of this request.</p>
+                                    <p style='font-size: 16px; color: #555;'>Make sure to complete the necessary actions at the earliest to ensure timely processing.</p>
+                                    <p style='font-size: 16px; color: #555;'>Thank you for your attention to this matter!</p>
+                                    <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                                    <p style='font-size: 16px; color: #555;'>The TradeFlow Team</p>
+                                </div>
+                            </body>
+                            </html>
+                        ";
                     _emailSender.SendEmailAsync(email, "New Order Request Received", body);
                 }
                 else if (orderDto.SellerShopId > 0 && orderDto.SellerShopId == ShopData.ShopId) // Shop-to-Shop Selling (S2Ss)
@@ -485,13 +547,36 @@ namespace WMS_Application.Controllers
                         "Pending",
                         "Pending"
                     );
-                    
+
                     type = "Bought";
                     customerName = _context.TblCompanies.Where(x => x.CompanyId == orderDto.CompanyId).Select(y => y.CompanyName).FirstOrDefault();
 
                     string email = _context.TblCompanies.Where(x => x.CompanyId == orderDto.CompanyId).Select(y => y.Email).FirstOrDefault();
                     string buyerName = _context.TblShops.Where(x => x.ShopId == orderDto.ShopId).Select(y => y.ShopName).FirstOrDefault();
-                    string body = $"New order request received from {buyerName}, checkout your order page for more details";
+
+                    string subject = "New Order Request Received";
+                    string body = $@"
+                            <html>
+                            <head>
+                                <meta charset='UTF-8'>
+                                <title>New Order Request</title>
+                            </head>
+                            <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                                <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                                    <h2 style='color: #333;'>New Order Request</h2>
+                                    <p style='font-size: 16px; color: #555;'>Dear {customerName},</p>
+                                    <p style='font-size: 16px; color: #555;'>You have received a new order request from <strong>{buyerName}</strong>. Please visit your order page for further details.</p>
+                                    <p style='font-size: 16px; color: #555;'>We recommend reviewing the request as soon as possible to proceed with the necessary actions.</p>
+                                    <p style='font-size: 16px; color: #555;'>Thank you for your prompt attention to this matter!</p>
+                                    <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                                    <p style='font-size: 16px; color: #555;'>The TradeFlow Team</p>
+                                </div>
+                            </body>
+                            </html>
+                        ";
+
+                    // Send the email
+
                     _emailSender.SendEmailAsync(email, "New Order Request Received", body);
 
                 }
@@ -573,30 +658,79 @@ namespace WMS_Application.Controllers
                         id = (int)HttpContext.Session.GetInt32("UserId");
                         name = _context.TblUsers.Where(x => x.UserId == id).Select(y => y.Username).FirstOrDefault();
                     }
-                    
+
                     string buyerName = buyerInfo.ShopName;
                     string type = "Order Request Status Updated";
-                    string desc = $"{name} accepted {buyerName}'s order request";
+                    string desc = $"{name} has accepted {buyerName}'s order request";
+
+                    // Add the activity log for the action
                     _activity.AddNewActivity(id, roleId, type, desc);
 
+                    // Compose the email subject and body
                     string subject = "Order Request Approved";
-                    string body = $"{buyerName} your order request for order id : {order.OrderId} has been approved by {name}. It will be delivered to your soon, or you can pick it from our premises too.";
-                    _emailSender.SendEmailAsync(buyerEmail, subject, body);
+                    string body = $@"
+                        <html>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <title>Order Request Approved</title>
+                        </head>
+                        <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                            <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                                <h2 style='color: #333;'>Order Request Approved</h2>
+                                <p style='font-size: 16px; color: #555;'>Dear {buyerName},</p>
+                                <p style='font-size: 16px; color: #555;'>We are pleased to inform you that your order request with order ID: <strong>{order.OrderId}</strong> has been approved by {name}.</p>
+                                <p style='font-size: 16px; color: #555;'>Your order will be delivered soon, or you can choose to pick it up from our premises. Please contact us if you have any further questions.</p>
+                                <p style='font-size: 16px; color: #555;'>Thank you for your business, and we look forward to serving you again!</p>
+                                <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                                <p style='font-size: 16px; color: #555;'>The TradeFlow Team</p>
+                            </div>
+                        </body>
+                        </html>
+                    ";
+
+                    // Send the email to the buyer
+                    await _emailSender.SendEmailAsync(buyerEmail, subject, body);
+
+                    // Return a success response
                     return Json(new { success = true, message = "Order status updated successfully." });
+
                 }
                 else
                 {
+                    // Update the order status and payment status
                     order.OrderStatus = request.NewStatus;
                     order.PaymentStatus = "Pending Refund";
                     _context.TblOrders.Update(order);
-
                     _context.SaveChanges();
 
+                    // Compose the email subject and body
                     string subject = "Order Request Rejected";
-                    string body = $"{buyerInfo.ShopName} your order request for order id : {order.OrderId} has been rejected. You can request for again for another order sometime, or you can support the owner for more details";
+                    string body = $@"
+                            <html>
+                            <head>
+                                <meta charset='UTF-8'>
+                                <title>Order Request Rejected</title>
+                            </head>
+                            <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                                <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                                    <h2 style='color: #333;'>Order Request Rejected</h2>
+                                    <p style='font-size: 16px; color: #555;'>Dear {buyerInfo.ShopName},</p>
+                                    <p style='font-size: 16px; color: #555;'>We regret to inform you that your order request for order ID: <strong>{order.OrderId}</strong> has been rejected. We apologize for any inconvenience this may have caused.</p>
+                                    <p style='font-size: 16px; color: #555;'>You are welcome to submit another order request in the future, or feel free to reach out to the shop owner for more information.</p>
+                                    <p style='font-size: 16px; color: #555;'>Thank you for your understanding.</p>
+                                    <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                                    <p style='font-size: 16px; color: #555;'>The [Your Company Name] Team</p>
+                                </div>
+                            </body>
+                            </html>
+                        ";
 
-                    _emailSender.SendEmailAsync(buyerEmail, subject, body);
+                    // Send the rejection email to the buyer
+                    await _emailSender.SendEmailAsync(buyerEmail, subject, body);
+
+                    // Return a success response
                     return Json(new { success = true, message = "Order Rejected" });
+
                 }
             }
             catch (Exception ex)

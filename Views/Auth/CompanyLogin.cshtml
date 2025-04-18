@@ -45,14 +45,19 @@
                                 </div>
                             </div>
 
-                            @* <div class="pass-group"> *@
-                            @*     <input type="checkbox" asp-for="RememberMe"> Remember Me *@
-                            @* </div> *@
-                            @* <div class="form-login"> *@
-                            @*     <div class="alreadyuser"> *@
-                            @*         <h4><a href="~/Auth/ForgotPassword" class="hover-a">Forgot Password?</a></h4> *@
-                            @*     </div> *@
-                            @* </div> *@
+                            <div class="pass-group">
+                                <input type="checkbox" asp-for="RememberMe"> Remember Me
+                            </div>
+
+                            <div class="form-login">
+                                <div class="alreadyuser">
+                                    <h4>
+                                        <!-- Pass a query parameter to identify the user type -->
+                                        <a href="~/Auth/ForgotPassword?isCompany=true" class="hover-a">Forgot Password?</a>
+                                    </h4>
+                                </div>
+                            </div>
+
                             <div class="form-login">
                                 <button type="submit" id="btnLogin" class="btn btn-login">
                                     <span class="spinner-border spinner-border-sm d-none" id="btnLoader" role="status" aria-hidden="true"></span>
@@ -82,6 +87,17 @@
 
                 $(document).ready(function () {
                     showToast('@TempData["companyreg-toast"]','@TempData["companyreg-toastType"]');
+                });
+
+            </script>
+        }
+
+        @if (TempData["reset-toast"] != null)
+        {
+            <script>
+
+                $(document).ready(function () {
+                    showToast('@TempData["reset-toast"]','@TempData["reset-toastType"]');
                 });
 
             </script>

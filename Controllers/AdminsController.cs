@@ -38,10 +38,10 @@ namespace WMS_Application.Controllers
         }
 
 
-        [Route("Admins")]
+        [Route("Owners")]
         public async Task<IActionResult> Index()
         {
-            string permissionType = GetUserPermission("Admins");
+            string permissionType = GetUserPermission("Owners");
             if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
                 return View(await _admins.GetAllAdminsData());
@@ -56,7 +56,7 @@ namespace WMS_Application.Controllers
         {
             List<TblUser> adminList = await _admins.GetAllAdminsData();
 
-            var dataTable = new DataTable("Admins");
+            var dataTable = new DataTable("Owners");
             dataTable.Columns.AddRange(new DataColumn[]
             {
                 new DataColumn("Full Name"),
@@ -74,7 +74,7 @@ namespace WMS_Application.Controllers
                 dataTable.Rows.Add(admin.FirstName + " " + admin.LastName, admin.Username, admin.Email, admin.CreatedAt, admin.PhoneNumber, admin.DateOfBirth, admin.IsVerified, admin.VerificationStatus);
             }
 
-            var fileBytes = _export.ExportToExcel(dataTable, "AdminList");
+            var fileBytes = _export.ExportToExcel(dataTable, "OwnersList");
 
             if (fileBytes != null)
             {
@@ -82,7 +82,7 @@ namespace WMS_Application.Controllers
                 int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
                 string name = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
 
-                string type = "Export Admin List";
+                string type = "Export Owners List";
                 string desc = $"{name} exported Admin list";
 
                 _activity.AddNewActivity(userId, roleId, type, desc);
@@ -96,7 +96,7 @@ namespace WMS_Application.Controllers
         [HttpGet]
         public IActionResult Details(int id)
         {
-            string permissionType = GetUserPermission("Admins");
+            string permissionType = GetUserPermission("Owners");
             if (permissionType == "canView" || permissionType == "canEdit" || permissionType == "fullAccess")
             {
                 TblUser admin = _context.TblUsers.FirstOrDefault(x => x.UserId == id);
@@ -141,25 +141,46 @@ namespace WMS_Application.Controllers
                 _context.SaveChanges();
 
                 //Sending email after deletion
-                string subject = "Account Deleted!! heehehehehehe";
-                string body = "I'm sorry to inform you but your account has been terminated, please contact the support team if you have query regarding it";
-                _emailSender.SendEmailAsync(admin.Email, subject, body);
+                string subject = "Account Deletion Notification";
+                string emailBody = @"
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <title>Account Deletion Notification</title>
+                        </head>
+                        <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                            <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                                <h2 style='color: #333;'>Account Deletion Notification</h2>
+                                <p style='font-size: 16px; color: #555;'>Dear [User's Name],</p>
+                                <p style='font-size: 16px; color: #555;'>We regret to inform you that your account has been successfully deleted. If you have any questions or concerns regarding this process, please do not hesitate to contact our support team. We're here to assist you with any queries you may have.</p>
+                                <p style='font-size: 16px; color: #555;'>Thank you for your understanding.</p>
+                                <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                                <p style='font-size: 16px; color: #555;'>TradeFlow Support Team</p>
+                                <p style='font-size: 14px; color: #888;'>If you believe this is an error, please reach out to support immediately.</p>
+                                <div style='margin-top: 30px; font-size: 12px; color: #aaa;'>
+                                    <p>If you did not request this action, please contact our support team immediately.</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>";
+                _emailSender.SendEmailAsync(admin.Email, subject, emailBody);
 
                 int userId = (int)HttpContext.Session.GetInt32("UserId");
                 int roleId = (int)HttpContext.Session.GetInt32("UserRoleId");
                 string userName = _context.TblUsers.Where(x => x.UserId == userId).Select(y => y.Username).FirstOrDefault();
 
-                string type = "Admin Delete";
+                string type = "Owner Delete";
                 string desc = $"{userName} deleted {admin.Username}";
 
                 _activity.AddNewActivity(userId, roleId, type, desc);
                 // If successful, redirect to Index
-                return Json(new { success = true, message = "Admin deleted successfully." });
+                return Json(new { success = true, message = "Owner deleted successfully." });
             }
             catch (Exception ex)
             {
                 // Handle any exceptions during the deletion
-                Console.WriteLine("Error deleting admin: " + ex.Message);
+                Console.WriteLine("Error deleting Owner: " + ex.Message);
                 return Json(new { success = false, message = "Error deleting admin." });
             }
         }
@@ -260,7 +281,7 @@ namespace WMS_Application.Controllers
         public async Task<IActionResult> SaveAdmin(int? id, string? from)
         {
             // Determine role type dynamically
-            string roleToCheck = from == "admin" ? "Admins" : "Employees";
+            string roleToCheck = from == "admin" ? "Owners" : "Employees";
             string permissionType = GetUserPermission(roleToCheck);
             if (permissionType == "canEdit" || permissionType == "fullAccess")
             {
@@ -314,7 +335,7 @@ namespace WMS_Application.Controllers
                 int ResId = (int)HttpContext.Session.GetInt32("UserId");
                 int verifier = ResId;
                 user.VerifiedBy = verifier.ToString();
-                string type = "Admin";
+                string type = "Owner";
                 if (user.RoleId > 2)
                 {
                     user.AdminRef = verifier;
@@ -334,8 +355,39 @@ namespace WMS_Application.Controllers
                         TempData["saveAdmin-toast"] = $"{type} Updated Successfully";
                         TempData["saveAdmin-toastType"] = "success";
 
-                        string subject = $"{type} account has been updated";
-                        string body = $"Hello there {user.FirstName}, your account has been successfully updated by the SuperAdmin and you can access your account now, some information has been update and your username and email has been mailed regardless of any changes, you can now login under the given credentials. UserName : {user.Username}, Email : {user.Email}, Password : you old same pass. But keep in mind, this is a sensitive information, so plz don't share it with anyone else. Thank you";
+                        string subject = $"{type} Account Update Notification";
+                        string body = $@"
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset='UTF-8'>
+                                <title>Account Updated</title>
+                            </head>
+                            <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                                <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                                    <h2 style='color: #333;'>Account Successfully Updated</h2>
+                                    <p style='font-size: 16px; color: #555;'>Hello {user.FirstName},</p>
+                                    <p style='font-size: 16px; color: #555;'>We would like to inform you that your account has been successfully updated by the SuperAdmin. You can now access your account with the updated information.</p>
+                                    <p style='font-size: 16px; color: #555;'>Please note that while some information has been updated, your username and email have been sent to you regardless of any changes made. You can log in using the credentials provided below:</p>
+            
+                                    <p style='font-size: 16px; color: #555;'>
+                                        <strong>Username:</strong> {user.Username}<br>
+                                        <strong>Email:</strong> {user.Email}<br>
+                                        <strong>Password:</strong> Your existing password remains the same.
+                                    </p>
+            
+                                    <p style='font-size: 16px; color: #555;'>Please keep in mind that this is sensitive information. We advise you not to share your credentials with anyone else for your account's security.</p>
+
+                                    <p style='font-size: 16px; color: #555;'>Thank you for being a valued member.</p>
+
+                                    <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                                    <p style='font-size: 16px; color: #555;'>[Your Company Name] Support Team</p>
+                                    <div style='margin-top: 30px; font-size: 12px; color: #aaa;'>
+                                        <p>If you did not request this update, please contact our support team immediately.</p>
+                                    </div>
+                                </div>
+                            </body>
+                            </html>";
                         _emailSender.SendEmailAsync(user.Email, subject, body);
 
                         activityDesc = $"{username} updated {user.Username}'s details";
@@ -349,8 +401,42 @@ namespace WMS_Application.Controllers
                         TempData["saveAdmin-toast"] = $"{type} Added Successfully";
                         TempData["saveAdmin-toastType"] = "success";
 
-                        string subject = $"{type} account has been created";
-                        string body = $"Hello there {user.FirstName}, welcome to our WMS Application, you account has been successfully created and you can access your account under the given credentials. UserName : {user.Username}, Email : {user.Email}, Password : {password} and after login, you can fill out your extra informations. But keep in mind, this is a sensitive information, so plz don't share it with anyone else. Thank you";
+                        string subject = $"{type} Account Creation Confirmation";
+                        string body = $@"
+                            <!DOCTYPE html>
+                            <html>
+                            <head>
+                                <meta charset='UTF-8'>
+                                <title>Account Created</title>
+                            </head>
+                            <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                                <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                                    <h2 style='color: #333;'>Account Successfully Created</h2>
+                                    <p style='font-size: 16px; color: #555;'>Hello {user.FirstName},</p>
+                                    <p style='font-size: 16px; color: #555;'>Welcome to our WMS Application! We are pleased to inform you that your account has been successfully created.</p>
+                                    <p style='font-size: 16px; color: #555;'>You can now access your account using the credentials provided below:</p>
+            
+                                    <p style='font-size: 16px; color: #555;'>
+                                        <strong>Username:</strong> {user.Username}<br>
+                                        <strong>Email:</strong> {user.Email}<br>
+                                        <strong>Password:</strong> {password}
+                                    </p>
+            
+                                    <p style='font-size: 16px; color: #555;'>Once logged in, you will be prompted to fill out additional information to complete your profile setup.</p>
+
+                                    <p style='font-size: 16px; color: #555;'>Please note that these credentials are sensitive. We advise you not to share your username and password with anyone else for your account's security.</p>
+
+                                    <p style='font-size: 16px; color: #555;'>Thank you for joining us. We look forward to having you as a valued user of our platform.</p>
+
+                                    <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                                    <p style='font-size: 16px; color: #555;'>[Your Company Name] Support Team</p>
+
+                                    <div style='margin-top: 30px; font-size: 12px; color: #aaa;'>
+                                        <p>If you did not request this account creation, please contact our support team immediately.</p>
+                                    </div>
+                                </div>
+                            </body>
+                            </html>";
                         _emailSender.SendEmailAsync(user.Email, subject, body);
 
                         activityDesc = $"{username} added new {type} named : {user.Username}";

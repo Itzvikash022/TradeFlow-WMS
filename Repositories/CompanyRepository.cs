@@ -11,11 +11,9 @@ namespace WMS_Application.Repositories
     public class CompanyRepository : ICompanyRepository
     {
         private readonly dbMain _context;
-        private readonly IEmailSenderRepository _emailSender;
         public CompanyRepository(dbMain context, IEmailSenderRepository emailSender)
         {
             _context = context;
-            _emailSender = emailSender;
         }
         public List<TblCompany> GetAllCompanies()
         {

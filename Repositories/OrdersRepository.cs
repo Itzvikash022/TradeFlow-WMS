@@ -526,52 +526,65 @@ namespace WMS_Application.Repositories
 
 
                 // ✅ Generate receipt & send email AFTER everything is successfully saved
-                if (transaction.OrderId != 0)
-                {
-                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Receipts");
-                    string uniqueFileName = $"Receipt_{transaction.OrderId}_{Guid.NewGuid()}.pdf";
-                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                //if (transaction.OrderId != 0)
+                //{
+                //    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Receipts");
+                //    string uniqueFileName = $"Receipt_{transaction.OrderId}_{Guid.NewGuid()}.pdf";
+                //    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                    if (!Directory.Exists(uploadsFolder))
-                        Directory.CreateDirectory(uploadsFolder);
+                //    if (!Directory.Exists(uploadsFolder))
+                //        Directory.CreateDirectory(uploadsFolder);
 
-                    var receiptBytes = await GenerateReceiptAsync(transaction);
-                    if (receiptBytes != null)
-                    {
-                        await File.WriteAllBytesAsync(filePath, receiptBytes);
-                        transaction.ReceiptPath = "\\Receipts\\" + uniqueFileName;
+                //    var receiptBytes = await GenerateReceiptAsync(transaction);
+                //    if (receiptBytes != null)
+                //    {
+                //        await File.WriteAllBytesAsync(filePath, receiptBytes);
+                //        transaction.ReceiptPath = "\\Receipts\\" + uniqueFileName;
 
-                        string buyerEmail;
-                        if (order.OrderType == "ShopToCustomer")
-                        {
-                            buyerEmail = await _context.TblCustomers
-                                .Where(u => u.CustomerId == order.BuyerId)
-                                .Select(u => u.Email)
-                                .FirstOrDefaultAsync();
-                        }
-                        else
-                        {
-                            int buyerId = await _context.TblShops
-                                .Where(u => u.ShopId == order.BuyerId)
-                                .Select(u => u.AdminId)
-                                .FirstOrDefaultAsync();
+                //        string buyerEmail, name;
+                //        if (order.OrderType == "ShopToCustomer")
+                //        {
+                //            var buyerData = await _context.TblCustomers
+                //                .Where(u => u.CustomerId == order.BuyerId)
+                //                .FirstOrDefaultAsync();
+                //            buyerEmail = buyerData.Email;
+                //            name = buyerData.CustomerName;
+                //        }
+                //        else
+                //        {
+                //            int buyerId = await _context.TblShops
+                //                .Where(u => u.ShopId == order.BuyerId)
+                //                .Select(u => u.AdminId)
+                //                .FirstOrDefaultAsync();
 
-                            buyerEmail = await _context.TblUsers
-                                .Where(u => u.UserId == buyerId)
-                                .Select(u => u.Email)
-                                .FirstOrDefaultAsync();
-                        }
-
-                        string fileName = $"Receipt_{transaction.OrderId}.pdf";
-                        await _emailSender.SendEmailAsync(
-                            toEmail: buyerEmail,
-                            subject: "Your Order Receipt",
-                            body: "<p>Thank you for your order! Find your receipt attached.</p>",
-                            attachmentBytes: receiptBytes,
-                            attachmentFilename: fileName
-                        );
-                    }
-                }
+                //            var buyerData = await _context.TblUsers
+                //                .Where(u => u.UserId == buyerId)
+                //                .FirstOrDefaultAsync();
+                //            buyerEmail = buyerData.Email;
+                //            name = buyerData.Username;
+                //        }
+                //        string fileName = $"Receipt_{transaction.OrderId}.pdf";
+                //        await _emailSender.SendEmailAsync(
+                //            toEmail: buyerEmail,
+                //            subject: "Your Order Receipt",
+                //            body: $@"
+                //                <html>
+                //                <body style='font-family: Arial, sans-serif;'>
+                //                    <h2>Thank you for your order, {name}!</h2>
+                //                    <p>We are pleased to inform you that your order has been successfully processed.</p>
+                //                    <p>Please find your receipt attached below for reference. If you have any questions, feel free to contact us.</p>
+                //                    <p><strong>Order ID:</strong> {transaction.OrderId}</p>
+                //                    <p><strong>Amount:</strong> {order.TotalAmount}</p>
+                //                    <p>We appreciate your business and look forward to serving you again!</p>
+                //                    <p>Best regards,</p>
+                //                    <p>Your Support Team</p>
+                //                </body>
+                //                </html>",
+                //            attachmentBytes: receiptBytes,
+                //            attachmentFilename: fileName
+                //        );
+                //    }
+                //}
 
                 // ✅ Stock is available, proceed with transaction insertion
                 await _context.TblTransactions.AddAsync(transaction);
@@ -608,13 +621,14 @@ namespace WMS_Application.Repositories
                         await File.WriteAllBytesAsync(filePath, receiptBytes);
                         transaction.ReceiptPath = "\\Receipts\\" + uniqueFileName;
 
-                        string buyerEmail;
+                        string buyerEmail, name;
                         if (order.OrderType == "ShopToCustomer")
                         {
-                            buyerEmail = await _context.TblCustomers
+                            var buyerData= await _context.TblCustomers
                                 .Where(u => u.CustomerId == order.BuyerId)
-                                .Select(u => u.Email)
                                 .FirstOrDefaultAsync();
+                            buyerEmail = buyerData.Email;
+                            name = buyerData.CustomerName;
                         }
                         else
                         {
@@ -623,20 +637,33 @@ namespace WMS_Application.Repositories
                                 .Select(u => u.AdminId)
                                 .FirstOrDefaultAsync();
 
-                            buyerEmail = await _context.TblUsers
+                            var buyerData = await _context.TblUsers
                                 .Where(u => u.UserId == buyerId)
-                                .Select(u => u.Email)
                                 .FirstOrDefaultAsync();
+                            buyerEmail = buyerData.Email;
+                            name = buyerData.Username;
                         }
-
                         string fileName = $"Receipt_{transaction.OrderId}.pdf";
                         await _emailSender.SendEmailAsync(
                             toEmail: buyerEmail,
                             subject: "Your Order Receipt",
-                            body: "<p>Thank you for your order! Find your receipt attached.</p>",
+                            body: $@"
+                                <html>
+                                <body style='font-family: Arial, sans-serif;'>
+                                    <h2>Thank you for your order, {name}!</h2>
+                                    <p>We are pleased to inform you that your order has been successfully processed.</p>
+                                    <p>Please find your receipt attached below for reference. If you have any questions, feel free to contact us.</p>
+                                    <p><strong>Order ID:</strong> {transaction.OrderId}</p>
+                                    <p><strong>Amount:</strong> {order.TotalAmount}</p>
+                                    <p>We appreciate your business and look forward to serving you again!</p>
+                                    <p>Best regards,</p>
+                                    <p>Your Support Team</p>
+                                </body>
+                                </html>",
                             attachmentBytes: receiptBytes,
                             attachmentFilename: fileName
                         );
+
                     }
                 }
 

@@ -115,8 +115,26 @@ namespace WMS_Application.Controllers
 
 
                 //Sending email after deletion
-                string subject = "Account Deleted!! heehehehehehe";
-                string body = "I'm sorry to inform you but your account has been terminated, please contact the support team if you have query regarding it";
+                string subject = "Account Deletion Notification";
+                string body = @"
+                    <html>
+                    <head>
+                        <meta charset='UTF-8'>
+                        <title>Account Deletion</title>
+                    </head>
+                    <body style='font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 30px;'>
+                        <div style='max-width: 500px; margin: auto; background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05);'>
+                            <h2 style='color: #333;'>Account Deletion Notification</h2>
+                            <p style='font-size: 16px; color: #555;'>Dear {user.FirstName},</p>
+                            <p style='font-size: 16px; color: #555;'>We regret to inform you that your account has been terminated. If you have any questions or concerns, please don't hesitate to reach out to our support team.</p>
+                            <p style='font-size: 16px; color: #555;'>If you believe this to be an error or have any queries regarding this action, please contact us at [Support Email] or visit our support page.</p>
+                            <p style='font-size: 16px; color: #555;'>Best regards,</p>
+                            <p style='font-size: 16px; color: #555;'>The Support Team</p>
+                        </div>
+                    </body>
+                    </html>
+                ";
+
                 _emailSender.SendEmailAsync(emp.Email, subject, body);
 
                 int userId = (int)HttpContext.Session.GetInt32("UserId");

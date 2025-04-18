@@ -241,4 +241,65 @@
         }
     });
 
+
+    $("#ResetCompanyPassword").validate({
+        rules: {
+            PasswordHash: {
+                required: true,
+                minlength: 8
+            },
+            ConfirmPassword: {
+                required: true,
+                minlength: 8,
+                equalTo: "#PasswordHash"
+            },
+        },
+        messages: {
+            PasswordHash: {
+                required: "Please enter a password.",
+                minlength: "Password must be at least 8 characters."
+            },
+            ConfirmPassword: {
+                required: "Please enter confirm password",
+                minlength: "Confirm password must be least 8 characters",
+                equalTo: "Password doesn't match"
+            },
+        },
+
+        submitHandler: function (form, event) {
+            event.preventDefault()
+            const formData = new FormData(form);
+            //var formData = {
+            //    PasswordHash: $('#PasswordHash').val(),
+            //}
+
+            const btnRegister = $("#btnSubmit");
+            const btnLoader = $("#btnLoader");
+            btnRegister.prop("disabled", true);
+            btnLoader.removeClass("d-none");
+
+                // AJAX submission
+                $.ajax({
+                    url: '/Auth/ResetCompanyPasswordAction',
+                    type: 'POST',
+                    processData: false,
+                    contentType: false,
+                    data: formData,
+                    success: function (result) {
+                        if (result.success) {
+                            window.location.href = '/Auth/CompanyLogin';
+                        }
+                    },
+                    complete: function () {
+                        // Re-enable button and hide loader
+                        btnRegister.prop("disabled", false);
+                        btnLoader.addClass("d-none");
+                    },
+                    error: function () {
+                        showToast("Unknown error occurred", "error")
+                    }
+                });
+        }
+    });
+
 });

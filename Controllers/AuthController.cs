@@ -58,10 +58,17 @@ namespace WMS_Application.Controllers
         }
 
 
-        public IActionResult ForgotPassword()
+        public IActionResult ForgotPassword(bool isCompany)
         {
+            if (isCompany)
+            {
+                HttpContext.Session.SetString("isCompany", "true");
+            }
+            else
+            {
+                HttpContext.Session.SetString("isCompany", "false");
+            }
             return View();
-
         }
         public IActionResult GoogleDetails(string email)
         {
@@ -226,7 +233,8 @@ namespace WMS_Application.Controllers
         public async Task<IActionResult> ForgotPassword(TblUser user)
         {
             HttpContext.Session.SetString("ForgotPassEmail", user.Email);
-            var res = await _login.TokenSenderViaEmail(user.Email);
+            string isCompany = HttpContext.Session.GetString("isCompany");
+            var res = await _login.TokenSenderViaEmail(user.Email, isCompany);
             return Ok(res);
         }
 
@@ -244,12 +252,40 @@ namespace WMS_Application.Controllers
             _memoryCache.Remove(token);
             return View();
         }
+        
+        [HttpGet]
+        public IActionResult ResetCompanyPassword(string token)
+        {
+            // Validate the token
+            if (string.IsNullOrEmpty(token) || !_memoryCache.TryGetValue(token, out object tokenData))
+            {
+                ViewBag.InvalidToken = true;
+                return View();
+            }
+            ViewBag.InvalidToken = false;
+            ViewBag.Token = token;
+            _memoryCache.Remove(token);
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetCompanyPasswordAction(string PasswordHash)
+        {
+            string user = HttpContext.Session.GetString("ForgotPassEmail");
+
+            var res = await _login.ResetPassword(user, PasswordHash, true);
+
+            TempData["reset-toast"] = "Password Changed Successgfully!";
+            TempData["reset-toastType"] = "success";
+            return Ok(res);
+        }
 
         [HttpPost]
         public async Task<IActionResult> ResetPasswordAction(string PasswordHash)
         {
             string user = HttpContext.Session.GetString("ForgotPassEmail");
-            var res = await _login.ResetPassword(user, PasswordHash);
+
+            var res = await _login.ResetPassword(user, PasswordHash, false);
 
             TempData["reset-toast"] = "Password Changed Successgfully!";
             TempData["reset-toastType"] = "success";
@@ -257,6 +293,21 @@ namespace WMS_Application.Controllers
         }
         public IActionResult OtpCheck()
         {
+
+            int? roleId = HttpContext.Session.GetInt32("UserRoleId");
+            if (roleId != null && roleId == 5)
+            {
+                return RedirectToAction("CompanyLogin", "Auth", null);
+
+            }
+
+            string email = HttpContext.Session.GetString("UserEmail");
+            bool isVerified = _context.TblUsers.Where(x => x.Email == email).Select(y => y.IsVerified).FirstOrDefault();
+
+            if (isVerified)
+            {
+                return RedirectToAction("Moredetails", "Auth", null);
+            }
             return View();
         }
 
@@ -272,15 +323,49 @@ namespace WMS_Application.Controllers
         }
         public IActionResult CompanyLogin()
         {
-            return View();
+            var model = new TblCompany();
+            if (Request.Cookies.TryGetValue("RememberMe_CompEmail", out string Emailvalue))
+            {
+                model.Email = Emailvalue;
+                model.RememberMe = true;
+            }
+
+            //JIC, password is working fine and is being stored in the input field, but due to browser restrictions being type=pass, it can't autofill, changin pass field type=text fixes it.
+            //if (Request.Cookies.TryGetValue("RememberMe_Password", out string Passvalue))
+            //{
+            //    model.Password = Passvalue;
+            //    model.RememberMe = true;
+            //}
+
+            return View(model);
+
         }
         [HttpPost]
-        public async Task<IActionResult> CompanyLogin([FromForm] string email, string passwordhash)
+        public async Task<IActionResult> CompanyLogin([FromForm] string email, string passwordhash, bool rememberMe)
         {
             var result = await _company.AuthenticateUser(email, passwordhash);
             var companyData = _context.TblCompanies.FirstOrDefault(x => x.Email == email);
             if (((dynamic)result).success)
             {
+
+
+                if (rememberMe)
+                {
+                    var options = new CookieOptions
+                    {
+                        Expires = DateTime.Now.AddDays(7), // Cookie expiration time
+                        HttpOnly = true,                  // Secure the cookie
+                        Secure = true                     // Use HTTPS
+                    };
+                    Response.Cookies.Append("RememberMe_CompEmail", email, options);
+                }
+                else
+                {
+                    // Clear cookies if Remember Me is not checked
+                    Response.Cookies.Delete("RememberMe_CompEmail");
+                }
+
+
                 HttpContext.Session.SetInt32("UserRoleId", 5);
                 HttpContext.Session.SetInt32("CompanyId", companyData.CompanyId);
                 companyData.LastLogin = DateTime.Now;
@@ -348,6 +433,14 @@ namespace WMS_Application.Controllers
 
         public async Task<IActionResult> MoreDetails()
         {
+
+            int? roleId = HttpContext.Session.GetInt32("UserRoleId");
+            if (roleId != null && roleId == 5)
+            {
+                return RedirectToAction("CompanyLogin", "Auth", null);
+
+            }
+
             var model = new TblUser();
             string email = HttpContext.Session.GetString("UserEmail");
             if (email != null)
@@ -552,8 +645,24 @@ namespace WMS_Application.Controllers
         }
         public async Task<IActionResult> ShopDetails()
         {
-            var model = new TblShop();
+
+
+            int? roleId = HttpContext.Session.GetInt32("UserRoleId");
+            if (roleId != null && roleId == 5)
+            {
+                return RedirectToAction("CompanyLogin", "Auth", null);
+
+            }
+
+
             int id = (int)HttpContext.Session.GetInt32("UserId");
+            bool hasShopDetails = await _users.hasShopDetails(id);
+            if (hasShopDetails)
+            {
+                return RedirectToAction("AdminDoc", "Auth", null);
+            }
+
+            var model = new TblShop();
             if (id != 0)
             {
                 model = await _users.GetShopDataByUserId(id) ?? new TblShop();
@@ -563,8 +672,23 @@ namespace WMS_Application.Controllers
 
         public async Task<IActionResult> AdminDoc()
         {
-            var model = new TblAdminInfo();
+            int? roleId = HttpContext.Session.GetInt32("UserRoleId");
+            if(roleId != null && roleId == 5)
+            {
+                return RedirectToAction("CompanyLogin", "Auth", null);
+
+            }
+
             int id = (int)HttpContext.Session.GetInt32("UserId");
+
+            bool hasAdminDocs = await _users.hasAdminDoc(id);
+            if (hasAdminDocs)
+            {
+                return RedirectToAction("Login", "Auth", null);
+            }
+
+
+            var model = new TblAdminInfo();
             if (id != 0)
             {
                 model = await _users.GetAdminDocDetailsById(id);

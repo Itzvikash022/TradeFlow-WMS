@@ -93,7 +93,7 @@
                                         @if (ViewBag.PermissionType != "canView")
                                         {
                                             <div class="col-lg-12 mt-4 btn btn-login">
-                                                <button class="btn btn-submit me-2" onclick="sendReminder('@Model.BuyerEmail')">
+                                                <button class="btn btn-submit me-2" onclick="sendReminder('@Model.BuyerEmail',@Model.OrderId)">
                                                     Payment Yet to be Completed
                                                 </button>
                                             </div>
@@ -158,9 +158,9 @@
 @section Scripts {
     <script>
 
-            function sendReminder(buyerEmail) {
-                $.post('/Orders/SendReminder', { buyerEmail: buyerEmail }, function(response) {
-            alert(response.message);
+                function sendReminder(buyerEmail, orderId) {
+                $.post('/Orders/SendReminder', { buyerEmail: buyerEmail, orderId: orderId }, function(response) {
+            showToast(response.message);
         });
     }
     </script>

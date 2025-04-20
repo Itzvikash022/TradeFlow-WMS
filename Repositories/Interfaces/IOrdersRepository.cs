@@ -17,6 +17,7 @@ namespace WMS_Application.Repositories.Interfaces
         OrderDetailsDTO GetOrderDetails(int orderId);
         Task<List<TblOrder>> GetAllCompanyOrders(int companyId);
         List<TransactionReportsDTO> GetTransactionReports(int Id);
+        Task<object> HandleProfits(int orderId);
 
     }
 }

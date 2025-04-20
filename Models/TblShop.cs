@@ -11,6 +11,7 @@ public partial class TblShop
     public string? ShopName { get; set; }
 
     public int AdminId { get; set; }
+    public int MarginPercentage { get; set; }
 
     public string? ShopImagePath { get; set; }
 

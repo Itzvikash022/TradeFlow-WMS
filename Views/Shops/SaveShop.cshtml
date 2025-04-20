@@ -106,6 +106,16 @@
                             </div>
                             <input type="hidden" asp-for="AdminId" readonly />
                         }
+                        else if (ViewBag.IsAction == "UpdateSelf")
+                        {
+                            <div class="col-lg-4 col-sm-9 col-12">
+                                <div class="form-group">
+                                    <label>Margin Percentage</label>
+                                    <input type="text" asp-for="MarginPercentage" >
+                                </div>
+                            </div>
+                            <input type="hidden" asp-for="AdminId" readonly />
+                        }
                         <div class="col-lg-4 col-sm-9 col-12">
                             <div class="form-group">
                                 <label>Pincode</label>

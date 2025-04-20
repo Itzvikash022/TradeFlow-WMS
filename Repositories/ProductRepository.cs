@@ -89,7 +89,7 @@ namespace WMS_Application.Repositories
                                    ProductId = product.ProductId,
                                    ProductName = product.ProductName,
                                    ProdCategory = _context.TblProductCategories.Where(c => c.ProdCatId == product.Category).Select(c => c.ProductCategory).FirstOrDefault(),
-                                   PricePerUnit = product.PricePerUnit,
+                                   PricePerUnit = stock.BoughtPrice,
                                    CreateAt = product.CreateAt,
                                    LastUpdateDate = stock.LastUpdated,
                                    Manufacturer = product.Manufacturer,
@@ -207,6 +207,9 @@ namespace WMS_Application.Repositories
 
         public async Task SaveStockAsync(int ProductId, int ShopId, int Quantity, int shopPrice)
         {
+            var product = await _context.TblProducts
+                .FirstOrDefaultAsync(s => s.ProductId == ProductId);
+
             var existingStock = await _context.TblStocks
                 .FirstOrDefaultAsync(s => s.ProductId == ProductId && s.ShopId == ShopId);
             if (existingStock != null)
@@ -222,7 +225,8 @@ namespace WMS_Application.Repositories
                     ProductId = ProductId,
                     ShopId = ShopId,
                     Quantity = Quantity,
-                    ShopPrice = shopPrice
+                    ShopPrice = shopPrice,
+                    BoughtPrice = (int)product.PricePerUnit
                 };
                 _context.TblStocks.Add(stock);
             }

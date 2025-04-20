@@ -26,6 +26,7 @@
 		<PackageReference Include="itext7" Version="9.1.0" />
 		<PackageReference Include="itext7.bouncy-castle-adapter" Version="9.1.0" />
 		<PackageReference Include="BouncyCastle.NetCore" Version="9.1.0" />
+		<PackageReference Include="Razorpay" Version="3.1.4" />
 	</ItemGroup>
 
 	<ItemGroup>

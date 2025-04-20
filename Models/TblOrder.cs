@@ -22,6 +22,7 @@ public partial class TblOrder
     public string PaymentStatus { get; set; }
 
     public int TotalQty { get; set; }
+    public int TotalProfit { get; set; }
     public string? Remarks { get; set; }
 
     [NotMapped]

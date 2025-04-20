@@ -1,90 +1,140 @@
 ﻿$(document).ready(function () {
+    console.log("Transaction.js loaded");
 
-    console.log("test-hehe");
+    let razorpayTimeout = null; // store the timeout reference
+
     $("#TransactionForm").validate({
         rules: {
-            ReferenceNumber: {
-                required: true
-            },
-            Remarks: {
-                required: true
-            }
+            ReferenceNumber: { required: true },
+            Remarks: { required: true }
         },
         messages: {
-            ReferenceNumber: {
-                required: "Reference Number is required"
-            },
-            Remarks: {
-                required: "Add a remark"
-            }
+            ReferenceNumber: { required: "Reference Number is required" },
+            Remarks: { required: "Add a remark" }
         },
 
         submitHandler: function (form, event) {
-            event.preventDefault()
+            event.preventDefault();
 
             const btn = $("#btnCheckout");
             const btnLoader = $("#btnLoader");
             btn.prop("disabled", true);
             btnLoader.removeClass("d-none");
 
-            let TransactionData = {
-                ReferenceNo: $("#ReferenceNo").val(),
-                Remarks: $("#Remarks").val(),
-                TransactionType: $("#TransactionType").val(),
-                Amount: $("#Amount").val(),
-                OrderId: $("#OrderId").val(),
-                BuyerName: $("#BuyerName").val(),
-                SellerName: $("#SellerName").val()
-            }
-                // AJAX submission
+            let orderId = $("#OrderId").val();
+            let amount = $("#Amount").val();
+            let buyerName = $("#BuyerName").val();
+            let sellerName = $("#SellerName").val();
+            let paymentType = $("#TransactionType").val();
+
+            if (paymentType == "Online") {
+
+                // First Step: Call backend to create Razorpay Order
                 $.ajax({
-                    url: '/Orders/AddTransaction',
+                    url: '/Payment/InitiatePayment',
                     type: 'POST',
                     contentType: "application/json",
-                    data: JSON.stringify(TransactionData),
-                    success: function (result) {
-                        if (result.success) {
-                            window.location.href = "/Orders";
+                    data: JSON.stringify({
+                        OrderId: orderId,
+                        Amount: amount
+                    }),
+                    success: function (res) {
+                        console.log(res);
+                        if (res.success) {
+                            var options = {
+                                "key": "rzp_test_J0O7pTXoCjjDRN", // Razorpay KeyId
+                                "amount": res.amount, // Amount in paisa
+                                "currency": "INR",
+                                "name": sellerName,
+                                "description": "Order Payment",
+                                "order_id": res.orderId,
+                                "handler": function (response) {
+                                    clearTimeout(razorpayTimeout); // Clear timeout
+                                    SaveTransaction(orderId, response.razorpay_payment_id, response.razorpay_order_id, response.razorpay_signature);
+                                },
+                                "prefill": {
+                                    "name": buyerName,
+                                },
+                                "theme": {
+                                    "color": "#3399cc"
+                                },
+                                "modal": {
+                                    ondismiss: function () {
+                                        console.log("Razorpay payment popup closed by user.");
+                                        clearTimeout(razorpayTimeout); // Clear timeout
+                                        resetButton(); // Reset button if user closes/cancels
+                                    }
+                                }
+                            };
+
+                            var rzp = new Razorpay(options);
+
+                            // Start the timeout (3 mins = 180000 ms)
+                            razorpayTimeout = setTimeout(function () {
+                                console.log("Payment timeout after 3 minutes.");
+                                resetButton(); // Auto-reset button
+                                rzp.close(); // Close Razorpay window if still open
+                                showToast("Payment session expired. Please try again.", "error");
+                            }, 180000); // 3 minutes
+
+                            rzp.open();
+                        } else {
+                            showToast(res.message, "error");
+                            resetButton();
                         }
-                        else {
-                            showToast(result.message, "error");
-                        }
-                    },
-                    complete: function () {
-                        // Re-enable button and hide loader
-                        btn.prop("disabled", false);
-                        btnLoader.addClass("d-none");
                     },
                     error: function (xhr) {
-                        console.error(xhr.responseText); // Logs the error in the browser console
-                        showToast("Error: " + xhr.responseText,"error"); // Shows the actual error message from the server
+                        console.error(xhr.responseText);
+                        showToast("Error initiating payment: " + xhr.responseText, "error");
+                        resetButton();
                     }
-
                 });
+            }
+            else {
+                    let ReferenceNo = $("#ReferenceNo").val()
+                    SaveTransaction(orderId, ReferenceNo, null, null);
+            }
         }
     });
 
-    // Custom method for letters only
-    $.validator.addMethod("lettersOnly", function (value, element) {
-        return this.optional(element) || /^[a-zA-Z]+$/.test(value);
-    }, "Please enter only letters.");
+    function SaveTransaction(orderId, razorpayPaymentId, razorpayOrderId, razorpaySignature) {
+        let TransactionData = {
+            OrderId: orderId,
+            ReferenceNo: razorpayPaymentId,
+            TransactionType: $("#TransactionType").val(),
+            Amount: $("#Amount").val(),
+            Remarks: $("#Remarks").val(),
+            SellerName: $("#SellerName").val(),
+            BuyerName: $("#BuyerName").val(),
+            RazorpayOrderId: razorpayOrderId,
+            RazorpaySignature: razorpaySignature
+        };
 
-    // Custom validation method for file extension
-    $.validator.addMethod("extension", function (value, element, param) {
-        return this.optional(element) || param.split("|").some(ext => value.endsWith(`.${ext}`));
-    }, "Please upload a valid image file (jpg, jpeg, png).");
+        $.ajax({
+            url: '/Orders/AddTransaction',
+            type: 'POST',
+            contentType: "application/json",
+            data: JSON.stringify(TransactionData),
+            success: function (result) {
+                if (result.success) {
+                    window.location.href = "/Orders";
+                } else {
+                    showToast(result.message, "error");
+                }
+            },
+            complete: function () {
+                resetButton();
+            },
+            error: function (xhr) {
+                console.error(xhr.responseText);
+                showToast("Error saving transaction: " + xhr.responseText, "error");
+            }
+        });
+    }
 
-    // Add custom validation method for DateOfBirth
-    $.validator.addMethod("dateBeforeToday", function (value, element) {
-        // Get today's date
-        var today = new Date();
-
-        // Convert the input value into a date object (assuming it's in 'YYYY-MM-DD' format)
-        var selectedDate = new Date(value);
-
-        // Compare if the selected date is earlier than today
-        return this.optional(element) || selectedDate < today;
-    }, "Date of birth must be before today's date.");
-
+    function resetButton() {
+        $("#btnCheckout").prop("disabled", false);
+        $("#btnLoader").addClass("d-none");
+    }
 
 });

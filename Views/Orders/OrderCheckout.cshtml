@@ -54,16 +54,12 @@
                                 <input id="BuyerName" value="@Model.BuyerName" hidden readonly />
                                 <input id="SellerName" value="@Model.SellerName" hidden readonly />
                                 <input id="Amount" value="@Model.TotalAmount" hidden readonly />
-                                <label class="col-form-label">Transaction Type</label>
-                                    <select class="form-select" asp-for="@Model.PaymentType" id="TransactionType">
-                                        <option value="">-- Select --</option>
-                                        <option value="Online">Online</option>
-                                        <option value="Cash">Cash</option>
-                                        <option value="Cheque">Cheque</option>
-                                        <option value="Card">Card</option>
-                                    </select>
-                                <label class="col-form-label">Reference Number</label>
-                                <input type="text" asp-for="@Model.ReferenceNumber" id="ReferenceNo" class="form-control" placeholder="TransactionID/CheckSRL/CashMemo">
+                                <input id="TransactionType" value="@Model.PaymentType" readonly class="form-control" />
+
+                                @if(Model.PaymentType == "Cash"){
+                                    <label class="col-form-label">Reference</label>
+                                    <input type="text" asp-for="@Model.ReferenceNumber" id="ReferenceNo" class="form-control" placeholder="Reference Name ">
+                                }
                                 <label class="col-form-label">Remark</label>
                                 <input type="text" class="form-control" asp-for="@Model.Remarks">
                                 <button type="submit" class="btn btn-submit mt-3 me-2" id="btnCheckout">
@@ -112,6 +108,8 @@
 </div>
 
 @section Scripts {
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
     <script src="~/js/Transactions.js"></script>
 
     @if (TempData["order-toast"] != null)

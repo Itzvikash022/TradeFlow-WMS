@@ -3,17 +3,20 @@ using WMS_Application.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using Microsoft.AspNetCore.Http;
 namespace WMS_Application.Repositories.Auth
 {
     public class UsersRepository : IUsersRepository
     {
         private readonly dbMain _context;
         private readonly IEmailSenderRepository _emailSender;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public UsersRepository(dbMain context, IEmailSenderRepository emailSender)
+        public UsersRepository(dbMain context, IEmailSenderRepository emailSender, IHttpContextAccessor httpContextAccessor)
         {
             _context = context;
             _emailSender = emailSender;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<bool> IsUsernameExists(string Username)
@@ -221,6 +224,10 @@ namespace WMS_Application.Repositories.Auth
                 UpdatedShopDetails.Address = shop.Address;
                 UpdatedShopDetails.StartTime = shop.StartTime;
                 UpdatedShopDetails.ClosingTime = shop.ClosingTime;
+                if(shop.ShopId == _httpContextAccessor.HttpContext.Session.GetInt32("ShopId"))
+                {
+                    UpdatedShopDetails.MarginPercentage = shop.MarginPercentage;
+                }
                 if(shop.ShopImage != null)
                 {
                     UpdatedShopDetails.ShopImagePath = shop.ShopImagePath;

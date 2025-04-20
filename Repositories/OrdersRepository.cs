@@ -198,7 +198,7 @@ namespace WMS_Application.Repositories
                 query = query.Where(p => p.ProductName.Contains(productName.Trim()));
             }
 
-            if (category != null && category != 0 )
+            if (category != null && category != 0)
             {
                 query = query.Where(p => p.Category == category);
             }
@@ -240,9 +240,9 @@ namespace WMS_Application.Repositories
 
         public List<ProductS2SBuyDto> GetProductsS2SBuy(string? productName, int? category, int? shop, int userId)
         {
-            TblUser userData = _context.TblUsers.FirstOrDefault(x=>x.UserId == userId);
+            TblUser userData = _context.TblUsers.FirstOrDefault(x => x.UserId == userId);
             int adminId = userId;
-            if(userData.RoleId > 2 && userData.RoleId != 5)
+            if (userData.RoleId > 2 && userData.RoleId != 5)
             {
                 adminId = userData.AdminRef;
             }
@@ -265,7 +265,7 @@ namespace WMS_Application.Repositories
                                && (string.IsNullOrEmpty(productName) || product.ProductName.Contains(productName.Trim())) // Apply filter if productName is provided
                                && (!category.HasValue || category == 0 || product.Category == category) // Apply category filter only if provided
                                && (!shop.HasValue || shop == 0 || stock.ShopId == shop) // Apply shop filter only if provided
-                               && stock.Quantity > 0 
+                               && stock.Quantity > 0
 
                          select new ProductS2SBuyDto
                          {
@@ -275,7 +275,7 @@ namespace WMS_Application.Repositories
                                          .Where(c => c.ProdCatId == product.Category)
                                          .Select(c => c.ProductCategory)
                                          .FirstOrDefault(),
-                             PricePerUnit = stock.ShopPrice,
+                             PricePerUnit = (int)stock.ShopPrice,
                              ProductImagePath = product.ProductImagePath,
                              CompanyName = shopEntity.ShopName, // Shop name as company name
                              ProductQty = stock.Quantity,
@@ -401,6 +401,7 @@ namespace WMS_Application.Repositories
                 }
             }
 
+            int totalProfit = 0;
             //Update qty
             foreach (var product in products)
             {
@@ -410,7 +411,7 @@ namespace WMS_Application.Repositories
                     var companyProduct = await _context.TblProducts
                         .FirstOrDefaultAsync(p => p.ProductId == product.ProductID);
 
-                        companyProduct.ProductQty -= product.qty;
+                    companyProduct.ProductQty -= product.qty;
 
                     // Increase stock in the buyer's shop (tblStock)
                     var shopStock = await _context.TblStocks
@@ -422,12 +423,14 @@ namespace WMS_Application.Repositories
                     }
                     else
                     {
+                        int marginPercentage = _context.TblShops.Where(x => x.ShopId == order.BuyerId).Select(y => y.MarginPercentage).FirstOrDefault();
                         _context.TblStocks.Add(new TblStock
                         {
                             ProductId = product.ProductID,
                             ShopId = order.BuyerId,
                             Quantity = product.qty,
-                            ShopPrice = product.PricePerUnit
+                            BoughtPrice = (int)product.PricePerUnit,
+                            ShopPrice = product.PricePerUnit + ((product.PricePerUnit * marginPercentage) / 100)
                         });
                     }
                 }
@@ -436,18 +439,18 @@ namespace WMS_Application.Repositories
                     // Reduce stock from the seller's shop (tblStock)
                     var shopStock = await _context.TblStocks
                         .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == order.SellerId);
-                        shopStock.Quantity -= product.qty;
+                    shopStock.Quantity -= product.qty;
                 }
                 else if (order.OrderType == "ShopToShopSell" || (order.OrderType == "ShopToShopBuy" && order.OrderStatus == "Success"))
                 {
                     // Reduce stock from the seller's shop (Shop 1)
                     var sellerStock = await _context.TblStocks
                         .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == order.SellerId);
-                        sellerStock.Quantity -= product.qty;
+                    sellerStock.Quantity -= product.qty;
 
                     // Increase stock in the buyer's shop (Shop 2)
                     var buyerStock = await _context.TblStocks
-                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == order.BuyerId&& s.ShopPrice == product.PricePerUnit);
+                        .FirstOrDefaultAsync(s => s.ProductId == product.ProductID && s.ShopId == order.BuyerId && s.ShopPrice == product.PricePerUnit);
 
                     if (buyerStock != null)
                     {
@@ -455,18 +458,62 @@ namespace WMS_Application.Repositories
                     }
                     else
                     {
+                        int marginPercentage = _context.TblShops.Where(x => x.ShopId == order.BuyerId).Select(y => y.MarginPercentage).FirstOrDefault();
+
                         _context.TblStocks.Add(new TblStock
                         {
                             ProductId = product.ProductID,
                             ShopId = order.BuyerId,
                             Quantity = product.qty,
-                            ShopPrice = product.PricePerUnit
+                            BoughtPrice = (int)product.PricePerUnit,
+                            ShopPrice = product.PricePerUnit + ((product.PricePerUnit * marginPercentage) / 100)
                         });
                     }
                 }
             }
 
             await _context.SaveChangesAsync();
+            //if(order.OrderType == "ShopToCustomer" || (order.OrderType == "ShopToShopSell" || (order.OrderType == "ShopToShopBuy" && order.OrderStatus == "Success")))
+            //{
+            //    await HandleProfits(orderId);
+            //}
+
+        }
+
+
+        //Handling Profits
+        public async Task<object> HandleProfits(int orderId)
+        {
+            try
+            {
+                var order = _context.TblOrders.FirstOrDefault(x => x.OrderId == orderId);
+                order.TblOrderDetails = _context.TblOrderDetails.Where(x => x.OrderId == order.OrderId).ToList();
+
+                int totalProfit = 0;
+                foreach (var orderDetail in order.TblOrderDetails)
+                {
+                    var stockInfo = _context.TblStocks.FirstOrDefault(x => x.ProductId == orderDetail.ProductId && x.ShopId == order.SellerId);
+                    if (stockInfo != null)
+                    {
+                        int profit = (int)(stockInfo.ShopPrice - stockInfo.BoughtPrice) * orderDetail.Quantity;
+                        totalProfit += profit;
+
+                        var updatedOrderDetails = _context.TblOrderDetails.FirstOrDefault(x => x.OrderDetailId == orderDetail.OrderDetailId);
+                        updatedOrderDetails.Profit = profit;
+                        _context.TblOrderDetails.Update(updatedOrderDetails);
+                    }
+                }
+                order.TotalProfit = totalProfit;
+                _context.TblOrders.Update(order);
+                _context.SaveChangesAsync();
+
+                return new { success = true, message = "Profits Updated successfully" };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message); // Actually throw the exception
+            }
+
         }
 
 
@@ -525,66 +572,66 @@ namespace WMS_Application.Repositories
                 }
 
 
-                // ✅ Generate receipt & send email AFTER everything is successfully saved
-                //if (transaction.OrderId != 0)
-                //{
-                //    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Receipts");
-                //    string uniqueFileName = $"Receipt_{transaction.OrderId}_{Guid.NewGuid()}.pdf";
-                //    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                //✅ Generate receipt &send email AFTER everything is successfully saved
+                if (transaction.OrderId != 0)
+                {
+                    string uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Receipts");
+                    string uniqueFileName = $"Receipt_{transaction.OrderId}_{Guid.NewGuid()}.pdf";
+                    string filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-                //    if (!Directory.Exists(uploadsFolder))
-                //        Directory.CreateDirectory(uploadsFolder);
+                    if (!Directory.Exists(uploadsFolder))
+                        Directory.CreateDirectory(uploadsFolder);
 
-                //    var receiptBytes = await GenerateReceiptAsync(transaction);
-                //    if (receiptBytes != null)
-                //    {
-                //        await File.WriteAllBytesAsync(filePath, receiptBytes);
-                //        transaction.ReceiptPath = "\\Receipts\\" + uniqueFileName;
+                    var receiptBytes = await GenerateReceiptAsync(transaction);
+                    if (receiptBytes != null)
+                    {
+                        await File.WriteAllBytesAsync(filePath, receiptBytes);
+                        transaction.ReceiptPath = "\\Receipts\\" + uniqueFileName;
 
-                //        string buyerEmail, name;
-                //        if (order.OrderType == "ShopToCustomer")
-                //        {
-                //            var buyerData = await _context.TblCustomers
-                //                .Where(u => u.CustomerId == order.BuyerId)
-                //                .FirstOrDefaultAsync();
-                //            buyerEmail = buyerData.Email;
-                //            name = buyerData.CustomerName;
-                //        }
-                //        else
-                //        {
-                //            int buyerId = await _context.TblShops
-                //                .Where(u => u.ShopId == order.BuyerId)
-                //                .Select(u => u.AdminId)
-                //                .FirstOrDefaultAsync();
+                        string buyerEmail, name;
+                        if (order.OrderType == "ShopToCustomer")
+                        {
+                            var buyerData = await _context.TblCustomers
+                                .Where(u => u.CustomerId == order.BuyerId)
+                                .FirstOrDefaultAsync();
+                            buyerEmail = buyerData.Email;
+                            name = buyerData.CustomerName;
+                        }
+                        else
+                        {
+                            int buyerId = await _context.TblShops
+                                .Where(u => u.ShopId == order.BuyerId)
+                                .Select(u => u.AdminId)
+                                .FirstOrDefaultAsync();
 
-                //            var buyerData = await _context.TblUsers
-                //                .Where(u => u.UserId == buyerId)
-                //                .FirstOrDefaultAsync();
-                //            buyerEmail = buyerData.Email;
-                //            name = buyerData.Username;
-                //        }
-                //        string fileName = $"Receipt_{transaction.OrderId}.pdf";
-                //        await _emailSender.SendEmailAsync(
-                //            toEmail: buyerEmail,
-                //            subject: "Your Order Receipt",
-                //            body: $@"
-                //                <html>
-                //                <body style='font-family: Arial, sans-serif;'>
-                //                    <h2>Thank you for your order, {name}!</h2>
-                //                    <p>We are pleased to inform you that your order has been successfully processed.</p>
-                //                    <p>Please find your receipt attached below for reference. If you have any questions, feel free to contact us.</p>
-                //                    <p><strong>Order ID:</strong> {transaction.OrderId}</p>
-                //                    <p><strong>Amount:</strong> {order.TotalAmount}</p>
-                //                    <p>We appreciate your business and look forward to serving you again!</p>
-                //                    <p>Best regards,</p>
-                //                    <p>Your Support Team</p>
-                //                </body>
-                //                </html>",
-                //            attachmentBytes: receiptBytes,
-                //            attachmentFilename: fileName
-                //        );
-                //    }
-                //}
+                            var buyerData = await _context.TblUsers
+                                .Where(u => u.UserId == buyerId)
+                                .FirstOrDefaultAsync();
+                            buyerEmail = buyerData.Email;
+                            name = buyerData.Username;
+                        }
+                        string fileName = $"Receipt_{transaction.OrderId}.pdf";
+                        await _emailSender.SendEmailAsync(
+                            toEmail: buyerEmail,
+                            subject: "Your Order Receipt",
+                            body: $@"
+                                <html>
+                                <body style='font-family: Arial, sans-serif;'>
+                                    <h2>Thank you for your order, {name}!</h2>
+                                    <p>We are pleased to inform you that your order has been successfully processed.</p>
+                                    <p>Please find your receipt attached below for reference. If you have any questions, feel free to contact us.</p>
+                                    <p><strong>Order ID:</strong> {transaction.OrderId}</p>
+                                    <p><strong>Amount:</strong> {order.TotalAmount}</p>
+                                    <p>We appreciate your business and look forward to serving you again!</p>
+                                    <p>Best regards,</p>
+                                    <p>Your Support Team</p>
+                                </body>
+                                </html>",
+                            attachmentBytes: receiptBytes,
+                            attachmentFilename: fileName
+                        );
+                    }
+                }
 
                 // ✅ Stock is available, proceed with transaction insertion
                 await _context.TblTransactions.AddAsync(transaction);
@@ -624,7 +671,7 @@ namespace WMS_Application.Repositories
                         string buyerEmail, name;
                         if (order.OrderType == "ShopToCustomer")
                         {
-                            var buyerData= await _context.TblCustomers
+                            var buyerData = await _context.TblCustomers
                                 .Where(u => u.CustomerId == order.BuyerId)
                                 .FirstOrDefaultAsync();
                             buyerEmail = buyerData.Email;
@@ -780,7 +827,7 @@ namespace WMS_Application.Repositories
                                     Amount = transaction.Amount,
                                     TransactionDate = transaction.TransactionDate,
                                     OrderDate = order.OrderDate
-                                }).OrderByDescending(x=>x.TransactionDate).ToList();
+                                }).OrderByDescending(x => x.TransactionDate).ToList();
 
             return transactions;
         }
@@ -883,7 +930,7 @@ namespace WMS_Application.Repositories
                 TotalQuantity = order.TotalQty,
                 OrderStatus = order.OrderStatus,
                 PaymentStatus = order.PaymentStatus,
-                BuyerId = (int) order.BuyerId,
+                BuyerId = (int)order.BuyerId,
 
                 // Seller & Buyer Data
                 SellerName = sellerName,
@@ -892,6 +939,7 @@ namespace WMS_Application.Repositories
                 BuyerName = buyerName,
                 BuyerContact = buyerContact,
                 BuyerEmail = buyerEmail,
+                SellerId = (int)order.SellerId,
 
                 // Product List
                 Products = orderProducts

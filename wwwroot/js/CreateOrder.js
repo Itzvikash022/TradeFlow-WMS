@@ -205,6 +205,7 @@
             success: function (response) {
                 cachedProducts = response.result; // Store in global variable
                 displayProducts(response.result);
+                $("#customerId").val(response.customerId);
             },
             error: function () {
                 showToast("Error fetching products.","error");

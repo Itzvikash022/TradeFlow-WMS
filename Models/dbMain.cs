@@ -185,6 +185,7 @@ public partial class dbMain : DbContext
                 .HasMaxLength(255)
                 .IsUnicode(false);
             entity.Property(e => e.TotalAmount).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.TotalProfit).HasColumnName("TotalProfit");
         });
 
         modelBuilder.Entity<TblOrderDetail>(entity =>
@@ -197,6 +198,7 @@ public partial class dbMain : DbContext
             entity.Property(e => e.Amount).HasColumnType("decimal(10, 2)");
             entity.Property(e => e.OrderId).HasColumnName("OrderID");
             entity.Property(e => e.PricePerUnit).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.Profit).HasColumnName("Profit");
             entity.Property(e => e.ProductId).HasColumnName("ProductID");
         });
 
@@ -274,6 +276,7 @@ public partial class dbMain : DbContext
             entity.Property(e => e.ShopId).HasColumnName("ShopID");
             entity.Property(e => e.Address).IsUnicode(false);
             entity.Property(e => e.AdminId).HasColumnName("AdminID");
+            entity.Property(e => e.MarginPercentage).HasColumnName("MarginPercentage");
             entity.Property(e => e.City)
                 .HasMaxLength(30)
                 .IsUnicode(false);
@@ -306,6 +309,7 @@ public partial class dbMain : DbContext
             entity.Property(e => e.ProductId).HasColumnName("ProductID");
             entity.Property(e => e.ShopId).HasColumnName("ShopID");
             entity.Property(e => e.ShopPrice).HasColumnType("decimal(10, 2)");
+            entity.Property(e => e.BoughtPrice).HasColumnName("BoughtPrice");
 
             entity.HasOne(d => d.Product).WithMany(p => p.TblStocks)
                 .HasForeignKey(d => d.ProductId)

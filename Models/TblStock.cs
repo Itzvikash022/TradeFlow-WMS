@@ -14,6 +14,7 @@ public partial class TblStock
     public int Quantity { get; set; }
 
     public decimal ShopPrice { get; set; }
+    public int BoughtPrice { get; set; }
 
     public DateTime? LastUpdated { get; set; }
 

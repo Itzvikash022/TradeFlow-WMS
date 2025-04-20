@@ -12,6 +12,7 @@ public partial class TblOrderDetail
     public int? ProductId { get; set; }
 
     public int Quantity { get; set; }
+    public int Profit { get; set; }
 
     public decimal PricePerUnit { get; set; }
 

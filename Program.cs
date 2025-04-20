@@ -6,6 +6,8 @@ using WMS_Application.Repositories.Auth;
 using WMS_Application.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Razorpay.Api;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,12 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<dbMain>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")),
     ServiceLifetime.Scoped);
+
+builder.Services.Configure<RazorpaySettings>(builder.Configuration.GetSection("Razorpay"));
+builder.Services.AddSingleton(resolver =>
+    resolver.GetRequiredService<IOptions<RazorpaySettings>>().Value);
+
+
 
 builder.Services.AddSession(options =>
 {
@@ -61,6 +69,7 @@ builder.Services.AddScoped<IImportServiceRepository, ImportServiceRepository>();
 builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 builder.Services.AddScoped<IAdminDashboardRepository, AdminDashboardRepository>();
 builder.Services.AddScoped<IActivityRepository, ActivityRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 
 builder.Services.AddMemoryCache();

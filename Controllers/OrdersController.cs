@@ -297,6 +297,15 @@ namespace WMS_Application.Controllers
                 //TblOrder OrderDetails = new TblOrder();
                 //var AllOrders = await _orders.GetAllOrders(shopId);
                 var OrderDetails = _orders.GetOrderDetails(orderId);
+                if(shopId == OrderDetails.SellerId)
+                {
+                    OrderDetails.PaymentType = "Cash";
+                }
+                else
+                {
+                    OrderDetails.PaymentType = "Online";
+                }
+
                 if (OrderDetails.PaymentStatus == "Paid")
                 {
                     return RedirectToAction("Index");

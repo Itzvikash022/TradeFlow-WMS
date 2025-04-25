@@ -17,11 +17,11 @@
             @if (ViewBag.PermissionType != "canView" || Context.Session.GetInt32("UserRoleId") == 5)
             {    <div class="page-btn">
                     <a class="btn"
-                       data-bs-toggle="modal"
-                       data-bs-target="#recents">
+                    data-bs-toggle="modal"
+                    data-bs-target="#recents">
                         <img src="~/assets/img/icons/transcation.svg"
-                             alt="img"
-                             class="me-1" />
+                        alt="img"
+                        class="me-1" />
                         View Requests
                     </a>
                 </div>
@@ -42,27 +42,27 @@
                         {
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link @(orderType == "Sale" ? "active" : "")"
-                                        id="@orderType-tab"
-                                        data-bs-toggle="tab"
-                                        data-bs-target="#@orderType"
-                                        type="button"
-                                        aria-controls="@orderType"
-                                        aria-selected="@(orderType == "Sale" ? "true" : "false")"
-                                        role="tab">
+                                id="@orderType-tab"
+                                data-bs-toggle="tab"
+                                data-bs-target="#@orderType"
+                                type="button"
+                                aria-controls="@orderType"
+                                aria-selected="@(orderType == "Sale" ? "true" : "false")"
+                                role="tab">
                                     @orderType
                                 </button>
                             </li>
                         }
                     </ul>
-                  
+
 
                     <div class="tab-content">
                         @foreach (var orderType in orderTypes)
                         {
                             <div class="tab-pane fade @(orderType == "Sale" ? "show active" : "")"
-                                 id="@orderType"
-                                 role="tabpanel"
-                                 aria-labelledby="@orderType-tab">
+                            id="@orderType"
+                            role="tabpanel"
+                            aria-labelledby="@orderType-tab">
 
                                 <!-- Common Table Structure -->
                                 <div class="table-top">
@@ -94,6 +94,10 @@
                                                 <th>Date</th>
                                                 <th>Amount</th>
                                                 <th>Qty</th>
+                                                @if (orderType == "Sale")
+                                                {
+                                                    <th>Profits</th>
+                                                }
                                                 <th>Payment</th>
                                                 <th>Action</th>
                                             </tr>
@@ -112,6 +116,10 @@
                                                     <td>@order.OrderDate</td>
                                                     <td>@order.TotalAmount</td>
                                                     <td>@order.TotalQty</td>
+                                                    @if(orderType == "Sale")
+                                                    {
+                                                        <td>@order.TotalProfit</td>
+                                                    }
                                                     <td>
                                                         <span class="badges @(order.PaymentStatus == "Pending" ? "bg-warning" : order.PaymentStatus == "Paid" ? "bg-lightgreen" : "bg-danger")">
                                                             @order.PaymentStatus

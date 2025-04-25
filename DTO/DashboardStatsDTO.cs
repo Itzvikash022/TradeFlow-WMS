@@ -13,6 +13,7 @@ namespace WMS_Application.DTO
         public int? EmployeeCount { get; set; }
         public int? TotalProductQty { get; set; }
         public int? UniqueProductQty { get; set; }
+        public int? ProfitThisMonth { get; set; }
         public List<TblProduct>? RecentlyAddedProducts { get; set; } = new List<TblProduct>();
         public List<TblProduct>? LowStockProducts { get; set; } = new List<TblProduct>();
     }

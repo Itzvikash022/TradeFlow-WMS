@@ -49,7 +49,7 @@ namespace WMS_Application.Controllers
                     shopId = (int)HttpContext.Session.GetInt32("CompanyId");
                 }
 
-                int productQty, uniqueQty, EmployeeCount;
+                int productQty, uniqueQty, EmployeeCount, ProfitCount;
                 List<TblProduct> recentlyAddedProducts = new List<TblProduct>();
                 if (roleId == 5)
                 {
@@ -57,6 +57,7 @@ namespace WMS_Application.Controllers
                     uniqueQty = _dashboard.GetUniqueProductQtyCompany(shopId);
                     recentlyAddedProducts = _dashboard.RecentlyAddedProductsCompany(shopId);
                     EmployeeCount = 0;
+                    ProfitCount = 0;
                 }
                 else
                 {
@@ -64,6 +65,7 @@ namespace WMS_Application.Controllers
                     uniqueQty = _dashboard.GetUniqueProductQty(shopId);
                     recentlyAddedProducts = _dashboard.RecentlyAddedProductsShop(shopId);
                     EmployeeCount = _dashboard.GetEmployeeCountByShop((int)HttpContext.Session.GetInt32("UserId"));
+                    ProfitCount = _dashboard.GetProfitThisMonth(shopId);
                 }
                 DashboardStatsDTO dashboardData = new DashboardStatsDTO
                 {
@@ -77,7 +79,8 @@ namespace WMS_Application.Controllers
                     UniqueProductQty = uniqueQty,
                     RecentlyAddedProducts = recentlyAddedProducts,
                     LowStockProducts = _dashboard.GetLowStockProductsForShop(shopId),
-                    EmployeeCount = EmployeeCount
+                    EmployeeCount = EmployeeCount,
+                    ProfitThisMonth = ProfitCount
                 };
 
                 return View(dashboardData);

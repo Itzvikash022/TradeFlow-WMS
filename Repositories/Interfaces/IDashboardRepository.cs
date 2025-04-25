@@ -21,5 +21,6 @@ namespace WMS_Application.Repositories.Interfaces
         List<TblProduct> GetLowStockProductsForShop(int shopId);
         List<TblProduct> GetLowStockProductsForCompany(int companyId);
         int GetEmployeeCountByShop(int adminId);
+        int GetProfitThisMonth(int shopId);
     }
 }

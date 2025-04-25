@@ -42,6 +42,7 @@ namespace WMS_Application.DTO
         public int Quantity { get; set; }
         public decimal PricePerUnit { get; set; }
         public decimal TotalAmount { get; set; }
+        public int ProfitGained { get; set; }
     }
 
 

@@ -71,7 +71,8 @@ namespace WMS_Application.Repositories
                                     OrderStatus = o.OrderStatus,
                                     CanEditStatus = o.SellerId == loggedInShopId,
                                     TotalQty = o.TotalQty,
-                                    PaymentStatus = o.PaymentStatus
+                                    PaymentStatus = o.PaymentStatus,
+                                    TotalProfit = o.TotalProfit
                                 })
                      .OrderByDescending(o => o.OrderDate).AsNoTracking()
                      .ToListAsync();
@@ -910,6 +911,7 @@ namespace WMS_Application.Repositories
                     Quantity = od.Quantity,
                     PricePerUnit = od.PricePerUnit,
                     TotalAmount = od.Amount,
+                    ProfitGained = od.Profit,
                     ProductName = _context.TblProducts.Where(p => p.ProductId == od.ProductId).Select(p => p.ProductName).FirstOrDefault() ?? "N/a",
                     ProductImage = _context.TblProducts.Where(p => p.ProductId == od.ProductId).Select(p => p.ProductImagePath).FirstOrDefault() ?? "N/A"
                 })

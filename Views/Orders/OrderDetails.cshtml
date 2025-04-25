@@ -126,6 +126,10 @@
                                     <th>Product Name</th>
                                     <th>Price Per Unit</th>
                                     <th>Quantity</th>
+                                    @if (Model.SellerId == (int)Context.Session.GetInt32("ShopId") && Model.OrderStatus == "Success")
+                                    {
+                                        <th>Profit</th>
+                                    }
                                     <th>Total Amount</th>
                                 </tr>
                             </thead>
@@ -136,12 +140,16 @@
                                         <td class="productimgname">
                                             <a class="product-img">
                                                 <img src="@item.ProductImage"
-                                                     alt="product" />
+                                                alt="product" />
                                             </a>
                                         </td>
                                         <td>@item.ProductName</td>
                                         <td>@item.PricePerUnit</td>
                                         <td>@item.Quantity</td>
+                                        @if (Model.SellerId == (int)Context.Session.GetInt32("ShopId") && Model.OrderStatus == "Success")
+                                        {
+                                            <td>@item.ProfitGained</td>
+                                        }
                                         <td>@item.TotalAmount</td>
                                     </tr>
                                 }

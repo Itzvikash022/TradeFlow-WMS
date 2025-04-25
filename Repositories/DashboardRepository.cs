@@ -92,7 +92,17 @@ namespace WMS_Application.Repositories
 
             return totalQty;
         }
-        
+
+        public int GetProfitThisMonth(int shopId)
+        {
+            var totalProfit = _context.TblOrders
+            .Where(x => x.SellerId == shopId && x.OrderStatus == "Success")
+            .Sum(y => y.TotalProfit);
+
+            return totalProfit;
+
+        }
+
         public int GetTotalProductQtyCompany(int companyId)
         {
             var totalQty = _context.TblProducts

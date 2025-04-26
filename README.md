@@ -7,7 +7,7 @@ TradeFlow is a comprehensive web-based Wholesale Management System developed as 
 
 ## ⚙️ Tech Stack
 
-- **Frontend**: HTML, CSS, JavaScript, Bootstrap, React.js
+- **Frontend**: HTML, CSS, JavaScript, Bootstrap
 - **Backend**: ASP.NET Core MVC (C#), Entity Framework Core
 - **Database**: Microsoft SQL Server
 - **Authentication**: Email/password, Google OAuth

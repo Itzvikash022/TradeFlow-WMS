@@ -41,7 +41,7 @@ namespace WMS_Application.Controllers
         // Public method to get user permission
         public string GetUserPermission(string action)
         {
-            int roleId = HttpContext.Session.GetInt32("UserRoleId").Value;
+            int roleId = (int) HttpContext.Session.GetInt32("UserRoleId");
             string PermissionType = _permission.HasAccess(action, roleId);
             ViewBag.Permissiontype = PermissionType;
             return PermissionType;
@@ -772,6 +772,7 @@ namespace WMS_Application.Controllers
                     type = "Add Payment";
                     desc = $"{shopName} added it's payment details for OrderID : {transaction.OrderId}";
                 }
+                _activity.AddNewActivity(id, roleId, type, desc);   
 
                 return Ok(new {success = true, message = "Transaction added successfully!" });
             }

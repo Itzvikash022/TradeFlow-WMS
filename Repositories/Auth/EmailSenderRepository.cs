@@ -77,8 +77,7 @@ namespace WMS_Application.Repositories.Auth
                 throw;
             }
         }
-
-
+        
         //We are generating OTP here which will be sent to user's email and saved in db
         public string GenerateOtp()
         {

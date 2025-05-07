@@ -22,6 +22,7 @@ namespace WMS_Application.Controllers
             _context = context;
             _admins = admins;
             _users = users;
+            _users = users;
             _emailSender = emailSender;
             _permission = permission;
             _export = export;
